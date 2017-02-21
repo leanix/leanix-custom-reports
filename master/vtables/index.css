@@ -7000,7 +7000,7 @@ button.close {
 .report-hierarchy .react-bs-table table td {
     overflow: auto;
     text-overflow: default;
-    white-space: normal;
+    white-space: normal !important;
 }
 
 .report-hierarchy .tr-level-1 {
