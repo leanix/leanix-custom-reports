@@ -13,7 +13,7 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
  
 1. `npm install -g create-react-app`
 1. `npm install` in project directory
-1. create an `.env` file in project directory (please read the comments in `leanix-custom-reports/lib/default.env`)
+1. create an `.env` file in project directory (please read the comments in `default.env`)
  
 ## Available scripts
  
