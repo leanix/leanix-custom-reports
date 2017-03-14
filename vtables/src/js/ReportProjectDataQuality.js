@@ -4,7 +4,7 @@ var ReportProjectDataQuality = (function () {
         this.tagFilter = tagFilter;
     }
 
-    ReportProjectDataQuality.prototype.render = function () {
+    ReportProjectDataQuality.prototype.render = function (hideSpinner) {
         var that = this;
 
         var factSheetPromise = $.get(this.reportSetup.apiBaseUrl + '/factsheets?relations=true'
@@ -154,6 +154,7 @@ var ReportProjectDataQuality = (function () {
                     return '<div class="percentage" style="background-color: ' + getGreenToRed(cell) + ';">' + cell + ' %</div>';
                 }
 
+                hideSpinner();
                 ReactDOM.render(
                     <div className="report-data-quality">
                         <BootstrapTable data={output} striped={false} hover={true} search={true} condensed={true} exportCSV={true}>

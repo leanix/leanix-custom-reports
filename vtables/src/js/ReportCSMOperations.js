@@ -5,7 +5,7 @@ var ReportCSMOperations = (function () {
         this.title = title;
     }
 
-    ReportCSMOperations.prototype.render = function () {
+    ReportCSMOperations.prototype.render = function (hideSpinner) {
         var that = this;
 
         var tagGroupPromise = $.get(this.reportSetup.apiBaseUrl + '/tagGroups')
@@ -121,7 +121,7 @@ var ReportCSMOperations = (function () {
                 for (var z = 0; z < that.maxLevel; z++) {
                     levels.push(z + 1);
                 }
-
+                hideSpinner();
                 ReactDOM.render(
                     <div className="report-csm-operations">
                         <BootstrapTable data={output} striped={false} hover={false} search={true} exportCSV={true} trClassName={trClassFormat}>

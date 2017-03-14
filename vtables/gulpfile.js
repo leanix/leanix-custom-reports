@@ -35,7 +35,14 @@ gulp.task('dist_fonts', ['copy'], function() {
         .pipe(gulp.dest('./dist/fonts/'));
 });
 
-gulp.task('dist', ['copy', 'dist_css', 'dist_fonts'], function() {
+gulp.task('dist_img', ['copy'], function() {
+    return gulp.src([
+        './src/spinner.gif',
+    ])
+        .pipe(gulp.dest('./dist/img/'));
+});
+
+gulp.task('dist', ['copy', 'dist_css', 'dist_fonts', 'dist_img'], function() {
   return gulp.src([
       './node_modules/jquery/dist/jquery.js',
       './node_modules/react/dist/react-with-addons.js',

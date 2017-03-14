@@ -5,7 +5,7 @@ var ReportAppMap2BCA = (function () {
         this.title = title;
     }
 
-    ReportAppMap2BCA.prototype.render = function () {
+    ReportAppMap2BCA.prototype.render = function (hideSpinner) {
         var that = this;
 
         var factSheetPromise = $.get(this.reportSetup.apiBaseUrl + '/factsheets?relations=true'
@@ -92,7 +92,7 @@ var ReportAppMap2BCA = (function () {
                     if (id)
                         return '<a href="' + that.reportSetup.baseUrl + '/businessCapabilities/' + id + '" target="_blank">' + cell + '</a>';
                 }
-
+                hideSpinner();
                 ReactDOM.render(
                     <div>
                         <BootstrapTable data={output} striped={true} hover={true} search={true} pagination={true} exportCSV={true}>

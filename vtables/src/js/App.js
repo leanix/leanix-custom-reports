@@ -1,6 +1,7 @@
 (function () {
     'use strict';
 
+    var hideSpinner;
     var reportSetup = new ReportSetup();
 
     switch (reportSetup.getArg('report')) {
@@ -45,7 +46,12 @@
 			break;
     }
 
-    if (report)
-        report.render();
+    hideSpinner = function hideSpinner() {
+        document.getElementById('spinnerloader').style.display = 'none';
+    };
+
+    if (report) {
+        report.render(hideSpinner);
+    }
 
 })();

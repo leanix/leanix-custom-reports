@@ -8,7 +8,7 @@ var ReportTechnopedia = (function () {
 		this.title = title;
 	}
 
-	ReportTechnopedia.prototype.render = function () {
+	ReportTechnopedia.prototype.render = function (hideSpinner) {
 		var that = this;
 		var documentsUrl = '/documents?relations=false&referenceSystem=technopedia';
 		var documentsPromise = $.get(this.reportSetup.apiBaseUrl + documentsUrl).then(function (documents) {
@@ -168,7 +168,8 @@ var ReportTechnopedia = (function () {
 				}
 				return '';
 			}
-			
+
+            hideSpinner();
 			ReactDOM.render(
 				<BootstrapTable
 					data={output}

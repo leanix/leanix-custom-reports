@@ -8,7 +8,7 @@ var ReportApplicationLifecycle = (function () {
         this.title = title;
     }
 
-    ReportApplicationLifecycle.prototype.render = function () {
+    ReportApplicationLifecycle.prototype.render = function (hideSpinner) {
         var that = this;
 
         var tagGroupPromise = $.get(this.reportSetup.apiBaseUrl + '/tagGroups')
@@ -224,7 +224,7 @@ var ReportApplicationLifecycle = (function () {
                     if (row.projectId)
                         return '<a href="' + that.reportSetup.baseUrl + '/projects/' + row.projectId + '" target="_blank">' + row.projectName + '</a>';
                 }
-
+                hideSpinner();
                 ReactDOM.render(
                     <BootstrapTable
                             data={output}

@@ -5,7 +5,7 @@ var ReportAppMap2ETOM = (function () {
         this.title = title;
     }
 
-    ReportAppMap2ETOM.prototype.render = function () {
+    ReportAppMap2ETOM.prototype.render = function (hideSpinner) {
         var that = this;
 
         var factSheetPromise = $.get(this.reportSetup.apiBaseUrl + '/factsheets?relations=true'
@@ -98,7 +98,7 @@ var ReportAppMap2ETOM = (function () {
                     if (id)
                         return '<a href="' + that.reportSetup.baseUrl + '/processes/' + id + '" target="_blank">' + cell + '</a>';
                 }
-
+                hideSpinner();
                 ReactDOM.render(
                     <div>
                         <BootstrapTable data={output} striped={true} hover={true} search={true} pagination={true} exportCSV={true}>

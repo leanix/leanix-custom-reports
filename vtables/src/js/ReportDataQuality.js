@@ -4,7 +4,7 @@ var ReportDataQuality = (function () {
         this.tagFilter = tagFilter;
     }
 
-    ReportDataQuality.prototype.render = function () {
+    ReportDataQuality.prototype.render = function (hideSpinner) {
         var that = this;
 
         var tagGroupPromise = $.get(this.reportSetup.apiBaseUrl + '/tagGroups')
@@ -446,8 +446,7 @@ var ReportDataQuality = (function () {
                     return '<div class="percentage" style="background-color: ' + getGreenToRed(cell) + ';">' + cell + ' %</div>';
                 }
 
-
-
+                hideSpinner();
                 ReactDOM.render(
                     <div className="report-data-quality">
                         <BootstrapTable data={output} striped={false} hover={true} search={true} condensed={true} exportCSV={true}>

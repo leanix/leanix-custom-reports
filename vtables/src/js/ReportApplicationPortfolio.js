@@ -5,7 +5,7 @@ var ReportApplicationPortfolio = (function () {
         this.title = title;
     }
 
-    ReportApplicationPortfolio.prototype.render = function () {
+    ReportApplicationPortfolio.prototype.render = function (hideSpinner) {
         var that = this;
 
         var tagGroupPromise = $.get(this.reportSetup.apiBaseUrl + '/tagGroups')
@@ -373,7 +373,7 @@ var ReportApplicationPortfolio = (function () {
                     if (row.cobraId)
                         return '<a href="' + that.reportSetup.baseUrl + '/businessCapabilities/' + row.cobraId + '" target="_blank">' + cell + '</a>';
                 }
-
+                hideSpinner();
                 ReactDOM.render(
                     <div>
                         <BootstrapTable data={output} striped={true} hover={true} search={true} pagination={true} exportCSV={true}>

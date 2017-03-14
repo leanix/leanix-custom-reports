@@ -5,7 +5,7 @@ var ReportPassbook = (function() {
         this.title = title;
     }
 
-    ReportPassbook.prototype.render = function() {
+    ReportPassbook.prototype.render = function(hideSpinner) {
         var that = this;
 
         var tagGroupPromise = $.get(this.reportSetup.apiBaseUrl + '/tagGroups')
@@ -85,6 +85,7 @@ var ReportPassbook = (function() {
                     return '<a href="' + that.reportSetup.baseUrl + '/resourceCapabilities/' + row.resourceCapabilityID + '" target="_blank">' + cell + '</a>';
                 }
 
+                hideSpinner();
                 ReactDOM.render(
                     <div>
                         <BootstrapTable data={output} striped={true} hover={true} search={true} pagination={true} exportCSV={true}>

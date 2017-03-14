@@ -5,7 +5,7 @@ var ReportCIMMasterList = (function () {
         this.title = title;
     }
 
-    ReportCIMMasterList.prototype.render = function () {
+    ReportCIMMasterList.prototype.render = function (hideSpinner) {
         var that = this;
 
         var tagGroupPromise = $.get(this.reportSetup.apiBaseUrl + '/tagGroups')
@@ -115,7 +115,7 @@ var ReportCIMMasterList = (function () {
                 for (var z = 0; z < that.maxLevel; z++) {
                     levels.push(z + 1);
                 }
-
+                hideSpinner();
                 ReactDOM.render(
                     <div className="report-cim-masterlist">
                         <BootstrapTable data={output} striped={false} hover={false} search={true} exportCSV={true} trClassName={trClassFormat}>
