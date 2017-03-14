@@ -54527,7 +54527,7 @@ var ReportDataQuality = (function () {
         this.tagFilter = tagFilter;
     }
 
-    ReportDataQuality.prototype.render = function () {
+    ReportDataQuality.prototype.render = function (hideSpinner) {
         var that = this;
 
         var tagGroupPromise = $.get(this.reportSetup.apiBaseUrl + '/tagGroups')
@@ -54969,8 +54969,7 @@ var ReportDataQuality = (function () {
                     return '<div class="percentage" style="background-color: ' + getGreenToRed(cell) + ';">' + cell + ' %</div>';
                 }
 
-
-
+                hideSpinner();
                 ReactDOM.render(
                     React.createElement("div", {className: "report-data-quality"}, 
                         React.createElement(BootstrapTable, {data: output, striped: false, hover: true, search: true, condensed: true, exportCSV: true}, 
@@ -54999,7 +54998,7 @@ var ReportApplicationLifecycle = (function () {
         this.title = title;
     }
 
-    ReportApplicationLifecycle.prototype.render = function () {
+    ReportApplicationLifecycle.prototype.render = function (hideSpinner) {
         var that = this;
 
         var tagGroupPromise = $.get(this.reportSetup.apiBaseUrl + '/tagGroups')
@@ -55215,7 +55214,7 @@ var ReportApplicationLifecycle = (function () {
                     if (row.projectId)
                         return '<a href="' + that.reportSetup.baseUrl + '/projects/' + row.projectId + '" target="_blank">' + row.projectName + '</a>';
                 }
-
+                hideSpinner();
                 ReactDOM.render(
                     React.createElement(BootstrapTable, {
                             data: output, 
@@ -55293,7 +55292,7 @@ var ReportApplicationPortfolio = (function () {
         this.title = title;
     }
 
-    ReportApplicationPortfolio.prototype.render = function () {
+    ReportApplicationPortfolio.prototype.render = function (hideSpinner) {
         var that = this;
 
         var tagGroupPromise = $.get(this.reportSetup.apiBaseUrl + '/tagGroups')
@@ -55661,7 +55660,7 @@ var ReportApplicationPortfolio = (function () {
                     if (row.cobraId)
                         return '<a href="' + that.reportSetup.baseUrl + '/businessCapabilities/' + row.cobraId + '" target="_blank">' + cell + '</a>';
                 }
-
+                hideSpinner();
                 ReactDOM.render(
                     React.createElement("div", null, 
                         React.createElement(BootstrapTable, {data: output, striped: true, hover: true, search: true, pagination: true, exportCSV: true}, 
@@ -55724,7 +55723,7 @@ var ReportAppMap2BCA = (function () {
         this.title = title;
     }
 
-    ReportAppMap2BCA.prototype.render = function () {
+    ReportAppMap2BCA.prototype.render = function (hideSpinner) {
         var that = this;
 
         var factSheetPromise = $.get(this.reportSetup.apiBaseUrl + '/factsheets?relations=true'
@@ -55811,7 +55810,7 @@ var ReportAppMap2BCA = (function () {
                     if (id)
                         return '<a href="' + that.reportSetup.baseUrl + '/businessCapabilities/' + id + '" target="_blank">' + cell + '</a>';
                 }
-
+                hideSpinner();
                 ReactDOM.render(
                     React.createElement("div", null, 
                         React.createElement(BootstrapTable, {data: output, striped: true, hover: true, search: true, pagination: true, exportCSV: true}, 
@@ -55838,7 +55837,7 @@ var ReportAppMap2CIM = (function () {
         this.title = title;
     }
 
-    ReportAppMap2CIM.prototype.render = function () {
+    ReportAppMap2CIM.prototype.render = function (hideSpinner) {
         var that = this;
 
         var factSheetPromise = $.get(this.reportSetup.apiBaseUrl + '/factsheets?relations=true'
@@ -55909,7 +55908,7 @@ var ReportAppMap2CIM = (function () {
                     if (id)
                         return '<a href="' + that.reportSetup.baseUrl + '/businessCapabilities/' + id + '" target="_blank">' + cell + '</a>';
                 }
-
+                hideSpinner();
                 ReactDOM.render(
                     React.createElement("div", null, 
                         React.createElement(BootstrapTable, {data: output, striped: true, hover: true, search: true, pagination: true, exportCSV: true}, 
@@ -55935,7 +55934,7 @@ var ReportAppMap2ETOM = (function () {
         this.title = title;
     }
 
-    ReportAppMap2ETOM.prototype.render = function () {
+    ReportAppMap2ETOM.prototype.render = function (hideSpinner) {
         var that = this;
 
         var factSheetPromise = $.get(this.reportSetup.apiBaseUrl + '/factsheets?relations=true'
@@ -56028,7 +56027,7 @@ var ReportAppMap2ETOM = (function () {
                     if (id)
                         return '<a href="' + that.reportSetup.baseUrl + '/processes/' + id + '" target="_blank">' + cell + '</a>';
                 }
-
+                hideSpinner();
                 ReactDOM.render(
                     React.createElement("div", null, 
                         React.createElement(BootstrapTable, {data: output, striped: true, hover: true, search: true, pagination: true, exportCSV: true}, 
@@ -56056,7 +56055,7 @@ var ReportAppMap2Platforms = (function () {
         this.title = title;
     }
 
-    ReportAppMap2Platforms.prototype.render = function () {
+    ReportAppMap2Platforms.prototype.render = function (hideSpinner) {
         var that = this;
 
         var factSheetPromise = $.get(this.reportSetup.apiBaseUrl + '/factsheets?relations=true'
@@ -56124,7 +56123,7 @@ var ReportAppMap2Platforms = (function () {
                     if (id)
                         return '<a href="' + that.reportSetup.baseUrl + '/businessCapabilities/' + id + '" target="_blank">' + cell + '</a>';
                 }
-
+                hideSpinner();
                 ReactDOM.render(
                     React.createElement("div", null, 
                         React.createElement(BootstrapTable, {data: output, striped: true, hover: true, search: true, pagination: true, exportCSV: true}, 
@@ -56149,7 +56148,7 @@ var ReportCSMOperations = (function () {
         this.title = title;
     }
 
-    ReportCSMOperations.prototype.render = function () {
+    ReportCSMOperations.prototype.render = function (hideSpinner) {
         var that = this;
 
         var tagGroupPromise = $.get(this.reportSetup.apiBaseUrl + '/tagGroups')
@@ -56265,7 +56264,7 @@ var ReportCSMOperations = (function () {
                 for (var z = 0; z < that.maxLevel; z++) {
                     levels.push(z + 1);
                 }
-
+                hideSpinner();
                 ReactDOM.render(
                     React.createElement("div", {className: "report-csm-operations"}, 
                         React.createElement(BootstrapTable, {data: output, striped: false, hover: false, search: true, exportCSV: true, trClassName: trClassFormat}, 
@@ -56293,7 +56292,7 @@ var ReportCSMServices = (function () {
         this.title = title;
     }
 
-    ReportCSMServices.prototype.render = function () {
+    ReportCSMServices.prototype.render = function (hideSpinner) {
         var that = this;
 
         var tagGroupPromise = $.get(this.reportSetup.apiBaseUrl + '/tagGroups')
@@ -56487,7 +56486,7 @@ var ReportCSMServices = (function () {
                 for (var z = 0; z < that.maxLevel; z++) {
                     levels.push(z + 1);
                 }
-
+                hideSpinner();
                 ReactDOM.render(
                     React.createElement("div", {className: "report-cms-services"}, 
                         React.createElement(BootstrapTable, {data: output, striped: false, hover: false, search: true, exportCSV: true, trClassName: trClassFormat}, 
@@ -56519,7 +56518,7 @@ var ReportCIMMasterList = (function () {
         this.title = title;
     }
 
-    ReportCIMMasterList.prototype.render = function () {
+    ReportCIMMasterList.prototype.render = function (hideSpinner) {
         var that = this;
 
         var tagGroupPromise = $.get(this.reportSetup.apiBaseUrl + '/tagGroups')
@@ -56629,7 +56628,7 @@ var ReportCIMMasterList = (function () {
                 for (var z = 0; z < that.maxLevel; z++) {
                     levels.push(z + 1);
                 }
-
+                hideSpinner();
                 ReactDOM.render(
                     React.createElement("div", {className: "report-cim-masterlist"}, 
                         React.createElement(BootstrapTable, {data: output, striped: false, hover: false, search: true, exportCSV: true, trClassName: trClassFormat}, 
@@ -56656,7 +56655,7 @@ var ReportPassbook = (function() {
         this.title = title;
     }
 
-    ReportPassbook.prototype.render = function() {
+    ReportPassbook.prototype.render = function(hideSpinner) {
         var that = this;
 
         var tagGroupPromise = $.get(this.reportSetup.apiBaseUrl + '/tagGroups')
@@ -56736,6 +56735,7 @@ var ReportPassbook = (function() {
                     return '<a href="' + that.reportSetup.baseUrl + '/resourceCapabilities/' + row.resourceCapabilityID + '" target="_blank">' + cell + '</a>';
                 }
 
+                hideSpinner();
                 ReactDOM.render(
                     React.createElement("div", null, 
                         React.createElement(BootstrapTable, {data: output, striped: true, hover: true, search: true, pagination: true, exportCSV: true}, 
@@ -56758,7 +56758,7 @@ var ReportProjectDataQuality = (function () {
         this.tagFilter = tagFilter;
     }
 
-    ReportProjectDataQuality.prototype.render = function () {
+    ReportProjectDataQuality.prototype.render = function (hideSpinner) {
         var that = this;
 
         var factSheetPromise = $.get(this.reportSetup.apiBaseUrl + '/factsheets?relations=true'
@@ -56908,6 +56908,7 @@ var ReportProjectDataQuality = (function () {
                     return '<div class="percentage" style="background-color: ' + getGreenToRed(cell) + ';">' + cell + ' %</div>';
                 }
 
+                hideSpinner();
                 ReactDOM.render(
                     React.createElement("div", {className: "report-data-quality"}, 
                         React.createElement(BootstrapTable, {data: output, striped: false, hover: true, search: true, condensed: true, exportCSV: true}, 
@@ -56936,7 +56937,7 @@ var ReportTechnopedia = (function () {
 		this.title = title;
 	}
 
-	ReportTechnopedia.prototype.render = function () {
+	ReportTechnopedia.prototype.render = function (hideSpinner) {
 		var that = this;
 		var documentsUrl = '/documents?relations=false&referenceSystem=technopedia';
 		var documentsPromise = $.get(this.reportSetup.apiBaseUrl + documentsUrl).then(function (documents) {
@@ -57096,7 +57097,8 @@ var ReportTechnopedia = (function () {
 				}
 				return '';
 			}
-			
+
+            hideSpinner();
 			ReactDOM.render(
 				React.createElement(BootstrapTable, {
 					data: output, 
@@ -57158,6 +57160,7 @@ var ReportTechnopedia = (function () {
 (function () {
     'use strict';
 
+    var hideSpinner;
     var reportSetup = new ReportSetup();
 
     switch (reportSetup.getArg('report')) {
@@ -57202,7 +57205,12 @@ var ReportTechnopedia = (function () {
 			break;
     }
 
-    if (report)
-        report.render();
+    hideSpinner = function hideSpinner() {
+        document.getElementById('spinnerloader').style.display = 'none';
+    };
+
+    if (report) {
+        report.render(hideSpinner);
+    }
 
 })();
