@@ -1,29 +1,28 @@
 {
-	"name": "leanix-custom-reports",
-	"version": "0.0.1",
-	"description": "Contains a set of custom reports for leanIX",
-	"private": true,
-	"scripts": {
-		"createLink": "node ./lib/createLink.js",
-		"tables": "cd tables && gulp watch",
-		"bubbles": "cd bubbles && gulp watch",
-		"circle": "cd circle && gulp watch"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/leanix/leanix-custom-reports.git"
-	},
-	"keywords": [
-		"leanix",
-		"custom",
-		"reports",
-		"visualisation"
-	],
-	"author": "leanIX GmbH",
-	"license": "MIT",
-	"bugs": {
-		"url": "https://github.com/leanix/leanix-custom-reports/issues"
-	},
-	"homepage": "https://github.com/leanix/leanix-custom-reports#readme",
-	"devDependencies": {}
+  "name": "leanix-custom-reports",
+  "version": "0.0.1",
+  "description": "Contains a set of custom reports for leanIX",
+  "private": true,
+  "scripts": {
+    "createLink": "node ./lib/createLink.js",
+    "tables": "cd tables && gulp watch",
+    "bubbles": "cd bubbles && gulp watch",
+    "circle": "cd circle && gulp watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/leanix/leanix-custom-reports.git"
+  },
+  "keywords": [
+    "leanix",
+    "custom",
+    "reports",
+    "visualisation"
+  ],
+  "author": "leanIX GmbH",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/leanix/leanix-custom-reports/issues"
+  },
+  "homepage": "https://github.com/leanix/leanix-custom-reports#readme"
 }
