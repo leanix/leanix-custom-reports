@@ -1,0 +1,35 @@
+body {
+    padding: 10px;
+}
+  
+.App {
+    padding: 0px;
+}
+  
+.loader {
+    background: url("./spinner.gif") no-repeat center center transparent;
+    min-height: 100px;
+}
+
+/*
+ * Inputfield css
+ */
+
+.inputfield-menu {
+	overflow-y: auto;
+	overflow-x: visible;
+	max-height: 300px;
+	display: block;
+}
+
+.inputfield-menu-item {
+	display: list-item;
+	white-space: nowrap;
+	padding: 2px 6px;
+	cursor: default;
+}
+
+.inputfield-menu-item mark {
+	padding: .1em .1em;
+	border-radius: .25em;
+}
