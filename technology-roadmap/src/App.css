@@ -1,0 +1,13 @@
+
+body {
+    padding: 10px;
+}
+  
+.App {
+    padding: 0px;
+}
+  
+.loader {
+    background: url("./spinner.gif") no-repeat center center transparent;
+    min-height: 100px;
+}
