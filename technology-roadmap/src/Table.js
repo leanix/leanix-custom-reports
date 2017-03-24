@@ -41,17 +41,13 @@ class Table extends Component {
   _formatDateStart (cell, row) {
     if (!cell) { return; }
     const date = ('0' + cell.getDate()).slice(-2) + '/' + ('0' + (cell.getMonth() + 1)).slice(-2) + '/' + cell.getFullYear();
-    return '<a>' + row.projStartPhase + ' -- ' + date + '</a>';
-
-    //return `${row.projStartPhase} -- ${('0' + cell.getDate()).slice(-2)}/${('0' + (cell.getMonth() + 1)).slice(-2)}/${cell.getFullYear()}`;
+    return row.projStartPhase + ' -- ' + date;
   }
 
   _formatDateEnd (cell, row) {
     if (!cell) { return; }
     const date = ('0' + cell.getDate()).slice(-2) + '/' + ('0' + (cell.getMonth() + 1)).slice(-2) + '/' + cell.getFullYear();
-    return '<a>' + row.projEndPhase + ' -- ' + date + '</a>';
-
-    //return `${row.projEndPhase} -- ${('0' + cell.getDate()).slice(-2)}/${('0' + (cell.getMonth() + 1)).slice(-2)}/${cell.getFullYear()}`;
+    return row.projEndPhase + ' -- ' + date;
   }
 
   render () {
@@ -165,19 +161,33 @@ class Table extends Component {
 
 Table.propTypes = {
   tableData: React.PropTypes.arrayOf(
-    React.PropTypes.objectOf(
-      React.PropTypes.oneOfType([
-        React.PropTypes.string,
-        React.PropTypes.number,
-        React.PropTypes.object
-      ])
-    )
+    React.PropTypes.shape({
+      id: React.PropTypes.number.isRequired,
+      bcLvl1: React.PropTypes.string.isRequired,
+      IdBcLvl1: React.PropTypes.string.isRequired,
+      bcLvl2: React.PropTypes.string,
+      IdBcLvl2: React.PropTypes.string,
+      area: React.PropTypes.string,
+      IdArea: React.PropTypes.string,
+      proj: React.PropTypes.string.isRequired,
+      IdProj: React.PropTypes.string.isRequired,
+      projStartTime: React.PropTypes.instanceOf(Date),
+      projStartPhase: React.PropTypes.string,
+      projEndTime: React.PropTypes.instanceOf(Date),
+      projEndPhase: React.PropTypes.string,
+      prov: React.PropTypes.string,
+      IdProv: React.PropTypes.string,
+      scope: React.PropTypes.string,
+      host: React.PropTypes.string,
+      notYetDef: React.PropTypes.string
+    }).isRequired
   ).isRequired,
   baseUrl: React.PropTypes.string.isRequired,
-  tags: React.PropTypes.objectOf(
-    React.PropTypes.objectOf(
-      React.PropTypes.string)
-  ).isRequired
+  tags: React.PropTypes.shape({
+    scopes: React.PropTypes.object.isRequired,
+    hosts: React.PropTypes.object.isRequired,
+    notYetDefined: React.PropTypes.object.isRequired
+  }).isRequired
 };
 
 export default Table;
