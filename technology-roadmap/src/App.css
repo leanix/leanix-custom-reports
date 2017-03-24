@@ -11,3 +11,21 @@ body {
     background: url("./spinner.gif") no-repeat center center transparent;
     min-height: 100px;
 }
+
+/*
+ * from 'react-bootstrap-table/css/react-bootstrap-table.css'
+ */
+.react-bs-table table td,
+.react-bs-table table th {
+    white-space: normal !important;
+}
+
+.react-bs-table,
+.react-bs-table-tool-bar,
+.react-bs-table-pagination {
+    margin: 0px;
+}
+
+.react-bs-table-tool-bar {
+    margin-bottom: 10px;
+}

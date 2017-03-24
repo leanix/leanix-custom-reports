@@ -1,7 +1,7 @@
 // 3rd party css files
 import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap/dist/css/bootstrap-theme.css';
-import 'react-bootstrap-table/dist/react-bootstrap-table.min.css'
+import 'react-bootstrap-table/css/react-bootstrap-table.css'
   
 // global dependencies
 import React from 'react';

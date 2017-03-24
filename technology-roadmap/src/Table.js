@@ -40,22 +40,28 @@ class Table extends Component {
 
   _formatDateStart (cell, row) {
     if (!cell) { return; }
-    return `${row.projStartPhase} -- ${('0' + cell.getDate()).slice(-2)}/${('0' + (cell.getMonth() + 1)).slice(-2)}/${cell.getFullYear()}`;
+    const date = ('0' + cell.getDate()).slice(-2) + '/' + ('0' + (cell.getMonth() + 1)).slice(-2) + '/' + cell.getFullYear();
+    return '<a>' + row.projStartPhase + ' -- ' + date + '</a>';
+
+    //return `${row.projStartPhase} -- ${('0' + cell.getDate()).slice(-2)}/${('0' + (cell.getMonth() + 1)).slice(-2)}/${cell.getFullYear()}`;
   }
 
   _formatDateEnd (cell, row) {
     if (!cell) { return; }
-    return `${row.projEndPhase} -- ${('0' + cell.getDate()).slice(-2)}/${('0' + (cell.getMonth() + 1)).slice(-2)}/${cell.getFullYear()}`;
+    const date = ('0' + cell.getDate()).slice(-2) + '/' + ('0' + (cell.getMonth() + 1)).slice(-2) + '/' + cell.getFullYear();
+    return '<a>' + row.projEndPhase + ' -- ' + date + '</a>';
+
+    //return `${row.projEndPhase} -- ${('0' + cell.getDate()).slice(-2)}/${('0' + (cell.getMonth() + 1)).slice(-2)}/${cell.getFullYear()}`;
   }
 
   render () {
     return (
       <BootstrapTable
         data={ this.props.tableData } keyField='id'
-        scrollTop={'Bottom'} striped hover search pagination exportCSV>
+        striped hover search pagination exportCSV>
         <TableHeaderColumn dataSort
                            dataField='bcLvl1'
-                           width='230'
+                           width='300px'
                            dataAlign='left'
                            dataFormat={this._formatBusCapLvl1}
                            filter={{
@@ -64,7 +70,7 @@ class Table extends Component {
                            }}>Main Domain L1</TableHeaderColumn>
         <TableHeaderColumn dataSort
                            dataField='bcLvl2'
-                           width='230'
+                           width='300px'
                            dataAlign='left'
                            dataFormat={this._formatBusCapLvl2}
                            filter={{
@@ -73,7 +79,7 @@ class Table extends Component {
                            }}>Main Domain L2</TableHeaderColumn>
         <TableHeaderColumn dataSort
                            dataField='area'
-                           width='80'
+                           width='100px'
                            dataAlign='left'
                            dataFormat={this._formatUserGroups}
                            filter={{
@@ -82,7 +88,7 @@ class Table extends Component {
                            }}>Area</TableHeaderColumn>
         <TableHeaderColumn dataSort
                            dataField='proj'
-                           width='230'
+                           width='300px'
                            dataAlign='left'
                            dataFormat={this._formatProjects}
                            filter={{
@@ -91,7 +97,7 @@ class Table extends Component {
                            }}>Project</TableHeaderColumn>
         <TableHeaderColumn dataSort
                            dataField='projStartTime'
-                           width='250'
+                           width='250px'
                            dataAlign='right'
                            dataFormat={ this._formatDateStart }
                            filter={{
@@ -100,7 +106,7 @@ class Table extends Component {
                            }}>Project Start</TableHeaderColumn>
         <TableHeaderColumn dataSort
                            dataField='projEndTime'
-                           width='250'
+                           width='250px'
                            dataAlign='right'
                            dataFormat={ this._formatDateEnd }
                            filter={{
@@ -109,7 +115,7 @@ class Table extends Component {
                            }}>Project End</TableHeaderColumn>
         <TableHeaderColumn dataSort
                            dataField='prov'
-                           width='230'
+                           width='300px'
                            dataAlign='left'
                            dataFormat={this._formatProviders}
                            filter={{
@@ -118,7 +124,7 @@ class Table extends Component {
                            }}>Provider</TableHeaderColumn>
         <TableHeaderColumn dataSort
                            dataField='scope'
-                           width='120'
+                           width='120px'
                            dataAlign='left'
                            filterFormatted
                            dataFormat={ this._formatEnum }
@@ -130,7 +136,7 @@ class Table extends Component {
                            }}>Scope</TableHeaderColumn>
         <TableHeaderColumn dataSort
                            dataField='host'
-                           width='120'
+                           width='120px'
                            dataAlign='left'
                            filterFormatted
                            dataFormat={ this._formatEnum }
@@ -142,7 +148,7 @@ class Table extends Component {
                            }}>Hosting</TableHeaderColumn>
         <TableHeaderColumn dataSort
                            dataField='notYetDef'
-                           width='120'
+                           width='150px'
                            dataAlign='left'
                            filterFormatted
                            dataFormat={ this._formatEnum }
@@ -158,7 +164,20 @@ class Table extends Component {
 }
 
 Table.propTypes = {
-  tableData: React.PropTypes.array.isRequired
+  tableData: React.PropTypes.arrayOf(
+    React.PropTypes.objectOf(
+      React.PropTypes.oneOfType([
+        React.PropTypes.string,
+        React.PropTypes.number,
+        React.PropTypes.object
+      ])
+    )
+  ).isRequired,
+  baseUrl: React.PropTypes.string.isRequired,
+  tags: React.PropTypes.objectOf(
+    React.PropTypes.objectOf(
+      React.PropTypes.string)
+  ).isRequired
 };
 
 export default Table;

@@ -1,7 +1,4 @@
 /**
- * Created by mle on 15.03.2017.
- */
-/**
  * FactSheetIndex takes JSON data structure from rest api and creates an indexed structure separated
  * by FactSheet type, e.g. byType.services.100001010 = {ID:100001010, name:'AC Management', ...}
  */

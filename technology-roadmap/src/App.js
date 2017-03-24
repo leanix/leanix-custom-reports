@@ -11,6 +11,32 @@ const LOADING_INIT = 0;
 const LOADING_SUCCESSFUL = 1;
 const LOADING_ERROR = 2;
 
+const LIFECYCLES = {
+  1: 'Plan',
+  2: 'Phase In',
+  3: 'Active',
+  4: 'Phase Out',
+  5: 'End of Life'
+};
+
+const TAGS = {
+  scopes: {
+    0: ' ',
+    1: 'Core',
+    2: 'Common',
+    3: 'Distinct'
+  },
+  hosts: {
+    0: ' ',
+    1: 'Cloud',
+    2: 'On-Premise'
+  },
+  notYetDefined: {
+    0: ' ',
+    1: 'NotYetDefined'
+  }
+};
+
 class App extends Component {
 
   constructor (props) {
@@ -21,25 +47,7 @@ class App extends Component {
     this.state = {
       baseUrl: null,
       loadingState: LOADING_INIT,
-      factsheets: null,
-      tableData: null,
-      tags: {
-        scopes: {
-          0: ' ',
-          1: 'Core',
-          2: 'Common',
-          3: 'Distinct'
-        },
-        hosts: {
-          0: ' ',
-          1: 'Cloud',
-          2: 'On-Premise'
-        },
-        notYetDefined: {
-          0: ' ',
-          1: 'NotYetDefined'
-        }
-      }
+      tableData: null
     };
   }
 
@@ -61,7 +69,7 @@ class App extends Component {
           'factSheetRefID',
           'projectID',
           'tags',
-          'consumerID'] //filterAttributes
+          'consumerID' ] //filterAttributes
       );
     } catch (error) {
       this._handleLoadingError(error);
@@ -75,8 +83,7 @@ class App extends Component {
       this.setState({
         baseUrl: this.leanixApi.queryParams.baseUrl,
         loadingState: LOADING_SUCCESSFUL,
-        factsheets: factsheetsIndex,
-        tableData: createTableData(factsheetsIndex, this.state.tags)
+        tableData: createTableData(factsheetsIndex)
       });
     } catch (err) {
       this._handleLoadingError(err);
@@ -117,7 +124,7 @@ class App extends Component {
         <Table
           tableData={this.state.tableData}
           baseUrl={this.state.baseUrl}
-          tags={this.state.tags}
+          tags={TAGS}
         />
       </div>
     );
@@ -126,7 +133,7 @@ class App extends Component {
 
 export default App;
 
-function createTableData (factsheets, tags) {
+function createTableData (factsheets) {
   const result = [];
   let resultId = 0;
 
@@ -137,7 +144,7 @@ function createTableData (factsheets, tags) {
   const bcList = factsheets.getSortedList('businessCapabilities');
   bcList.forEach((bcItem) => {
     const prjList = bcItem.projectHasBusinessCapabilities;
-    if (prjList.length === 0) {
+    if (!prjList) {
       // no entry for business capabilities without project(s)
       return;
     }
@@ -180,15 +187,15 @@ function createTableData (factsheets, tags) {
       project.tags.forEach((tag) => {
         let tmp;
         if (!prjTags.scope) {
-          tmp = getEnumKey(tags.scopes, tag);
+          tmp = getEnumKey(TAGS.scopes, tag);
           prjTags.scope = tmp;
         }
         if (!tmp && !prjTags.host) {
-          tmp = getEnumKey(tags.hosts, tag);
+          tmp = getEnumKey(TAGS.hosts, tag);
           prjTags.host = tmp;
         }
         if (!tmp && !prjTags.notYetDef) {
-          tmp = getEnumKey(tags.notYetDefined, tag);
+          tmp = getEnumKey(TAGS.notYetDefined, tag);
           prjTags.notYetDef = tmp;
         }
       });
@@ -313,30 +320,22 @@ function createTableData (factsheets, tags) {
 }
 
 function getEnumKey (enumObject, value) {
-  if (!value || value === '') {
+  if (!value) {
     return 0; // first element in enum objects always ' '
   }
   for (let key in enumObject) {
-    if (enumObject[ key ] === value) {
+    if (enumObject.hasOwnProperty(key) && enumObject[ key ] === value) {
       return key;
     }
   }
   return null;
 }
 
-const lifecycles = {
-  1: "Plan",
-  2: "Phase In",
-  3: "Active",
-  4: "Phase Out",
-  5: "End of Life"
-}
-
 function getLifecycle (item, stateID) {
   for (var i = 0; i < item.factSheetHasLifecycles.length; i++) {
     if (item.factSheetHasLifecycles[ i ].lifecycleStateID === stateID) {
       return {
-        phase: lifecycles[ item.factSheetHasLifecycles[ i ].lifecycleStateID ],
+        phase: LIFECYCLES[ item.factSheetHasLifecycles[ i ].lifecycleStateID ],
         phaseID: item.factSheetHasLifecycles[ i ].lifecycleStateID,
         start: new Date(item.factSheetHasLifecycles[ i ].startDate)
       };
@@ -346,8 +345,8 @@ function getLifecycle (item, stateID) {
 
 function getLifecycles (item) {
   const result = {};
-  for (let key in lifecycles) {
-    if (lifecycles.hasOwnProperty(key)) {
+  for (let key in LIFECYCLES) {
+    if (LIFECYCLES.hasOwnProperty(key)) {
       const lifecycle = getLifecycle(item, key);
       if (lifecycle) {
         result[ lifecycle.phaseID ] = lifecycle;
