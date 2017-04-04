@@ -199,8 +199,11 @@ var ReportDataQuality = (function () {
                                 if (tmp && tmp.businessCapabilityID) {
                                     var bc = fsIndex.index.businessCapabilities[tmp.businessCapabilityID];
                                     if (bc && bc.tags.indexOf('AppMap') != -1) {
+                                        if (c) {
+                                          c = false;
+                                          break;
+                                        }
                                         c = true;
-                                        break;
                                     }
                                 }
                             }
