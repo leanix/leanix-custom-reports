@@ -42,7 +42,7 @@ gulp.task('dist', ['copy', 'dist_css', 'dist_fonts'], function() {
       './node_modules/react-dom/dist/react-dom.js',
       './node_modules/accounting/accounting.js',
       './node_modules/react-bootstrap-table/dist/react-bootstrap-table.js',
-      './node_modules/lodash/index.js',
+      './node_modules/lodash/lodash.js',
       './src/js/ReportSetup.js',
       './src/js/FactSheetIndex.js',
       './src/js/ReportCapabilitySpend.js',
