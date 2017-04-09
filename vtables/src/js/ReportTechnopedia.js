@@ -69,22 +69,22 @@ var ReportTechnopedia = (function () {
 				}
 			};
 			var technopediaStates = [
-				'URL',
-				'Ignore',
+				'Linked by URL',
+				'Ignored',
 				'Missing',
-				'"Blank"'
+				'Not linked'
 			];
 			var getTechnopediaStateFromDoc = function (document) {
 				if (!document || !document.referenceType) {
-					return 3;
+					return technopediaStates[3];
 				}
 				switch (document.referenceType) {
 				case 'skipped':
-					return 1;
+					return technopediaStates[1];
 				case 'missing':
-					return 2;
+					return technopediaStates[2];
 				default:
-					return 0;
+					return technopediaStates[0];
 				}
 			};
 			var marketRE = /^([A-Z]{2,3})_/;
@@ -158,15 +158,16 @@ var ReportTechnopedia = (function () {
 			
 			function formatState(cell, row) {
 				switch (row.state) {
-				case 0:
+				case technopediaStates[0]:
 					return '<a href="' + row.stateRef + '" target="_blank" title="' + row.stateTitle + '">' + technopediaStates[0] + '</a>';
-				case 1:
-				case 2:
-					return '<span title="' + row.stateTitle + '">' + technopediaStates[row.state] + '</span>';
-				case 3:
-					return '';
+				case technopediaStates[1]:
+					return '<span title="' + row.stateTitle + '">' + technopediaStates[1] + '</span>';
+				case technopediaStates[2]:
+					return '<span title="' + row.stateTitle + '">' + technopediaStates[2] + '</span>';
+				case technopediaStates[3]:
+					return technopediaStates[3];
 				}
-				return '';
+				return technopediaStates[3];
 			}
 
             hideSpinner();
@@ -209,7 +210,7 @@ var ReportTechnopedia = (function () {
 						filter={{
 							type: 'SelectFilter',
 							placeholder: 'Select a status',
-							options: reportUtils.getLookupByIndex(technopediaStates)
+							options: reportUtils.getLookup(technopediaStates)
 						}}>Technopedia status</TableHeaderColumn>
 					<TableHeaderColumn dataSort
 						dataField='count'
