@@ -18,8 +18,8 @@ You can use ```npm run createLink``` (in project root) to create a ```link.html`
 Note: The script doesn't support any proxy setting (nodejs doesn't either). So, if you're behind a proxy, please contact us and we might figure out a solution.
 
 ### Publishing for github pages
-In order to publish the current master or develop branch to github pages the command ```publish.sh``` can be executed. Before doing this make shure that the dist directory is up-to-date by executing ```build.sh```.
+In order to publish the current master or develop branch to github pages the command ```publish.sh``` can be executed. Before doing this make sure that the dist directory is up-to-date by executing ```build.sh```.
 
 * Execute build.sh
 * Commit everything
-* Execut publish.sh
+* Execute publish.sh

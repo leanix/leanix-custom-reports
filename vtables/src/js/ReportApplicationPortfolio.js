@@ -297,7 +297,7 @@ var ReportApplicationPortfolio = (function () {
                         var cotsSoftwareID = '';
                         var cotsVendor = '';
                         if (resources.length) {
-                            cotsVendor = resources[0].displayName.substring(0, resources[0].displayName.search(resources[0].name));
+                            cotsVendor = resources[0].displayName.substring(0, resources[0].displayName.indexOf(resources[0].name));
                             cotsSoftware = resources[0].name.endsWith('Software Product') ? '' : resources[0].displayName.substring(cotsVendor.length);
                             cotsSoftwareID = resources[0].id;
                         }
