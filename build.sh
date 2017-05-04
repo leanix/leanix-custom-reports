@@ -2,7 +2,7 @@
 set -e
 
 function build_report {
-  echo "building $1"
+  echo "building $1 with gulp"
   cd $1
   npm install
   gulp
@@ -12,11 +12,13 @@ function build_report {
 }
 
 function build_report_with_cra {
-  echo "building $1 with creat-react-app"
+  echo "building $1 with create-react-app"
   cd $1
   npm install
   npm run build
   cd ..
+# remove content (file names contain a hash value)
+  rm -rf dist/$1
   mkdir -p dist/$1
   cp -R $1/build/* dist/$1
 }
