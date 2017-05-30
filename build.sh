@@ -32,3 +32,4 @@ build_report circle
 build_report tables
 build_report vtables
 build_report_with_cra predecessor-successor
+build_report_with_cra technology-roadmap

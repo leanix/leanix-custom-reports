@@ -17,7 +17,7 @@ Each custom report is located in its own subdirectory. It is expected that the s
 
 ### npm run createLink
 
-You can use ```npm run createLink``` (in project root) to create a ```link.html``` file that automatically contains the required query parameters (baseUrl, apiBaseUrl, token etc.) to start a report. See ```default_link.properties``` for more information. Before opening ```link.html``` in your browser you have to start your dev server (in report directory). Overtime the generated access token will expire (HTTP status code 401 Unauthorized in console). In this case please re-run the npm script and open ```link.html``` again.
+You can use ```npm run createLink``` (in project root) to create a ```link.html``` file that automatically contains the required query parameters (baseUrl, apiBaseUrl, token etc.) to start a report (for gulp based project setup only). See ```default_link.properties``` for more information. Before opening ```link.html``` in your browser you have to start your dev server (in report directory). Overtime the generated access token will expire (HTTP status code 401 Unauthorized in console). In this case please re-run the npm script and open ```link.html``` again.
 
 Note: The script doesn't support any proxy setting (nodejs doesn't either). So, if you're behind a proxy, please contact us and we might figure out a solution.
 
