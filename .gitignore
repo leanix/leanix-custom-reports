@@ -1,5 +1,6 @@
 **/node_modules
 
-# ignore all dist files except the main in the root folder
+# ignore all dist and build files except the main in the root folder
+**/build
 **/dist
 !/dist
