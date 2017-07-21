@@ -1,12 +1,14 @@
 import React, {	Component } from 'react';
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 import $ from 'jquery';
+import _ from 'lodash';
 
 class Report extends Component {
 
 	constructor(props) {
 		super(props);
-		this._setData = this._setData.bind(this);
+		this._initReport = this._initReport.bind(this);
+		this._handleData = this._handleData.bind(this);
 		this.state = {
 			setup: null,
 			data: null
@@ -15,13 +17,21 @@ class Report extends Component {
 	}
 
 	componentDidMount() {
-		lx.init().then(((setup) => {
-				lx.ready(this._createConfig());
-				this.setState({
-					setup: setup
-				});
-				lx.executeGraphQL(this._createQuery()).then(this._setData);
-			}).bind(this));
+		lx.init().then(this._initReport);
+	}
+	
+	_initReport(setup) {
+		lx.ready(this._createConfig());
+		this.setState({
+			setup: setup
+		});
+		lx.executeGraphQL(this._createQuery()).then(this._handleData);
+	}
+
+	_createConfig() {
+		return {
+			allowEditing: false
+		};
 	}
 
 	_createQuery() {
@@ -33,18 +43,13 @@ class Report extends Component {
 		}}`;
 	}
 	
-	_setData(data) {
+	_handleData(data) {
 		this.setState({
 			data: data
 		});
 	}
-
-	_createConfig() {
-		return {
-			allowEditing: false
-		};
-
-	}
+	
+	/* formatting functions for the table */
 
 	_priceFormatter(cell, row) {
 		return '<i class="glyphicon glyphicon-usd"></i> ' + cell;

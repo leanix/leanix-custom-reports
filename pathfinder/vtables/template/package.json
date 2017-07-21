@@ -1,12 +1,12 @@
 {
-	"name": "appmap2platforms",
+	"name": "TODO app id",
 	"version": "1.0.0",
-	"description": "AppMap 2 Platforms",
+	"description": "TODO app description",
 	"private": true,
 	"main": "index.js",
 	"leanixReport": {
-		"id": "net.leanix.vtables.appmap2platforms",
-		"title": "AppMap 2 Platforms",
+		"id": "net.leanix.vtables.TODO app id",
+		"title": "TODO app name",
 		"defaultConfig": {}
 	},
 	"scripts": {
