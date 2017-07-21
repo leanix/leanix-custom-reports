@@ -1,10 +1,10 @@
+@import "bootstrap.min.css";
+@import "bootstrap-theme.min.css";
 @import "c3.min.css";
 
 body {
 	margin: 0px;
 	padding: 10px;
-	font-family: Arial;
-	font-size: 1em;
 }
 
 #title {

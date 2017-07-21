@@ -46,7 +46,6 @@ class Report {
 					id: key,
 					name: key,
 					callback: ((dde) => {
-						// TODO dde mssing in doc
 						this._getDataAndUpdate(dde.id);
 					}).bind(this)
 				});
@@ -61,8 +60,7 @@ class Report {
 				}
 			}
 		};
-		// TODO downdown menu doesn't close if clicked outside of the menu
-		// TODO allow empty or missing dropdownEntries
+		// TODO remove hack, once fixed in reporting framework
 		if (dropdownEntries.length !== 0) {
 			this.config.menuActions = {
 				customDropdowns: [{
