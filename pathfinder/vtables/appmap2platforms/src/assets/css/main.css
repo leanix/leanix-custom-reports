@@ -1,0 +1,32 @@
+@import "bootstrap.min.css";
+@import "bootstrap-theme.min.css";
+@import "react-bootstrap-table-all.min.css";
+
+body {
+	margin: 0px;
+	padding: 10px;
+}
+
+#report {
+	width: 98%;
+	margin: 0 auto;
+	padding: 0px;
+}
+
+/*
+ * from 'react-bootstrap-table/css/react-bootstrap-table.css'
+ */
+.react-bs-table table td,
+.react-bs-table table th {
+	white-space: normal !important;
+}
+  
+.react-bs-table,
+.react-bs-table-tool-bar,
+.react-bs-table-pagination {
+	margin: 0px;
+}
+  
+.react-bs-table-tool-bar {
+	margin-bottom: 10px;
+}

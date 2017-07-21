@@ -1,0 +1,52 @@
+@import "c3.min.css";
+
+body {
+	margin: 0px;
+	padding: 10px;
+	font-family: Arial;
+	font-size: 1em;
+}
+
+#title {
+	text-align: center;
+}
+
+#chart {
+	width: 98%;
+	height: 400px;
+	margin: 0 auto;
+}
+
+.c3-line {
+	stroke-width: 2px;
+}
+
+.c3-axis-x {
+	font-size: 1.25em;
+	font-weight: bold;
+}
+
+.c3-axis-y-label {
+	font-size: 1.5em;
+	font-weight: bold;
+}
+
+.c3-axis-y2-label {
+	font-size: 1.5em;
+	font-weight: bold;
+}
+
+.c3-tooltip-container table {
+	border: 1px solid grey;
+	opacity: 1;
+}
+
+.c3-tooltip th,
+.c3-tooltip tr,
+.c3-tooltip td {
+	border: 0px;
+}
+
+.c3-tooltip .value {
+	font-weight: bold;
+}
