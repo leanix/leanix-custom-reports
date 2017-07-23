@@ -231,8 +231,7 @@ function _extractDataFromRequest(requestData) {
 function _getNextPhaseKey(from, phase) {
 	let result = undefined;
 	let lastPhase = phase;
-	let i = 0;
-	while (i++ < 6) {
+	for (let i = 0; i < LIFECYCLE_PHASES.length; i++) {
 		const nextPhase = _getNextPhase(lastPhase);
 		if (!nextPhase) {
 			break;
