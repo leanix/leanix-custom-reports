@@ -1,12 +1,14 @@
 {
-	"name": "TODO app id",
+	"name": "TODO app_id",
 	"version": "1.0.0",
-	"description": "TODO app description",
+	"description": "TODO app_description",
 	"private": true,
-	"main": "index.js",
+	"engines": {
+		"node": ">=6.11.1"
+	},
 	"leanixReport": {
 		"id": "net.leanix.vtables.TODO app id",
-		"title": "TODO app name",
+		"title": "TODO app_name",
 		"defaultConfig": {}
 	},
 	"scripts": {

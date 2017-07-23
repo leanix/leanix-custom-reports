@@ -1,9 +1,11 @@
 {
 	"name": "appmap2platforms",
 	"version": "1.0.0",
-	"description": "AppMap 2 Platforms",
+	"description": "TODO app_description",
 	"private": true,
-	"main": "index.js",
+	"engines": {
+		"node": ">=6.11.1"
+	},
 	"leanixReport": {
 		"id": "net.leanix.vtables.appmap2platforms",
 		"title": "AppMap 2 Platforms",

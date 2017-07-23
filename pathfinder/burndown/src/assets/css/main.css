@@ -12,8 +12,8 @@ body {
 }
 
 #chart {
-	width: 98%;
-	height: 400px;
+	width: 90%;
+	height: 450px;
 	margin: 0 auto;
 }
 
@@ -23,6 +23,11 @@ body {
 
 .c3-axis-x {
 	font-size: 1.25em;
+	font-weight: bold;
+}
+
+.c3-axis-x-label {
+	font-size: 1.225em;
 	font-weight: bold;
 }
 

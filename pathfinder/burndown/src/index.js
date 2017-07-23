@@ -1,5 +1,5 @@
 import '@leanix/reporting';
-import Report from './report';
+import Report from './Report';
 
 lx.init()
 .then((setup) => {

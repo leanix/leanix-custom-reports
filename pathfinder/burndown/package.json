@@ -3,7 +3,9 @@
 	"version": "1.0.0",
 	"description": "A report that shows lifecyle information of LeanIX factsheets in a burndown chart.",
 	"private": true,
-	"main": "index.js",
+	"engines": {
+		"node": ">=6.11.1"
+	},
 	"leanixReport": {
 		"id": "net.leanix.burndown",
 		"title": "Factsheet Burndown Chart",
@@ -39,6 +41,8 @@
 		"bootstrap": "^3.3.7",
 		"c3": "^0.4.15",
 		"jquery": "^3.2.1",
-		"lodash": "^4.17.4"
+		"lodash": "^4.17.4",
+		"moment": "^2.18.1",
+		"moment-range": "^3.0.3"
 	}
 }
