@@ -95,7 +95,7 @@ class Report {
 	}
 
 	_updateStackPlanPhase(stackPlanPhase) {
-		if (this.currentStackPlanPhase === stackPlanPhase) {
+		if (this.currentStackPlanPhase === stackPlanPhase|| !this.currentFactsheetType || !this.currentData) {
 			// nothing to do
 			return;
 		}
