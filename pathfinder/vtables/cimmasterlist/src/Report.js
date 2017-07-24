@@ -41,11 +41,11 @@ class Report extends Component {
 
 	_createQuery() {
 		return `{dataObjectsL1: allFactSheets(filter: {facetFilters: [{facetKey: "FactSheetTypes", keys: ["DataObject"]}, {facetKey: "hierarchyLevel", keys: ["1"]}]}) {
-					edges { node { id fullName name displayName description tags { name } } }
+					edges { node { id fullName description tags { name } } }
 				}
 				dataObjectsL2: allFactSheets(filter: {facetFilters: [{facetKey: "FactSheetTypes", keys: ["DataObject"]}, {facetKey: "hierarchyLevel", keys: ["2"]}]}) {
 					edges { node {
-						id fullName name displayName description tags { name }
+						id fullName description tags { name }
 						... on DataObject {
 							relToParent { edges { node { factSheet { id } } } }
 							relDataObjectToBusinessCapability { edges { node { factSheet { id } } } }
