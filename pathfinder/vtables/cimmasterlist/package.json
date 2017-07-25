@@ -1,7 +1,7 @@
 {
 	"name": "cimmasterlist",
 	"version": "1.0.0",
-	"description": "TODO app_description",
+	"description": "Shows a table with all DataObjects in their domain and connection to AppMap BusinessCapabilities.",
 	"private": true,
 	"engines": {
 		"node": ">=6.11.1"
@@ -38,8 +38,6 @@
 	"dependencies": {
 		"@leanix/reporting": "0.1.3",
 		"bootstrap": "^3.3.7",
-		"jquery": "^3.2.1",
-		"lodash": "^4.17.4",
 		"prop-types": "^15.5.10",
 		"react": "^15.6.1",
 		"react-bootstrap-table": "^3.4.6",

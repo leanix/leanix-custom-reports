@@ -19,7 +19,7 @@ class Report extends Component {
 	componentDidMount() {
 		lx.init().then(this._initReport);
 	}
-	
+
 	_initReport(setup) {
 		lx.ready(this._createConfig());
 		this.setState({
@@ -42,19 +42,19 @@ class Report extends Component {
 			}}
 		}}`;
 	}
-	
+
 	_handleData(data) {
 		this.setState({
 			data: data
 		});
 	}
-	
+
 	/* formatting functions for the table */
 
 	_priceFormatter(cell, row) {
 		return '<i class="glyphicon glyphicon-usd"></i> ' + cell;
 	}
-	
+
 	render() {
 		console.log(this.state.setup);
 		console.log(this.state.data);
@@ -68,9 +68,9 @@ class Report extends Component {
 				price: 100
 			}];
 		return (
-			<BootstrapTable data={products} striped={true} hover={true}>
-				<TableHeaderColumn dataField='id' isKey={true} dataAlign='center' dataSort={true}>Product ID</TableHeaderColumn>
-				<TableHeaderColumn dataField='name' dataSort={true}>Product Name</TableHeaderColumn>
+			<BootstrapTable data={products} keyField='id' striped hover search pagination ignoreSinglePage exportCSV options={{ clearSearch: true }}>
+				<TableHeaderColumn dataSort dataField='id' dataAlign='center'>Product ID</TableHeaderColumn>
+				<TableHeaderColumn dataSort dataField='name'>Product Name</TableHeaderColumn>
 				<TableHeaderColumn dataField='price' dataFormat={this._priceFormatter}>Product Price</TableHeaderColumn>
 			</BootstrapTable>
 		);

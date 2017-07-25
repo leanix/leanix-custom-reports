@@ -20,13 +20,17 @@ body {
 .react-bs-table table th {
 	white-space: normal !important;
 }
-  
+
+.react-bs-container-header > table > thead > tr > th {
+    vertical-align: bottom !important;
+}
+
 .react-bs-table,
 .react-bs-table-tool-bar,
 .react-bs-table-pagination {
 	margin: 0px;
 }
-  
+
 .react-bs-table-tool-bar {
 	margin-bottom: 10px;
 }
