@@ -63,7 +63,7 @@ class DataIndex {
 	}
 
 	includesTag(node, tagName) {
-		if (!node.tags || !Array.isArray(node.tags)) {
+		if (!node || !node.tags || !Array.isArray(node.tags)) {
 			return false;
 		}
 		for (let i = 0; i < node.tags.length; i++) {

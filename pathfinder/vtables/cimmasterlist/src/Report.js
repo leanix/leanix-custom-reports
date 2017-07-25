@@ -124,7 +124,7 @@ class Report extends Component {
 				if (!appMapID) {
 					// filter for tag name
 					appMapBCs = appMapBCs.filter((e2) => {
-						return e2 && index.includesTag(e2, 'AppMap');
+						return index.includesTag(e2, 'AppMap');
 					});
 				}
 			}
