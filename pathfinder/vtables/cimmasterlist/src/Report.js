@@ -3,6 +3,7 @@ import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 import CommonQueries from './CommonGraphQLQueries';
 import DataIndex from './DataIndex';
 import Link from './Link';
+import LinkList from './LinkList';
 
 const LANDSCAPE_OPTIONS = {
 	0: 'Yes',
@@ -160,14 +161,15 @@ class Report extends Component {
 			return '';
 		}
 		return (
-			<span>
-				{cell.map((e, i) => {
-					if (i > 0) {
-						return (<span key={i}><br/><Link link={'factsheet/BusinessCapability/' + row.appMapIDs[i]} target='_blank' text={e} /></span>);
-					}
-					return (<span key={i}><Link link={'factsheet/BusinessCapability/' + row.appMapIDs[i]} target='_blank' text={e} /></span>);
-				})}
-			</span>
+			<LinkList links={
+				cell.reduce((arr, e, i) => {
+					arr.push({
+						link: 'factsheet/BusinessCapability/' + row.appMapIDs[i],
+						target: '_blank',
+						text: e
+					});
+					return arr;
+			}, [])} />
 		);
 	}
 
@@ -213,14 +215,14 @@ class Report extends Component {
 					 csvHeader='domain-name'
 					 filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 					>Domain</TableHeaderColumn>
-				<TableHeaderColumn hidden export row='0' colSpan='1'
+				<TableHeaderColumn hidden export row='0'
 					 csvHeader='Entity'
 					>Entity</TableHeaderColumn>
 				<TableHeaderColumn hidden export row='1'
 					 dataField='domainID'
 					 csvHeader='domain-id'
 					>domain-id</TableHeaderColumn>
-				<TableHeaderColumn row='1' tdStyle={{ fontSize: '.9em' }}
+				<TableHeaderColumn row='1' tdStyle={{ fontSize: '.85em' }}
 					 dataField='domainDescription'
 					 width='300px'
 					 headerAlign='left'
@@ -237,13 +239,13 @@ class Report extends Component {
 					 formatExtraData={false}
 					 filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 					>Name</TableHeaderColumn>
-				<TableHeaderColumn hidden export row='0' colSpan='1'
+				<TableHeaderColumn hidden export row='0'
 					 csvHeader='Entity'
 					>Entity</TableHeaderColumn>
 				<TableHeaderColumn hidden export row='1'
 					 dataField='id'
 					>id</TableHeaderColumn>
-				<TableHeaderColumn row='1' tdStyle={{ fontSize: '.9em' }}
+				<TableHeaderColumn row='1' tdStyle={{ fontSize: '.85em' }}
 					 dataField='description'
 					 width='300px'
 					 headerAlign='left'
