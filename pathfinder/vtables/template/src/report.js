@@ -1,5 +1,10 @@
 import React, {	Component } from 'react';
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
+import CommonQueries from './CommonGraphQLQueries';
+import DataIndex from './DataIndex';
+import Link from './Link';
+import LinkList from './LinkList';
+
 import $ from 'jquery';
 import _ from 'lodash';
 
@@ -11,9 +16,8 @@ class Report extends Component {
 		this._handleData = this._handleData.bind(this);
 		this.state = {
 			setup: null,
-			data: null
+			data: []
 		};
-
 	}
 
 	componentDidMount() {
@@ -25,7 +29,21 @@ class Report extends Component {
 		this.setState({
 			setup: setup
 		});
-		lx.executeGraphQL(this._createQuery()).then(this._handleData);
+		// get all tags, then the data
+		lx.executeGraphQL(CommonQueries.tagGroups).then((tagGroups) => {
+			const index = new DataIndex();
+			index.put(tagGroups);
+			/*let csmID = index.getTags('Application Type', 'CSM');
+			if (csmID.length > 0) {
+				csmID = csmID[0].id;
+			} else {
+				csmID = undefined;
+			}*/
+			lx.executeGraphQL(this._createQuery()).then((data) => {
+				index.put(data);
+				this._handleData(index);
+			});
+		});
 	}
 
 	_createConfig() {
@@ -35,29 +53,90 @@ class Report extends Component {
 	}
 
 	_createQuery() {
-		return `{allFactSheets(factSheetType:Application) {
-			edges {node {
-				name
-				type
-			}}
-		}}`;
+		return `{applications: allFactSheets(
+					sort: {mode: BY_FIELD, key: "displayName", order: asc},
+					filter: {facetFilters: [
+						{facetKey: "FactSheetTypes", keys: ["Application"]}
+					]}
+				) {
+					edges {node {
+						id name fullName displayName description
+						... on Application {
+							relToParent { edges { node { factSheet { id } } } }
+							relApplicationToPlatform { edges { node { factSheet { id } } } }
+						}
+					}}
+				}
+				businessCapabilities: allFactSheets(
+					filter: {facetFilters: [
+						{facetKey: "FactSheetTypes", keys: ["BusinessCapability"]}
+					]}
+				) {
+					edges { node { id displayName } }
+				}}}`;
 	}
 
-	_handleData(data) {
+	_handleData(index) {
+		const tableData = [];
+		// TODO
 		this.setState({
-			data: data
+			data: tableData
 		});
 	}
 
 	/* formatting functions for the table */
 
-	_priceFormatter(cell, row) {
-		return '<i class="glyphicon glyphicon-usd"></i> ' + cell;
+	_formatName(cell, row, parent) {
+		if (!cell) {
+			return '';
+		}
+		return (<Link link={'factsheet/Application/' + (parent ? row.domainID : row.id)} target='_blank' text={cell} />);
+	}
+
+	_formatArray(cell, row) {
+		if (!cell) {
+			return '';
+		}
+		return (
+			<LinkList links={
+				cell.reduce((arr, e, i) => {
+					arr.push({
+						link: 'factsheet/BusinessCapability/' + row.appMapIDs[i],
+						target: '_blank',
+						text: e
+					});
+					return arr;
+			}, [])} />
+		);
+	}
+
+	_formatEnum(cell, row, enums) {
+		if (cell < 0) {
+			return '';
+		}
+		return enums[cell];
+	}
+
+	/* formatting functions for the csv export */
+
+	_csvFormatArray(cell, row) {
+		let names = '';
+		if (!cell) {
+			return names;
+		}
+		cell.forEach((e) => {
+			if (names.length) {
+				names += '\n';
+			}
+			names += e;
+		});
+		return names;
 	}
 
 	render() {
-		console.log(this.state.setup);
-		console.log(this.state.data);
+		if (this.state.data.length === 0) {
+			//return null;
+		}
 		const products = [{
 				id: 1,
 				name: "Item name 1",
@@ -68,7 +147,9 @@ class Report extends Component {
 				price: 100
 			}];
 		return (
-			<BootstrapTable data={products} keyField='id' striped hover search pagination ignoreSinglePage exportCSV options={{ clearSearch: true }}>
+			<BootstrapTable data={this.state.data} keyField='id'
+				 striped hover search exportCSV pagination ignoreSinglePage
+				 options={{ clearSearch: true }}>
 				<TableHeaderColumn dataSort dataField='id' dataAlign='center'>Product ID</TableHeaderColumn>
 				<TableHeaderColumn dataSort dataField='name'>Product Name</TableHeaderColumn>
 				<TableHeaderColumn dataField='price' dataFormat={this._priceFormatter}>Product Price</TableHeaderColumn>

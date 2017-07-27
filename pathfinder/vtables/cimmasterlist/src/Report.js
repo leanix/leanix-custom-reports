@@ -16,8 +16,6 @@ class Report extends Component {
 		super(props);
 		this._initReport = this._initReport.bind(this);
 		this._handleData = this._handleData.bind(this);
-		this._formatName = this._formatName.bind(this);
-		this._formatAppMaps = this._formatAppMaps.bind(this);
 		this.state = {
 			setup: null,
 			data: []
@@ -133,7 +131,7 @@ class Report extends Component {
 				domainID: parent && parent.id ? parent.id : '',
 				domainName: parent && parent.name ? parent.name : '',
 				domainDescription: parent && parent.description ? parent.description : '',
-				id: e.id ? e.id : '',
+				id: e.id,
 				name: e.name ? e.name : '',
 				description: e.description ? e.description : '',
 				landscapeAvailable: index.includesTag(e, 'Landscape Available') ? 0 : 1,
@@ -153,10 +151,13 @@ class Report extends Component {
 	/* formatting functions for the table */
 
 	_formatName(cell, row, parent) {
+		if (!cell) {
+			return '';
+		}
 		return (<Link link={'factsheet/DataObject/' + (parent ? row.domainID : row.id)} target='_blank' text={cell} />);
 	}
 
-	_formatAppMaps(cell, row) {
+	_formatArray(cell, row) {
 		if (!cell) {
 			return '';
 		}
@@ -174,12 +175,15 @@ class Report extends Component {
 	}
 
 	_formatEnum(cell, row, enums) {
+		if (cell < 0) {
+			return '';
+		}
 		return enums[cell];
 	}
 
 	/* formatting functions for the csv export */
 
-	_csvFormatAppMaps(cell, row) {
+	_csvFormatArray(cell, row) {
 		let names = '';
 		if (!cell) {
 			return names;
@@ -203,7 +207,7 @@ class Report extends Component {
 				 options={{ clearSearch: true }}>
 				<TableHeaderColumn row='0' colSpan='4'
 					 headerAlign='center'
-					 csvHeader='Entity'
+					 csvHeader='entity'
 					>Entity</TableHeaderColumn>
 				<TableHeaderColumn dataSort row='1'
 					 dataField='domainName'
@@ -215,8 +219,9 @@ class Report extends Component {
 					 csvHeader='domain-name'
 					 filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 					>Domain</TableHeaderColumn>
+				{/* a header column for csv export only */}
 				<TableHeaderColumn hidden export row='0'
-					 csvHeader='Entity'
+					 csvHeader='entity'
 					>Entity</TableHeaderColumn>
 				<TableHeaderColumn hidden export row='1'
 					 dataField='domainID'
@@ -239,8 +244,9 @@ class Report extends Component {
 					 formatExtraData={false}
 					 filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 					>Name</TableHeaderColumn>
+				{/* a header column for csv export only */}
 				<TableHeaderColumn hidden export row='0'
-					 csvHeader='Entity'
+					 csvHeader='entity'
 					>Entity</TableHeaderColumn>
 				<TableHeaderColumn hidden export row='1'
 					 dataField='id'
@@ -259,6 +265,7 @@ class Report extends Component {
 					 dataAlign='left'
 					 dataFormat={this._formatEnum}
 					 formatExtraData={LANDSCAPE_OPTIONS}
+					 csvHeader='landscape-available'
 					 csvFormat={this._formatEnum}
 					 csvFormatExtraData={LANDSCAPE_OPTIONS}
 					 filterFormatted
@@ -269,16 +276,16 @@ class Report extends Component {
 					 width='250px'
 					 headerAlign='left'
 					 dataAlign='left'
-					 dataFormat={this._formatAppMaps}
+					 dataFormat={this._formatArray}
 					 csvHeader='appmap-names'
-					 csvFormat={this._csvFormatAppMaps}
+					 csvFormat={this._csvFormatArray}
 					 filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 					>Mappings to AppMap</TableHeaderColumn>
 				<TableHeaderColumn hidden export row='0' rowSpan='2'
 					 dataField='appMapIDs'
 					 csvHeader='appmap-ids'
 					 csvFormat={this._csvFormatAppMaps}
-					>domain-id</TableHeaderColumn>
+					>appmap ids</TableHeaderColumn>
 			</BootstrapTable>
 		);
 	}

@@ -13,4 +13,5 @@ build_report burndown
 cd vtables
 build_report appmap2platforms
 build_report cimmasterlist
+build_report csmoperations
 cd ..

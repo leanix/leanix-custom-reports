@@ -75,6 +75,19 @@ class DataIndex {
 		return false;
 	}
 
+	getFirstTagFromGroup(node, tagGroupName) {
+		if (!node || !node.tags || !Array.isArray(node.tags)) {
+			return;
+		}
+		const tags = this.getTags(tagGroupName).map((e) => {
+			return e.name;
+		});
+		const result = node.tags.filter((e) => {
+			return tags.includes(e.name);
+		});
+		return result.length > 0 ? result[0] : undefined;
+	}
+
 	getNodesWithName(index, name, nameAttribute) {
 		if (!nameAttribute) {
 			nameAttribute = 'name';
@@ -96,26 +109,38 @@ class DataIndex {
 		return result;
 	}
 
-	getTags(tagGroupName, tagName, tagGroupNameAttribute, tagNameAttribute) {
+	getTags(tagGroupName, tagName) {
 		const that = this;
-		const tagGroups = that.getNodesWithName(that.tagGroups, tagGroupName, tagGroupNameAttribute);
+		const tagGroups = that.getNodesWithName(that.tagGroups, tagGroupName);
 		if (!tagGroups) {
 			return [];
 		}
 		const result = [];
-		tagGroups.forEach((e) => {
-			const tagsIndex = e.tags;
-			if (!tagsIndex) {
-				return;
-			}
-			const tags = that.getNodesWithName(tagsIndex, tagName, tagNameAttribute);
-			if (!tags) {
-				return;
-			}
-			tags.forEach((e2) => {
-				result.push(e2);
+		if (tagName) {
+			tagGroups.forEach((e) => {
+				const tagsIndex = e.tags;
+				if (!tagsIndex) {
+					return;
+				}
+				const tags = that.getNodesWithName(tagsIndex, tagName);
+				if (!tags) {
+					return;
+				}
+				tags.forEach((e2) => {
+					result.push(e2);
+				});
 			});
-		});
+		} else {
+			tagGroups.forEach((e) => {
+				const tagsIndex = e.tags;
+				if (!tagsIndex) {
+					return;
+				}
+				tagsIndex.nodes.forEach((e2) => {
+					result.push(e2);
+				});
+			});
+		}
 		return result;
 	}
 }
