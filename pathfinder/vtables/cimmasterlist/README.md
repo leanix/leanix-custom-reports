@@ -21,7 +21,7 @@ In the project directory, one can run:
 
 `npm start`
 
-This command will start the local development server. Please make sure you're logged in the leanIX workspace first (`lxr.json`).
+This command will start the local development server. Please make sure you're logged in the leanIX workspace from `lxr.json` first.
 
 `npm run upload`
 
