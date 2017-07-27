@@ -1,4 +1,4 @@
-import React, {	Component } from 'react';
+import React, { Component } from 'react';
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 import CommonQueries from './CommonGraphQLQueries';
 import DataIndex from './DataIndex';
