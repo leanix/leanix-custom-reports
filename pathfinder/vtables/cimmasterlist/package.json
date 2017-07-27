@@ -1,7 +1,7 @@
 {
 	"name": "cimmasterlist",
 	"version": "1.0.0",
-	"description": "Shows a table with all DataObjects in their domain and connection to AppMap BusinessCapabilities.",
+	"description": "Shows a table with all DataObjects in their domain and all connections to AppMap BusinessCapabilities.",
 	"private": true,
 	"engines": {
 		"node": ">=6.11.1"
