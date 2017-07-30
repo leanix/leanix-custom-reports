@@ -33,18 +33,8 @@ class Report extends Component {
 		lx.executeGraphQL(CommonQueries.tagGroups).then((tagGroups) => {
 			const index = new DataIndex();
 			index.put(tagGroups);
-			let csmID = index.getTags('Application Type', 'CSM');
-			if (csmID.length > 0) {
-				csmID = csmID[0].id;
-			} else {
-				csmID = undefined;
-			}
-			let platformID = index.getTags('BC Type', 'Platform');
-			if (platformID.length > 0) {
-				platformID = platformID[0].id;
-			} else {
-				platformID = undefined;
-			}
+			const csmID = index.getFirstTagID('Application Type', 'CSM');
+			const platformID = index.getFirstTagID('BC Type', 'Platform');
 			this.OPERATION_STATUS_OPTIONS = index.getTags('Service Status').reduce((r, e, i) => {
 				r[i] = e.name;
 				return r;
@@ -63,55 +53,39 @@ class Report extends Component {
 	}
 
 	_createQuery(csmID, platformID) {
-		if (csmID && platformID) {
-			return `{applications: allFactSheets(
-						sort: {mode: BY_FIELD, key: "displayName", order: asc},
-						filter: {facetFilters: [
-							{facetKey: "FactSheetTypes", keys: ["Application"]},
-							{facetKey: "Application Type", keys: ["${csmID}"]},
-							{facetKey: "hierarchyLevel", operator: OR, keys: ["1", "2", "3"]}
-						]}
-					) {
-						edges { node {
-							id name description level tags { name }
-							... on Application {
-								relToParent { edges { node { factSheet { id } } } }
-								relApplicationToPlatform { edges { node { factSheet { id } } } }
-							}
-						}}
-					}
-					businessCapabilities: allFactSheets(
-						filter: {facetFilters: [
-							{facetKey: "FactSheetTypes", keys: ["BusinessCapability"]},
-							{facetKey: "BC Type", keys: ["${platformID}"]}
-						]}
-					) {
-						edges { node { id displayName } }
-					}}`;
+		const csmIDFilter = csmID ? `, {facetKey: "Application Type", keys: ["${csmID}"]}` : '';
+		let platformIDFilter = undefined;
+		let tagNameDef = undefined;
+		if (platformID) {
+			platformIDFilter = `, {facetKey: "BC Type", keys: ["${platformID}"]}`;
+			tagNameDef = '';
 		} else {
-			return `{applications: allFactSheets(
-						sort: {mode: BY_FIELD, key: "displayName", order: asc},
-						filter: {facetFilters: [
-							{facetKey: "FactSheetTypes", keys: ["Application"]},
-							{facetKey: "hierarchyLevel", operator: OR, keys: ["1", "2", "3"]}
-						]}
-					) {
-						edges { node {
-							id name description level tags { name }
-							... on Application {
-								relToParent { edges { node { factSheet { id } } } }
-								relApplicationToPlatform { edges { node { factSheet { id } } } }
-							}
-						}}
-					}
-					businessCapabilities: allFactSheets(
-						filter: {facetFilters: [
-							{facetKey: "FactSheetTypes", keys: ["BusinessCapability"]}
-						]}
-					) {
-						edges { node { id displayName tags { name } } }
-					}}`;
+			// tagGroup.name changed or id couldn't be determined otherwise -> need a query with tags for bc's
+			platformIDFilter = '';
+			tagNameDef = 'tags { name }';
 		}
+		return `{applications: allFactSheets(
+					sort: {mode: BY_FIELD, key: "displayName", order: asc},
+					filter: {facetFilters: [
+						{facetKey: "FactSheetTypes", keys: ["Application"]},
+						{facetKey: "hierarchyLevel", operator: OR, keys: ["1", "2", "3"]} ${csmIDFilter}
+					]}
+				) {
+					edges { node {
+						id name description level tags { name }
+						... on Application {
+							relToParent { edges { node { factSheet { id } } } }
+							relApplicationToPlatform { edges { node { factSheet { id } } } }
+						}
+					}}
+				}
+				businessCapabilities: allFactSheets(
+					filter: {facetFilters: [
+						{facetKey: "FactSheetTypes", keys: ["BusinessCapability"]} ${platformIDFilter}
+					]}
+				) {
+					edges { node { id displayName ${tagNameDef} } }
+				}}`;
 	}
 
 	_handleData(index, csmID, platformID) {

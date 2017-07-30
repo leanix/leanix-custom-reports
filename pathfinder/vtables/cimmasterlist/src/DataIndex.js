@@ -143,6 +143,11 @@ class DataIndex {
 		}
 		return result;
 	}
+
+	getFirstTagID(tagGroupName, tagName) {
+		let tags = this.getTags(tagGroupName, tagName);
+		return tags.length > 0 ? tags[0].id : undefined;
+	}
 }
 
 function resolveNestedInRelations(node) {

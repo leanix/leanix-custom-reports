@@ -35,12 +35,7 @@ class Report extends Component {
 		lx.executeGraphQL(CommonQueries.tagGroups).then((tagGroups) => {
 			const index = new DataIndex();
 			index.put(tagGroups);
-			let appMapID = index.getTags('BC Type', 'AppMap');
-			if (appMapID.length > 0) {
-				appMapID = appMapID[0].id;
-			} else {
-				appMapID = undefined;
-			}
+			const appMapID = index.getFirstTagID('BC Type', 'AppMap');
 			lx.executeGraphQL(this._createQuery(appMapID)).then((data) => {
 				index.put(data);
 				this._handleData(index, appMapID);
@@ -55,57 +50,40 @@ class Report extends Component {
 	}
 
 	_createQuery(appMapID) {
+		let appMapIDFilter = undefined;
+		let tagNameDef = undefined;
 		if (appMapID) {
-			return `{dataObjectsL1: allFactSheets(
-						filter: {facetFilters: [{facetKey: "FactSheetTypes", keys: ["DataObject"]}, {facetKey: "hierarchyLevel", keys: ["1"]}]}
-					) {
-						edges { node { id name description } }
-					}
-					dataObjectsL2: allFactSheets(
-						sort: {mode: BY_FIELD, key: "name", order: asc},
-						filter: {facetFilters: [{facetKey: "FactSheetTypes", keys: ["DataObject"]}, {facetKey: "hierarchyLevel", keys: ["2"]}]}
-					) {
-						edges { node {
-							id name description tags { name }
-							... on DataObject {
-								relToParent { edges { node { factSheet { id } } } }
-								relDataObjectToBusinessCapability { edges { node { factSheet { id } } } }
-							}
-						}}
-					}
-					businessCapabilities: allFactSheets(
-						filter: {facetFilters: [
-							{facetKey: "FactSheetTypes", keys: ["BusinessCapability"]},
-							{facetKey: "BC Type", keys: ["${appMapID}"]}
-						]}
-					) {
-						edges { node { id displayName } }
-					}}`;
+			appMapIDFilter = `, {facetKey: "BC Type", keys: ["${appMapID}"]}`;
+			tagNameDef = '';
 		} else {
 			// tagGroup.name changed or id couldn't be determined otherwise -> need a query with tags for bc's
-			return `{dataObjectsL1: allFactSheets(
-						filter: {facetFilters: [{facetKey: "FactSheetTypes", keys: ["DataObject"]}, {facetKey: "hierarchyLevel", keys: ["1"]}]}
-					) {
-						edges { node { id name description } }
-					}
-					dataObjectsL2: allFactSheets(
-						sort: {mode: BY_FIELD, key: "name", order: asc},
-						filter: {facetFilters: [{facetKey: "FactSheetTypes", keys: ["DataObject"]}, {facetKey: "hierarchyLevel", keys: ["2"]}]}
-					) {
-						edges { node {
-							id name description tags { name }
-							... on DataObject {
-								relToParent { edges { node { factSheet { id } } } }
-								relDataObjectToBusinessCapability { edges { node { factSheet { id } } } }
-							}
-						}}
-					}
-					businessCapabilities: allFactSheets(
-						filter: {facetFilters: [{facetKey: "FactSheetTypes", keys: ["BusinessCapability"]}]}
-					) {
-						edges { node { id displayName tags { name } } }
-					}}`;
+			appMapIDFilter = '';
+			tagNameDef = 'tags { name }';
 		}
+		return `{dataObjectsL1: allFactSheets(
+					filter: {facetFilters: [{facetKey: "FactSheetTypes", keys: ["DataObject"]}, {facetKey: "hierarchyLevel", keys: ["1"]}]}
+				) {
+					edges { node { id name description } }
+				}
+				dataObjectsL2: allFactSheets(
+					sort: {mode: BY_FIELD, key: "name", order: asc},
+					filter: {facetFilters: [{facetKey: "FactSheetTypes", keys: ["DataObject"]}, {facetKey: "hierarchyLevel", keys: ["2"]}]}
+				) {
+					edges { node {
+						id name description tags { name }
+						... on DataObject {
+							relToParent { edges { node { factSheet { id } } } }
+							relDataObjectToBusinessCapability { edges { node { factSheet { id } } } }
+						}
+					}}
+				}
+				businessCapabilities: allFactSheets(
+					filter: {facetFilters: [
+						{facetKey: "FactSheetTypes", keys: ["BusinessCapability"]} ${appMapIDFilter}
+					]}
+				) {
+					edges { node { id displayName ${tagNameDef} } }
+				}}`;
 	}
 
 	_handleData(index, appMapID) {
