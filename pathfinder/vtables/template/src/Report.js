@@ -33,12 +33,7 @@ class Report extends Component {
 		lx.executeGraphQL(CommonQueries.tagGroups).then((tagGroups) => {
 			const index = new DataIndex();
 			index.put(tagGroups);
-			/*let csmID = index.getTags('Application Type', 'CSM');
-			if (csmID.length > 0) {
-				csmID = csmID[0].id;
-			} else {
-				csmID = undefined;
-			}*/
+			// const appMapID = index.getFirstTagID('BC Type', 'AppMap');
 			lx.executeGraphQL(this._createQuery()).then((data) => {
 				index.put(data);
 				this._handleData(index);

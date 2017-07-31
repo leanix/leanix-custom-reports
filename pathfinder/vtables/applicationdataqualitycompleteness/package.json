@@ -1,0 +1,48 @@
+{
+	"name": "applicationdataqualitycompleteness",
+	"version": "1.0.0",
+	"description": "TODO app_description",
+	"private": true,
+	"engines": {
+		"node": ">=6.11.1"
+	},
+	"leanixReport": {
+		"id": "net.leanix.vtables.TODO app id",
+		"title": "Application Data Quality Completeness",
+		"defaultConfig": {}
+	},
+	"scripts": {
+		"start": "lxr start",
+		"upload": "lxr upload"
+	},
+	"keywords": [
+		"leanix",
+		"custom-report"
+	],
+	"author": "LeanIX GmbH",
+	"license": "MIT",
+	"devDependencies": {
+		"babel-core": "6.25.0",
+		"babel-loader": "7.1.0",
+		"babel-preset-env": "1.5.2",
+		"babel-preset-react": "6.24.1",
+		"copy-webpack-plugin": "4.0.1",
+		"fstream": "1.0.11",
+		"html-webpack-plugin": "2.28.0",
+		"http-proxy": "1.16.2",
+		"request": "2.81.0",
+		"tar": "3.1.5",
+		"webpack": "3.0.0",
+		"webpack-dev-server": "2.5.0"
+	},
+	"dependencies": {
+		"@leanix/reporting": "0.1.3",
+		"bootstrap": "^3.3.7",
+		"jquery": "^3.2.1",
+		"lodash": "^4.17.4",
+		"prop-types": "^15.5.10",
+		"react": "^15.6.1",
+		"react-bootstrap-table": "^3.4.6",
+		"react-dom": "^15.6.1"
+	}
+}
