@@ -3,7 +3,6 @@ import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 import CommonQueries from './CommonGraphQLQueries';
 import DataIndex from './DataIndex';
 import Link from './Link';
-import LinkList from './LinkList';
 import Utilities from './Utilities';
 import RuleSet from './RuleSet';
 
@@ -165,6 +164,7 @@ class Report extends Component {
 					id: market + '-' + e.name,
 					market: Utilities.getKeyToValue(this.MARKET_OPTIONS, market),
 					rule: e.name,
+					overallRule: e.overall === true,
 					compliant: ruleResult.compliant,
 					nonCompliant: ruleResult.nonCompliant,
 					percentage: percentage,
@@ -191,8 +191,7 @@ class Report extends Component {
 			return '';
 		}
 		return (
-			<div
-				 className='label'
+			<div className='label'
 				 style={{
 					 display: 'inline-block',
 					 textAlign: 'center',
@@ -202,14 +201,12 @@ class Report extends Component {
 					 color: 'inherit',
 					 backgroundColor: this._getGreenToRed(cell)
 				 }}
-			>
-				{cell + ' %'}
-			</div>
+			>{cell + ' %'}</div>
 		);
-		return '<span class="label label-danger" style="">' + cell + ' %</span>';
 	}
 
 	_getGreenToRed(percent) {
+		// TODO nicer color fade
 		const r = percent < 50 ? 255 : Math.floor(255 - (percent * 2 - 100) * 255 / 100);
 		const g = percent > 50 ? 255 : Math.floor((percent * 2) * 255 / 100);
 		return 'rgb(' + r + ',' + g + ',0)';
@@ -218,7 +215,7 @@ class Report extends Component {
 	/* customizing for the table */
 
 	_trClassname(row, fieldValue, rowIdx, colIdx) {
-		if (row.rule === 'Overall Quality') {
+		if (row.overallRule) {
 			return 'info';
 		}
 		return '';
@@ -254,6 +251,10 @@ class Report extends Component {
 					 dataAlign='left'
 					 filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 					>Rule</TableHeaderColumn>
+				<TableHeaderColumn hidden export
+					 dataField='overallRule'
+					 csvHeader='overall-rule'
+					>overallRule</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='compliant'
 					 width='260px'
