@@ -1,9 +1,5 @@
 import Utilities from './Utilities';
 
-const _tmp = new Date();
-_tmp.setFullYear(_tmp.getFullYear() - 1);
-const ONE_YEAR_BEFORE = _tmp.getTime();
-
 export default [{
 		name: 'Adding applications, but no project',
 		compute: (index, applications) => {
@@ -268,6 +264,10 @@ export default [{
 		}
 	}
 ];
+
+const _tmp = new Date();
+_tmp.setFullYear(_tmp.getFullYear() - 1);
+const ONE_YEAR_BEFORE = _tmp.getTime();
 
 function _hasProductionLifecycle(application) {
 	if (!application || !application.lifecycle || !application.lifecycle.phases

@@ -4,6 +4,7 @@ import CommonQueries from './CommonGraphQLQueries';
 import DataIndex from './DataIndex';
 import Link from './Link';
 import LinkList from './LinkList';
+import Utilities from './Utilities';
 
 import $ from 'jquery';
 import _ from 'lodash';

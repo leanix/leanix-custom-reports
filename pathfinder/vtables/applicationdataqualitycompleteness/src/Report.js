@@ -7,15 +7,13 @@ import LinkList from './LinkList';
 import Utilities from './Utilities';
 import RuleSet from './RuleSet';
 
-import $ from 'jquery';
-import _ from 'lodash';
-
 class Report extends Component {
 
 	constructor(props) {
 		super(props);
 		this._initReport = this._initReport.bind(this);
 		this._handleData = this._handleData.bind(this);
+		this._formatPercentage = this._formatPercentage.bind(this);
 		this.MARKET_OPTIONS = {};
 		this.state = {
 			setup: null,
@@ -153,14 +151,24 @@ class Report extends Component {
 					compliants[e.name] = ruleResult.compliant;
 					nonCompliants[e.name] = ruleResult.nonCompliant;
 				}
+				const sum = ruleResult.compliant + ruleResult.nonCompliant;
+				let percentage = undefined;
+				if (sum === 0 || (ruleResult.compliant > 0 && ruleResult.nonCompliant === 0)) {
+					percentage = 100;
+				} else if (ruleResult.compliant === 0 && ruleResult.nonCompliant > 0) {
+					percentage = 0;
+				} else {
+					percentage = ruleResult.compliant * 100 / sum;
+				}
+				percentage = Math.floor(percentage);
 				tableData.push({
 					id: market + '-' + e.name,
 					market: Utilities.getKeyToValue(this.MARKET_OPTIONS, market),
 					rule: e.name,
 					compliant: ruleResult.compliant,
 					nonCompliant: ruleResult.nonCompliant,
-					percentage: 0,
-					url: null
+					percentage: percentage,
+					url: null // TODO
 				});
 			});
 		}
@@ -179,26 +187,58 @@ class Report extends Component {
 	}
 
 	_formatPercentage(cell, row) {
-		if (!cell) {
+		if (cell === undefined || cell === null) {
 			return '';
 		}
-		return cell;
+		return (
+			<div
+				 className='label'
+				 style={{
+					 display: 'inline-block',
+					 textAlign: 'center',
+					 width: '50px',
+					 fontSize: '80%',
+					 paddingTop: '0.35em',
+					 color: 'inherit',
+					 backgroundColor: this._getGreenToRed(cell)
+				 }}
+			>
+				{cell + ' %'}
+			</div>
+		);
+		return '<span class="label label-danger" style="">' + cell + ' %</span>';
+	}
+
+	_getGreenToRed(percent) {
+		const r = percent < 50 ? 255 : Math.floor(255 - (percent * 2 - 100) * 255 / 100);
+		const g = percent > 50 ? 255 : Math.floor((percent * 2) * 255 / 100);
+		return 'rgb(' + r + ',' + g + ',0)';
+	}
+
+	/* customizing for the table */
+
+	_trClassname(row, fieldValue, rowIdx, colIdx) {
+		if (row.rule === 'Overall Quality') {
+			return 'info';
+		}
+		return '';
 	}
 
 	render() {
 		if (this.state.data.length === 0) {
-			//return null;
+			return null;
 		}
 		return (
 			<BootstrapTable data={this.state.data} keyField='id'
 				 striped hover search exportCSV
-				 options={{ clearSearch: true }}>
+				 options={{ clearSearch: true }}
+				 trClassName={this._trClassname}>
 				<TableHeaderColumn hidden
 					 dataField='id'
 					>id</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='market'
-					 width='80px'
+					 width='160px'
 					 headerAlign='left'
 					 dataAlign='left'
 					 dataFormat={this._formatEnum}
@@ -209,21 +249,21 @@ class Report extends Component {
 					>Market</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='rule'
-					 width='300px'
+					 width='400px'
 					 headerAlign='left'
 					 dataAlign='left'
 					 filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 					>Rule</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='compliant'
-					 width='110px'
+					 width='260px'
 					 headerAlign='left'
 					 dataAlign='left'
 					 filter={{ type: 'NumberFilter', placeholder: 'Please enter a value', defaultValue: { comparator: '<=' } }}
 					>Compliant</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='nonCompliant'
-					 width='110px'
+					 width='260px'
 					 headerAlign='left'
 					 dataAlign='left'
 					 csvHeader='non-compliant'
@@ -231,7 +271,7 @@ class Report extends Component {
 					>Non-Compliant</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='percentage'
-					 width='110px'
+					 width='260px'
 					 headerAlign='left'
 					 dataAlign='left'
 					 dataFormat={this._formatPercentage}
