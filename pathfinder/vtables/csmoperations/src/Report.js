@@ -91,7 +91,7 @@ class Report extends Component {
 	_handleData(index, csmID, platformID) {
 		const tableData = [];
 		index.applications.nodes.forEach((e) => {
-			if (!csmID && !index.includesTag(e2, 'CSM')) {
+			if (!csmID && !index.includesTag(e, 'CSM')) {
 				return;
 			}
 			const hierarchy = {};
