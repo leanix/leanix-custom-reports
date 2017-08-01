@@ -115,8 +115,8 @@ class Report extends Component {
 							appMapL2Name: appMapL2.fullName,
 							cimL1ID: cimL1 && cimL1.id ? cimL1.id : '',
 							cimL1Name: cimL1 && cimL1.fullName ? cimL1.fullName : '',
-							cimL2ID: cimL2 && cimL2.id ? cimL2.id : '',
-							cimL2Name: cimL2 && cimL2.fullName ? cimL2.fullName : '',
+							cimL2ID: cimL2.id,
+							cimL2Name: cimL2.fullName,
 						});
 					});
 				}
@@ -129,12 +129,20 @@ class Report extends Component {
 
 	/* formatting functions for the table */
 
-	_formatLink(cell, row, idName) {
+	_formatLinkBC(cell, row, idName) {
 		let id = row[idName];
 		if (!cell || !id) {
 			return '';
 		}
 		return (<Link link={'factsheet/BusinessCapability/' + id} target='_blank' text={cell} />);
+	}
+
+	_formatLinkDO(cell, row, idName) {
+		let id = row[idName];
+		if (!cell || !id) {
+			return '';
+		}
+		return (<Link link={'factsheet/DataObject/' + id} target='_blank' text={cell} />);
 	}
 
 	render() {
@@ -148,7 +156,7 @@ class Report extends Component {
 				<TableHeaderColumn dataSort
 					dataField='appMapL1Name'
 					dataAlign='left'
-					dataFormat={this._formatLink}
+					dataFormat={this._formatLinkBC}
 					formatExtraData={'appMapL1ID'}
 					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 					csvHeader='appmap-domain'
@@ -156,7 +164,7 @@ class Report extends Component {
 				<TableHeaderColumn dataSort
 					dataField='appMapL2Name'
 					dataAlign='left'
-					dataFormat={this._formatLink}
+					dataFormat={this._formatLinkBC}
 					formatExtraData={'appMapL2ID'}
 					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 					csvHeader='appmap-solution-area'
@@ -164,7 +172,7 @@ class Report extends Component {
 				<TableHeaderColumn dataSort
 					dataField='cimL1Name'
 					dataAlign='left'
-					dataFormat={this._formatLink}
+					dataFormat={this._formatLinkDO}
 					formatExtraData={'cimL1ID'}
 					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 					csvHeader='cim-domain'
@@ -172,7 +180,7 @@ class Report extends Component {
 				<TableHeaderColumn dataSort
 					dataField='cimL2Name'
 					dataAlign='left'
-					dataFormat={this._formatLink}
+					dataFormat={this._formatLinkDO}
 					formatExtraData={'cimL2ID'}
 					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 					csvHeader='cim-entity'
