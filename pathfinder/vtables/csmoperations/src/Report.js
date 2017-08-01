@@ -54,15 +54,11 @@ class Report extends Component {
 
 	_createQuery(csmID, platformID) {
 		const csmIDFilter = csmID ? `, {facetKey: "Application Type", keys: ["${csmID}"]}` : '';
-		let platformIDFilter = undefined;
-		let tagNameDef = undefined;
+		let platformIDFilter = ''; // initial assume tagGroup.name changed or the id couldn't be determined otherwise
+		let tagNameDef = 'tags { name }'; // initial assume to get it
 		if (platformID) {
 			platformIDFilter = `, {facetKey: "BC Type", keys: ["${platformID}"]}`;
 			tagNameDef = '';
-		} else {
-			// tagGroup.name changed or id couldn't be determined otherwise -> need a query with tags for bc's
-			platformIDFilter = '';
-			tagNameDef = 'tags { name }';
 		}
 		return `{applications: allFactSheets(
 					sort: {mode: BY_FIELD, key: "displayName", order: asc},
@@ -210,7 +206,6 @@ class Report extends Component {
 				<TableHeaderColumn dataSort row='0' rowSpan='2'
 					 dataField='level'
 					 width='150px'
-					 headerAlign='left'
 					 dataAlign='left'
 					 filter={{ type: 'NumberFilter', placeholder: 'Please choose', options: LEVEL_OPTIONS, numberComparators: ['<='], defaultValue: { number: LEVEL_OPTIONS[LEVEL_OPTIONS.length - 1], comparator: '<=' } }}
 					>Level</TableHeaderColumn>
@@ -221,7 +216,6 @@ class Report extends Component {
 				<TableHeaderColumn dataSort row='1'
 					 dataField='domain'
 					 width='200px'
-					 headerAlign='left'
 					 dataAlign='left'
 					 dataFormat={this._formatName}
 					 formatExtraData='L1'
@@ -230,7 +224,6 @@ class Report extends Component {
 				<TableHeaderColumn dataSort row='1'
 					 dataField='name'
 					 width='250px'
-					 headerAlign='left'
 					 dataAlign='left'
 					 dataFormat={this._formatName}
 					 formatExtraData='L2'
@@ -239,7 +232,6 @@ class Report extends Component {
 				<TableHeaderColumn dataSort row='1'
 					 dataField='operation'
 					 width='300px'
-					 headerAlign='left'
 					 dataAlign='left'
 					 dataFormat={this._formatName}
 					 formatExtraData='L3'
@@ -248,7 +240,6 @@ class Report extends Component {
 				<TableHeaderColumn row='1' tdStyle={{ fontSize: '.85em' }}
 					 dataField='description'
 					 width='300px'
-					 headerAlign='left'
 					 dataAlign='left'
 					 filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 					>Description</TableHeaderColumn>
@@ -262,7 +253,6 @@ class Report extends Component {
 				<TableHeaderColumn dataSort row='1'
 					 dataField='operationStatus'
 					 width='150px'
-					 headerAlign='left'
 					 dataAlign='left'
 					 dataFormat={this._formatEnum}
 					 formatExtraData={this.OPERATION_STATUS_OPTIONS}
@@ -274,7 +264,6 @@ class Report extends Component {
 				<TableHeaderColumn row='0' rowSpan='2'
 					 dataField='platforms'
 					 width='250px'
-					 headerAlign='left'
 					 dataAlign='left'
 					 dataFormat={this._formatArray}
 					 csvHeader='platform-names'

@@ -50,15 +50,11 @@ class Report extends Component {
 	}
 
 	_createQuery(appMapID) {
-		let appMapIDFilter = undefined;
-		let tagNameDef = undefined;
+		let appMapIDFilter = ''; // initial assume tagGroup.name changed or the id couldn't be determined otherwise
+		let tagNameDef = 'tags { name }'; // initial assume to get it
 		if (appMapID) {
 			appMapIDFilter = `, {facetKey: "BC Type", keys: ["${appMapID}"]}`;
 			tagNameDef = '';
-		} else {
-			// tagGroup.name changed or id couldn't be determined otherwise -> need a query with tags for bc's
-			appMapIDFilter = '';
-			tagNameDef = 'tags { name }';
 		}
 		return `{dataObjectsL1: allFactSheets(
 					filter: {facetFilters: [{facetKey: "FactSheetTypes", keys: ["DataObject"]}, {facetKey: "hierarchyLevel", keys: ["1"]}]}
@@ -190,7 +186,6 @@ class Report extends Component {
 				<TableHeaderColumn dataSort row='1'
 					 dataField='domainName'
 					 width='200px'
-					 headerAlign='left'
 					 dataAlign='left'
 					 dataFormat={this._formatName}
 					 formatExtraData={true}
@@ -208,7 +203,6 @@ class Report extends Component {
 				<TableHeaderColumn row='1' tdStyle={{ fontSize: '.85em' }}
 					 dataField='domainDescription'
 					 width='300px'
-					 headerAlign='left'
 					 dataAlign='left'
 					 csvHeader='domain-description'
 					 filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
@@ -216,7 +210,6 @@ class Report extends Component {
 				<TableHeaderColumn dataSort row='1'
 					 dataField='name'
 					 width='250px'
-					 headerAlign='left'
 					 dataAlign='left'
 					 dataFormat={this._formatName}
 					 formatExtraData={false}
@@ -232,14 +225,12 @@ class Report extends Component {
 				<TableHeaderColumn row='1' tdStyle={{ fontSize: '.85em' }}
 					 dataField='description'
 					 width='300px'
-					 headerAlign='left'
 					 dataAlign='left'
 					 filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 					>Description</TableHeaderColumn>
 				<TableHeaderColumn dataSort row='0' rowSpan='2'
 					 dataField='landscapeAvailable'
 					 width='130px'
-					 headerAlign='left'
 					 dataAlign='left'
 					 dataFormat={this._formatEnum}
 					 formatExtraData={LANDSCAPE_OPTIONS}
@@ -252,7 +243,6 @@ class Report extends Component {
 				<TableHeaderColumn row='0' rowSpan='2'
 					 dataField='appMaps'
 					 width='250px'
-					 headerAlign='left'
 					 dataAlign='left'
 					 dataFormat={this._formatArray}
 					 csvHeader='appmap-names'

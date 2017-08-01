@@ -52,15 +52,11 @@ class Report extends Component {
 	_createQuery(applicationTagID, itTagID, appMapID) {
 		const applicationTagIDFilter = applicationTagID ? `, {facetKey: "Application Type", keys: ["${applicationTagID}"]}` : '';
 		const itTagIDFilter = itTagID ? `, {facetKey: "CostCentre", keys: ["${itTagID}"]}` : '';
-		let appMapIDFilter = undefined;
-		let tagNameDef = undefined;
+		let appMapIDFilter = ''; // initial assume tagGroup.name changed or the id couldn't be determined otherwise
+		let tagNameDef = 'tags { name }'; // initial assume to get it
 		if (appMapID) {
 			appMapIDFilter = `, {facetKey: "BC Type", keys: ["${appMapID}"]}`;
 			tagNameDef = '';
-		} else {
-			// tagGroup.name changed or id couldn't be determined otherwise -> need a query with tags for bc's
-			appMapIDFilter = '';
-			tagNameDef = 'tags { name }';
 		}
 		return `{applications: allFactSheets(
 					sort: {mode: BY_FIELD, key: "displayName", order: asc},
@@ -236,7 +232,6 @@ class Report extends Component {
 				<TableHeaderColumn dataSort
 					 dataField='market'
 					 width='160px'
-					 headerAlign='left'
 					 dataAlign='left'
 					 dataFormat={this._formatEnum}
 					 formatExtraData={this.MARKET_OPTIONS}
@@ -247,7 +242,6 @@ class Report extends Component {
 				<TableHeaderColumn dataSort
 					 dataField='rule'
 					 width='400px'
-					 headerAlign='left'
 					 dataAlign='left'
 					 filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 					>Rule</TableHeaderColumn>
@@ -258,14 +252,12 @@ class Report extends Component {
 				<TableHeaderColumn dataSort
 					 dataField='compliant'
 					 width='260px'
-					 headerAlign='left'
 					 dataAlign='left'
 					 filter={{ type: 'NumberFilter', placeholder: 'Please enter a value', defaultValue: { comparator: '<=' } }}
 					>Compliant</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='nonCompliant'
 					 width='260px'
-					 headerAlign='left'
 					 dataAlign='left'
 					 csvHeader='non-compliant'
 					 filter={{ type: 'NumberFilter', placeholder: 'Please enter a value', defaultValue: { comparator: '<=' } }}
@@ -273,7 +265,6 @@ class Report extends Component {
 				<TableHeaderColumn dataSort
 					 dataField='percentage'
 					 width='260px'
-					 headerAlign='left'
 					 dataAlign='left'
 					 dataFormat={this._formatPercentage}
 					 csvHeader='compliant-percentage'
