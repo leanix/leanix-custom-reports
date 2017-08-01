@@ -4,8 +4,8 @@ export default [{
 		name: 'Adding applications, but no project',
 		compute: (index, applications) => {
 			const result = {
-				compliant: 0,
-				nonCompliant: 0
+				compliant: [],
+				nonCompliant: []
 			};
 			applications.all.forEach((e) => {
 				if (!_hasProductionLifecycle(e)) {
@@ -13,13 +13,13 @@ export default [{
 				}
 				const subIndex = e.relApplicationToProject;
 				if (!subIndex) {
-					result.nonCompliant++;
+					result.nonCompliant.push(e);
 					return;
 				}
 				if (subIndex.nodes.length > 0) {
-					result.compliant++;
+					result.compliant.push(e);
 				} else {
-					result.nonCompliant++;
+					result.nonCompliant.push(e);
 				}
 			});
 			return result;
@@ -28,8 +28,8 @@ export default [{
 		name: 'Retiring applications, but no project',
 		compute: (index, applications) => {
 			const result = {
-				compliant: 0,
-				nonCompliant: 0
+				compliant: [],
+				nonCompliant: []
 			};
 			applications.all.forEach((e) => {
 				if (!_isRetired(e)) {
@@ -37,13 +37,13 @@ export default [{
 				}
 				const subIndex = e.relApplicationToProject;
 				if (!subIndex) {
-					result.nonCompliant++;
+					result.nonCompliant.push(e);
 					return;
 				}
 				if (subIndex.nodes.length > 0) {
-					result.compliant++;
+					result.compliant.push(e);
 				} else {
-					result.nonCompliant++;
+					result.nonCompliant.push(e);
 				}
 			});
 			return result;
@@ -52,13 +52,13 @@ export default [{
 		name: 'has COBRA (only active, exactly one)',
 		compute: (index, applications) => {
 			const result = {
-				compliant: 0,
-				nonCompliant: 0
+				compliant: [],
+				nonCompliant: []
 			};
 			applications.onlyActive.forEach((e) => {
 				const subIndex = e.relApplicationToBusinessCapability;
 				if (!subIndex || subIndex.nodes.length < 1) {
-					result.nonCompliant++;
+					result.nonCompliant.push(e);
 					return;
 				}
 				const compliantBCs = subIndex.nodes.filter((e2) => {
@@ -66,9 +66,9 @@ export default [{
 					return bc && index.includesTag(bc, 'AppMap');
 				});
 				if (compliantBCs.length === 1) {
-					result.compliant++;
+					result.compliant.push(e);
 				} else {
-					result.nonCompliant++;
+					result.nonCompliant.push(e);
 				}
 			});
 			return result;
@@ -77,14 +77,14 @@ export default [{
 		name: 'has COTS Package (only active)',
 		compute: (index, applications) => {
 			const result = {
-				compliant: 0,
-				nonCompliant: 0
+				compliant: [],
+				nonCompliant: []
 			};
 			applications.onlyActive.forEach((e) => {
 				if (index.getFirstTagFromGroup(e, 'COTS Package')) {
-					result.compliant++;
+					result.compliant.push(e);
 				} else {
-					result.nonCompliant++;
+					result.nonCompliant.push(e);
 				}
 			});
 			return result;
@@ -93,22 +93,22 @@ export default [{
 		name: 'has Software Product (only active, w/ COTS Package)',
 		compute: (index, applications) => {
 			const result = {
-				compliant: 0,
-				nonCompliant: 0
+				compliant: [],
+				nonCompliant: []
 			};
 			applications.onlyActiveCOTSPackage.forEach((e) => {
 				const subIndex = e.relApplicationToITComponent;
 				if (!subIndex || subIndex.nodes.length < 1) {
-					result.nonCompliant++;
+					result.nonCompliant.push(e);
 					return;
 				}
 				const compliantITComp = subIndex.nodes.find((e2) => {
 					return index.byID[e2.id];
 				});
 				if (compliantITComp) {
-					result.compliant++;
+					result.compliant.push(e);
 				} else {
-					result.nonCompliant++;
+					result.nonCompliant.push(e);
 				}
 			});
 			return result;
@@ -117,8 +117,8 @@ export default [{
 		name: 'has Software Product, but no Placeholder (only active, w/ COTS Package)',
 		compute: (index, applications) => {
 			const result = {
-				compliant: 0,
-				nonCompliant: 0
+				compliant: [],
+				nonCompliant: []
 			};
 			applications.onlyActiveCOTSPackage.forEach((e) => {
 				const subIndex = e.relApplicationToITComponent;
@@ -129,9 +129,9 @@ export default [{
 					return index.byID[e2.id];
 				});
 				if (index.includesTag(compliantITComp ? index.byID[compliantITComp.id] : undefined, 'Placeholder')) {
-					result.nonCompliant++;
+					result.nonCompliant.push(e);
 				} else {
-					result.compliant++;
+					result.compliant.push(e);
 				}
 			});
 			return result;
@@ -140,14 +140,14 @@ export default [{
 		name: 'has Description (only active)',
 		compute: (index, applications) => {
 			const result = {
-				compliant: 0,
-				nonCompliant: 0
+				compliant: [],
+				nonCompliant: []
 			};
 			applications.onlyActive.forEach((e) => {
 				if (e.description) {
-					result.compliant++;
+					result.compliant.push(e);
 				} else {
-					result.nonCompliant++;
+					result.nonCompliant.push(e);
 				}
 			});
 			return result;
@@ -156,14 +156,14 @@ export default [{
 		name: 'has Lifecycle',
 		compute: (index, applications) => {
 			const result = {
-				compliant: 0,
-				nonCompliant: 0
+				compliant: [],
+				nonCompliant: []
 			};
 			applications.all.forEach((e) => {
 				if (Utilities.getCurrentLifecycle(e)) {
-					result.compliant++;
+					result.compliant.push(e);
 				} else {
-					result.nonCompliant++;
+					result.nonCompliant.push(e);
 				}
 			});
 			return result;
@@ -172,14 +172,14 @@ export default [{
 		name: 'has IT Owner (only active)',
 		compute: (index, applications) => {
 			const result = {
-				compliant: 0,
-				nonCompliant: 0
+				compliant: [],
+				nonCompliant: []
 			};
 			applications.onlyActive.forEach((e) => {
 				if (_hasSubscriptionRole(e, 'IT Owner')) {
-					result.compliant++;
+					result.compliant.push(e);
 				} else {
-					result.nonCompliant++;
+					result.nonCompliant.push(e);
 				}
 			});
 			return result;
@@ -188,14 +188,14 @@ export default [{
 		name: 'has SPOC (only active)',
 		compute: (index, applications) => {
 			const result = {
-				compliant: 0,
-				nonCompliant: 0
+				compliant: [],
+				nonCompliant: []
 			};
 			applications.onlyActive.forEach((e) => {
 				if (_hasSubscriptionRole(e, 'SPOC')) {
-					result.compliant++;
+					result.compliant.push(e);
 				} else {
-					result.nonCompliant++;
+					result.nonCompliant.push(e);
 				}
 			});
 			return result;
@@ -204,14 +204,14 @@ export default [{
 		name: 'has Business Value (only active)',
 		compute: (index, applications) => {
 			const result = {
-				compliant: 0,
-				nonCompliant: 0
+				compliant: [],
+				nonCompliant: []
 			};
 			applications.onlyActive.forEach((e) => {
 				if (e.functionalSuitability) {
-					result.compliant++;
+					result.compliant.push(e);
 				} else {
-					result.nonCompliant++;
+					result.nonCompliant.push(e);
 				}
 			});
 			return result;
@@ -220,14 +220,14 @@ export default [{
 		name: 'has Technical Condition (only active)',
 		compute: (index, applications) => {
 			const result = {
-				compliant: 0,
-				nonCompliant: 0
+				compliant: [],
+				nonCompliant: []
 			};
 			applications.onlyActive.forEach((e) => {
 				if (e.technicalSuitability) {
-					result.compliant++;
+					result.compliant.push(e);
 				} else {
-					result.nonCompliant++;
+					result.nonCompliant.push(e);
 				}
 			});
 			return result;
@@ -236,14 +236,14 @@ export default [{
 		name: 'has Cost Centre (only active)',
 		compute: (index, applications) => {
 			const result = {
-				compliant: 0,
-				nonCompliant: 0
+				compliant: [],
+				nonCompliant: []
 			};
 			applications.onlyActive.forEach((e) => {
 				if (index.getFirstTagFromGroup(e, 'CostCentre')) {
-					result.compliant++;
+					result.compliant.push(e);
 				} else {
-					result.nonCompliant++;
+					result.nonCompliant.push(e);
 				}
 			});
 			return result;

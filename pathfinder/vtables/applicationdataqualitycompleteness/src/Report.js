@@ -2,9 +2,9 @@ import React, { Component } from 'react';
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 import CommonQueries from './CommonGraphQLQueries';
 import DataIndex from './DataIndex';
-import Link from './Link';
 import Utilities from './Utilities';
 import RuleSet from './RuleSet';
+import SubTables from './SubTables';
 
 class Report extends Component {
 
@@ -143,17 +143,19 @@ class Report extends Component {
 					ruleResult = e.compute(compliants, nonCompliants);
 				} else {
 					ruleResult = e.compute(index, applications);
-					compliants[e.name] = ruleResult.compliant;
-					nonCompliants[e.name] = ruleResult.nonCompliant;
+					compliants[e.name] = ruleResult.compliant.length;
+					nonCompliants[e.name] = ruleResult.nonCompliant.length;
 				}
-				const sum = ruleResult.compliant + ruleResult.nonCompliant;
+				const compliant = e.overall ? ruleResult.compliant : ruleResult.compliant.length;
+				const nonCompliant = e.overall ? ruleResult.nonCompliant : ruleResult.nonCompliant.length;
+				const sum = compliant + nonCompliant;
 				let percentage = undefined;
-				if (sum === 0 || (ruleResult.compliant > 0 && ruleResult.nonCompliant === 0)) {
+				if (sum === 0 || (compliant > 0 && nonCompliant === 0)) {
 					percentage = 100;
-				} else if (ruleResult.compliant === 0 && ruleResult.nonCompliant > 0) {
+				} else if (compliant === 0 && nonCompliant > 0) {
 					percentage = 0;
 				} else {
-					percentage = ruleResult.compliant * 100 / sum;
+					percentage = compliant * 100 / sum;
 				}
 				percentage = Math.floor(percentage);
 				tableData.push({
@@ -161,10 +163,11 @@ class Report extends Component {
 					market: Utilities.getKeyToValue(this.MARKET_OPTIONS, market),
 					rule: e.name,
 					overallRule: e.overall === true,
-					compliant: ruleResult.compliant,
-					nonCompliant: ruleResult.nonCompliant,
-					percentage: percentage,
-					url: null // TODO
+					compliant: compliant,
+					compliantApps: e.overall ? [] : ruleResult.compliant,
+					nonCompliant: nonCompliant,
+					nonCompliantApps: e.overall ? [] : ruleResult.nonCompliant,
+					percentage: percentage
 				});
 			});
 		}
@@ -217,12 +220,29 @@ class Report extends Component {
 		return '';
 	}
 
+	_isExpandableRow(row) {
+		if (row.overallRule || (row.compliant === 0 && row.nonCompliant === 0)) {
+			return false;
+		}
+		return true;
+	}
+
+	_expandComponent(row) {
+		return (
+			<SubTables data={{ compliantApps: row.compliantApps, nonCompliantApps: row.nonCompliantApps }} />
+		);
+	}
+
 	render() {
 		if (this.state.data.length === 0) {
 			return null;
 		}
+		// TODO root csv export must have the ids aswell?
 		return (
 			<BootstrapTable data={this.state.data} keyField='id'
+				 expandableRow={this._isExpandableRow}
+				 expandComponent={this._expandComponent}
+				 expandColumnOptions={{ expandColumnVisible: true }}
 				 striped hover search exportCSV
 				 options={{ clearSearch: true }}
 				 trClassName={this._trClassname}>
