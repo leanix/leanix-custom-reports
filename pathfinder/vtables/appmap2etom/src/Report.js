@@ -1,4 +1,4 @@
-import React, {	Component } from 'react';
+import React, { Component } from 'react';
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 import CommonQueries from './CommonGraphQLQueries';
 import DataIndex from './DataIndex';
@@ -52,7 +52,7 @@ class Report extends Component {
 			tagNameDef = '';
 		}
 		return `{businessCapabilities: allFactSheets(
-					sort: {mode: BY_FIELD, key: "displayName", order: asc}, 
+					sort: {mode: BY_FIELD, key: "displayName", order: asc},
 					filter: {facetFilters: [
 						{facetKey: "FactSheetTypes", keys: ["BusinessCapability"]}
 						${appMapIDFilter}
@@ -92,8 +92,9 @@ class Report extends Component {
 			if (!subIndex) {
 				return;
 			}
+			const appMapL1 = appMapL2.relToParent ? appMapL2.relToParent.nodes[0] : undefined;
 			subIndex.nodes.forEach((e) => {
-				const appMapL1 = appMapL2.relToParent ? appMapL2.relToParent.nodes[0] : undefined;
+				// please note: every process has a eTOM tag, no need to filter
 				let etomL4 = e;
 				let etomL3 = etomL4.relToParent ? etomL4.relToParent.nodes[0] : undefined;
 				let etomL2 = etomL3 && etomL3.relToParent ? etomL3.relToParent.nodes[0] : undefined;
@@ -105,18 +106,18 @@ class Report extends Component {
 					etomL4 = undefined;
 				}
 				tableData.push({
-					appMapL1ID: appMapL1 && appMapL1.id ? appMapL1.id : '',
-					appMapL1Name: appMapL1 && appMapL1.name ? appMapL1.name : '',
+					appMapL1ID: appMapL1 ? appMapL1.id : '',
+					appMapL1Name: appMapL1 ? appMapL1.name : '',
 					appMapL2ID: appMapL2.id,
 					appMapL2Name: appMapL2.name,
-					etomL1ID: etomL1 && etomL1.id ? etomL1.id : '',
-					etomL1Name: etomL1 && etomL1.name ? etomL1.name : '',
-					etomL2ID: etomL2 && etomL2.id ? etomL2.id : '',
-					etomL2Name: etomL2 && etomL2.name ? etomL2.name : '',
-					etomL3ID: etomL3 && etomL3.id ? etomL3.id : '',
-					etomL3Name: etomL3 && etomL3.name ? etomL3.name : '',
-					etomL4ID: etomL4 && etomL4.id ? etomL4.id : '',
-					etomL4Name: etomL4 && etomL4.name ? etomL4.name : '',
+					etomL1ID: etomL1 ? etomL1.id : '',
+					etomL1Name: etomL1 ? etomL1.name : '',
+					etomL2ID: etomL2 ? etomL2.id : '',
+					etomL2Name: etomL2 ? etomL2.name : '',
+					etomL3ID: etomL3 ? etomL3.id : '',
+					etomL3Name: etomL3 ? etomL3.name : '',
+					etomL4ID: etomL4 ? etomL4.id : '',
+					etomL4Name: etomL4 ? etomL4.name : ''
 				});
 			});
 		});
@@ -194,7 +195,6 @@ class Report extends Component {
 					dataAlign='left'
 					dataFormat={this._formatLinkPr}
 					formatExtraData={'etomL2ID'}
-					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 					csvHeader='etom-L2'
 					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>eTOM L2</TableHeaderColumn>

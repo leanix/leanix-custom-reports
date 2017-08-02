@@ -1,4 +1,4 @@
-import React, {	Component } from 'react';
+import React, { Component } from 'react';
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 import CommonQueries from './CommonGraphQLQueries';
 import DataIndex from './DataIndex';
@@ -52,7 +52,7 @@ class Report extends Component {
 			tagNameDef = '';
 		}
 		return `{businessCapabilities: allFactSheets(
-					sort: {mode: BY_FIELD, key: "displayName", order: asc}, 
+					sort: {mode: BY_FIELD, key: "displayName", order: asc},
 					filter: {facetFilters: [
 						{facetKey: "FactSheetTypes", keys: ["BusinessCapability"]}
 						${appMapIDFilter}
@@ -90,24 +90,24 @@ class Report extends Component {
 			if (!subIndex) {
 				return;
 			}
+			const appMapL1 = appMapL2.relToParent ? appMapL2.relToParent.nodes[0] : undefined;
 			subIndex.nodes.forEach((bcaL4) => {
-				const appMapL1 = appMapL2.relToParent ? appMapL2.relToParent.nodes[0] : undefined;
 				const bcaL3 = bcaL4.relToParent ? bcaL4.relToParent.nodes[0] : undefined;
 				const bcaL2 = bcaL3 && bcaL3.relToParent ? bcaL3.relToParent.nodes[0] : undefined;
 				const bcaL1 = bcaL2 && bcaL2.relToParent ? bcaL2.relToParent.nodes[0] : undefined;
 				tableData.push({
-					appMapL1ID: appMapL1 && appMapL1.id ? appMapL1.id : '',
-					appMapL1Name: appMapL1 && appMapL1.name ? appMapL1.name : '',
+					appMapL1ID: appMapL1 ? appMapL1.id : '',
+					appMapL1Name: appMapL1 ? appMapL1.name : '',
 					appMapL2ID: appMapL2.id,
 					appMapL2Name: appMapL2.name,
-					bcaL1ID: bcaL1 && bcaL1.id ? bcaL1.id : '',
-					bcaL1Name: bcaL1 && bcaL1.name ? bcaL1.name : '',
-					bcaL2ID: bcaL2 && bcaL2.id ? bcaL2.id : '',
-					bcaL2Name: bcaL2 && bcaL2.name ? bcaL2.name : '',
-					bcaL3ID: bcaL3 && bcaL3.id ? bcaL3.id : '',
-					bcaL3Name: bcaL3 && bcaL3.name ? bcaL3.name : '',
+					bcaL1ID: bcaL1 ? bcaL1.id : '',
+					bcaL1Name: bcaL1 ? bcaL1.name : '',
+					bcaL2ID: bcaL2 ? bcaL2.id : '',
+					bcaL2Name: bcaL2 ? bcaL2.name : '',
+					bcaL3ID: bcaL3 ? bcaL3.id : '',
+					bcaL3Name: bcaL3 ? bcaL3.name : '',
 					bcaL4ID: bcaL4.id,
-					bcaL4Name: bcaL4.name,
+					bcaL4Name: bcaL4.name
 				});
 			});
 		});
@@ -178,7 +178,6 @@ class Report extends Component {
 					dataAlign='left'
 					dataFormat={this._formatLink}
 					formatExtraData={'bcaL2ID'}
-					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 					csvHeader='bca-L2'
 					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>BCA L2</TableHeaderColumn>

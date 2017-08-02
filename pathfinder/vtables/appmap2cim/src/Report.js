@@ -85,9 +85,9 @@ class Report extends Component {
 			if (!subIndex) {
 				return;
 			}
+			const appMapL1 = appMapL2.relToParent ? appMapL2.relToParent.nodes[0] : undefined;
 			subIndex.nodes.forEach((cimL2) => {
 				const cimL1 = cimL2.relToParent ? cimL2.relToParent.nodes[0] : undefined;
-				const appMapL1 = appMapL2.relToParent ? appMapL2.relToParent.nodes[0] : undefined;
 				tableData.push({
 					appMapL1ID: appMapL1 ? appMapL1.id : '',
 					appMapL1Name: appMapL1 ? appMapL1.name : '',

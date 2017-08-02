@@ -27,10 +27,11 @@ class LinkList extends Component {
 
 LinkList.propTypes = {
 	links: PropTypes.arrayOf(PropTypes.shape({
-		link: PropTypes.string.isRequired,
-		target: PropTypes.string.isRequired,
-		text: PropTypes.string.isRequired
-	})).isRequired
+			link: PropTypes.string.isRequired,
+			target: PropTypes.string.isRequired,
+			text: PropTypes.string.isRequired
+		}).isRequired
+	).isRequired
 };
 
 export default LinkList;
