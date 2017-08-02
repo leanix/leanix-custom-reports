@@ -13,7 +13,7 @@ class Report {
 	}
 
 	_createConfig() {
-		this.factsheetTypes = DataProvider.getFactsheetTypesObjects(this.setup.config.dataModel.factSheets);
+		this.factsheetTypes = DataProvider.getFactsheetTypesObjects(this.setup.settings.dataModel.factSheets);
 		// define a dropdown entry for each factsheet type
 		const dropdownEntries = [];
 		this.factsheetTypes.forEach(((value) => {
