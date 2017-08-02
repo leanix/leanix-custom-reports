@@ -14,7 +14,6 @@ class Report extends Component {
 			setup: null,
 			data: []
 		};
-
 	}
 
 	componentDidMount() {
@@ -30,12 +29,7 @@ class Report extends Component {
 		lx.executeGraphQL(CommonQueries.tagGroups).then((tagGroups) => {
 			const index = new DataIndex();
 			index.put(tagGroups);
-			let appMapID = index.getTags('BC Type', 'AppMap');
-			if (appMapID.length > 0) {
-				appMapID = appMapID[0].id;
-			} else {
-				appMapID = undefined;
-			}
+			const appMapID = index.getFirstTagID('BC Type', 'AppMap');
 			lx.executeGraphQL(this._createQuery(appMapID)).then((data) => {
 				index.put(data);
 				this._handleData(index, appMapID);
@@ -58,69 +52,53 @@ class Report extends Component {
 			tagNameDef = '';
 		}
 		return `{businessCapabilities: allFactSheets(
-						sort: {mode: BY_FIELD, key: "displayName", order: asc}, 
-						filter: {facetFilters: [
-							{facetKey: "FactSheetTypes", keys: ["BusinessCapability"]}
-							${appMapIDFilter}
-						]}
-					) {
-						edges { node {
-							id fullName ${tagNameDef}
-							... on BusinessCapability {
-								relBusinessCapabilityToDataObject {
-									edges { node {
-										factSheet {
-											id fullName
-											... on DataObject {
-												relToParent {
-													edges { node {
-														factSheet { id fullName }
-													}}
-												}
-											}
-										}
-									}}
-								}
-								relToParent {
-									edges { node {
-										factSheet { id fullName }
-									}}
-								}
+					sort: {mode: BY_FIELD, key: "displayName", order: asc},
+					filter: {facetFilters: [
+						{facetKey: "FactSheetTypes", keys: ["BusinessCapability"]}
+						${appMapIDFilter}
+					]}
+				) {
+					edges { node {
+						id name ${tagNameDef}
+						... on BusinessCapability {
+							relBusinessCapabilityToDataObject {
+								edges { node { factSheet {
+									id name
+									... on DataObject {
+										relToParent { edges { node { factSheet { id name } } } }
+									}
+								}}}
 							}
-						}}
-					}
-				}`;
+							relToParent { edges { node { factSheet { id name } } } }
+						}
+					}}
+				}}`;
 	}
 
 	_handleData(index, appMapID) {
 		const tableData = [];
 		index.businessCapabilities.nodes.forEach((appMapL2) => {
-			if (appMapID || (!appMapID && index.includesTag(appMapL2, 'AppMap'))) {
-				if (appMapL2.relBusinessCapabilityToDataObject) {
-					appMapL2.relBusinessCapabilityToDataObject.nodes.forEach((cimL2) => {
-						let cimL1 = undefined;
-						if (cimL2.relToParent) {
-							cimL1 = cimL2.relToParent.nodes[0];
-						}
-						
-						let appMapL1 = undefined;
-						if (appMapL2.relToParent) {
-							appMapL1 = appMapL2.relToParent.nodes[0];
-						}
-						
-						tableData.push({
-							appMapL1ID: appMapL1 && appMapL1.id ? appMapL1.id : '',
-							appMapL1Name: appMapL1 && appMapL1.fullName ? appMapL1.fullName : '',
-							appMapL2ID: appMapL2.id,
-							appMapL2Name: appMapL2.fullName,
-							cimL1ID: cimL1 && cimL1.id ? cimL1.id : '',
-							cimL1Name: cimL1 && cimL1.fullName ? cimL1.fullName : '',
-							cimL2ID: cimL2.id,
-							cimL2Name: cimL2.fullName,
-						});
-					});
-				}
+			if (!appMapID && !index.includesTag(appMapL2, 'AppMap')) {
+				return;
 			}
+			const subIndex = appMapL2.relBusinessCapabilityToDataObject;
+			if (!subIndex) {
+				return;
+			}
+			subIndex.nodes.forEach((cimL2) => {
+				const cimL1 = cimL2.relToParent ? cimL2.relToParent.nodes[0] : undefined;
+				const appMapL1 = appMapL2.relToParent ? appMapL2.relToParent.nodes[0] : undefined;
+				tableData.push({
+					appMapL1ID: appMapL1 ? appMapL1.id : '',
+					appMapL1Name: appMapL1 ? appMapL1.name : '',
+					appMapL2ID: appMapL2.id,
+					appMapL2Name: appMapL2.name,
+					cimL1ID: cimL1 ? cimL1.id : '',
+					cimL1Name: cimL1 ? cimL1.name : '',
+					cimL2ID: cimL2.id,
+					cimL2Name: cimL2.name
+				});
+			});
 		});
 		this.setState({
 			data: tableData
@@ -130,60 +108,74 @@ class Report extends Component {
 	/* formatting functions for the table */
 
 	_formatLinkBC(cell, row, idName) {
-		let id = row[idName];
-		if (!cell || !id) {
+		if (!cell) {
 			return '';
 		}
-		return (<Link link={'factsheet/BusinessCapability/' + id} target='_blank' text={cell} />);
+		return (<Link link={'factsheet/BusinessCapability/' + row[idName]} target='_blank' text={cell} />);
 	}
 
 	_formatLinkDO(cell, row, idName) {
-		let id = row[idName];
-		if (!cell || !id) {
+		if (!cell) {
 			return '';
 		}
-		return (<Link link={'factsheet/DataObject/' + id} target='_blank' text={cell} />);
+		return (<Link link={'factsheet/DataObject/' + row[idName]} target='_blank' text={cell} />);
 	}
 
 	render() {
 		if (this.state.data.length === 0) {
 			return null;
-		}		
+		}
 		return (
 			<BootstrapTable data={this.state.data} keyField='appMapL2ID'
-				striped hover search pagination ignoreSinglePage exportCSV 
+				striped hover search pagination ignoreSinglePage exportCSV
 				options={{ clearSearch: true }}>
+				<TableHeaderColumn hidden export
+					 dataField='appMapL1ID'
+					 csvHeader='appmap-domain-id'
+					>appMapL1ID</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					dataField='appMapL1Name'
 					dataAlign='left'
 					dataFormat={this._formatLinkBC}
 					formatExtraData={'appMapL1ID'}
-					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 					csvHeader='appmap-domain'
+					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>AppMap Domain</TableHeaderColumn>
+				<TableHeaderColumn hidden export
+					 dataField='appMapL2ID'
+					 csvHeader='appmap-solution-area-id'
+					>appMapL2ID</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					dataField='appMapL2Name'
 					dataAlign='left'
 					dataFormat={this._formatLinkBC}
 					formatExtraData={'appMapL2ID'}
-					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 					csvHeader='appmap-solution-area'
+					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>AppMap Solution Area</TableHeaderColumn>
+				<TableHeaderColumn hidden export
+					 dataField='cimL1ID'
+					 csvHeader='cim-domain-id'
+					>cimL1ID</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					dataField='cimL1Name'
 					dataAlign='left'
 					dataFormat={this._formatLinkDO}
 					formatExtraData={'cimL1ID'}
-					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 					csvHeader='cim-domain'
+					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>CIM Domain</TableHeaderColumn>
+				<TableHeaderColumn hidden export
+					 dataField='cimL2ID'
+					 csvHeader='cim-entity-id'
+					>cimL2ID</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					dataField='cimL2Name'
 					dataAlign='left'
 					dataFormat={this._formatLinkDO}
 					formatExtraData={'cimL2ID'}
-					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 					csvHeader='cim-entity'
+					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>CIM Entity</TableHeaderColumn>
 			</BootstrapTable>
 		);

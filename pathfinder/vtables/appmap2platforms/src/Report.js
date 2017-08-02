@@ -14,7 +14,6 @@ class Report extends Component {
 			setup: null,
 			data: []
 		};
-
 	}
 
 	componentDidMount() {
@@ -30,12 +29,7 @@ class Report extends Component {
 		lx.executeGraphQL(CommonQueries.tagGroups).then((tagGroups) => {
 			const index = new DataIndex();
 			index.put(tagGroups);
-			let appMapID = index.getTags('BC Type', 'AppMap');
-			if (appMapID.length > 0) {
-				appMapID = appMapID[0].id;
-			} else {
-				appMapID = undefined;
-			}
+			const appMapID = index.getFirstTagID('BC Type', 'AppMap');
 			lx.executeGraphQL(this._createQuery(appMapID)).then((data) => {
 				index.put(data);
 				this._handleData(index, appMapID);
@@ -58,69 +52,53 @@ class Report extends Component {
 			tagNameDef = '';
 		}
 		return `{businessCapabilities: allFactSheets(
-						sort: {mode: BY_FIELD, key: "displayName", order: asc}, 
-						filter: {facetFilters: [
-							{facetKey: "FactSheetTypes", keys: ["BusinessCapability"]}
-							${appMapIDFilter}
-						]}
-					) {
-						edges { node {
-							id fullName ${tagNameDef}
-							... on BusinessCapability {
-								relBusinessCapabilityToPlatform {
-									edges { node {
-										factSheet {
-											id fullName
-											... on BusinessCapability {
-												relToParent {
-													edges { node {
-														factSheet { id fullName }
-													}}
-												}
-											}
-										}
-									}}
-								}
-								relToParent {
-									edges { node {
-										factSheet { id fullName }
-									}}
-								}
+					sort: {mode: BY_FIELD, key: "displayName", order: asc},
+					filter: {facetFilters: [
+						{facetKey: "FactSheetTypes", keys: ["BusinessCapability"]}
+						${appMapIDFilter}
+					]}
+				) {
+					edges { node {
+						id name ${tagNameDef}
+						... on BusinessCapability {
+							relBusinessCapabilityToPlatform {
+								edges { node { factSheet {
+									id name
+									... on BusinessCapability {
+										relToParent { edges { node { factSheet { id name } } } }
+									}
+								}}}
 							}
-						}}
-					}
-				}`;
+							relToParent { edges { node { factSheet { id name } } } }
+						}
+					}}
+				}}`;
 	}
 
 	_handleData(index, appMapID) {
 		const tableData = [];
 		index.businessCapabilities.nodes.forEach((appMapL2) => {
-			if (appMapID || (!appMapID && index.includesTag(appMapL2, 'AppMap'))) {
-				if (appMapL2.relBusinessCapabilityToPlatform) {
-					appMapL2.relBusinessCapabilityToPlatform.nodes.forEach((platformL2) => {
-						let platformL1 = undefined;
-						if (platformL2.relToParent) {
-							platformL1 = platformL2.relToParent.nodes[0];
-						}
-						
-						let appMapL1 = undefined;
-						if (appMapL2.relToParent) {
-							appMapL1 = appMapL2.relToParent.nodes[0];
-						}
-						
-						tableData.push({
-							appMapL1ID: appMapL1 && appMapL1.id ? appMapL1.id : '',
-							appMapL1Name: appMapL1 && appMapL1.fullName ? appMapL1.fullName : '',
-							appMapL2ID: appMapL2.id,
-							appMapL2Name: appMapL2.fullName,
-							platformL1ID: platformL1 && platformL1.id ? platformL1.id : '',
-							platformL1Name: platformL1 && platformL1.fullName ? platformL1.fullName : '',
-							platformL2ID: platformL2 && platformL2.id ? platformL2.id : '',
-							platformL2Name: platformL2 && platformL2.fullName ? platformL2.fullName : '',
-						});
-					});
-				}
+			if (!appMapID && !index.includesTag(appMapL2, 'AppMap')) {
+				return;
 			}
+			const subIndex = appMapL2.relBusinessCapabilityToPlatform;
+			if (!subIndex) {
+				return;
+			}
+			subIndex.nodes.forEach((platformL2) => {
+				const platformL1 = platformL2.relToParent ? platformL2.relToParent.nodes[0] : undefined;
+				const appMapL1 = appMapL2.relToParent ? appMapL2.relToParent.nodes[0] : undefined;
+				tableData.push({
+					appMapL1ID: appMapL1 ? appMapL1.id : '',
+					appMapL1Name: appMapL1 ? appMapL1.name : '',
+					appMapL2ID: appMapL2.id,
+					appMapL2Name: appMapL2.name,
+					platformL1ID: platformL1 ? platformL1.id : '',
+					platformL1Name: platformL1 ? platformL1.name : '',
+					platformL2ID: platformL2.id,
+					platformL2Name: platformL2.name
+				});
+			});
 		});
 		this.setState({
 			data: tableData
@@ -130,52 +108,67 @@ class Report extends Component {
 	/* formatting functions for the table */
 
 	_formatLink(cell, row, idName) {
-		let id = row[idName];
-		if (!cell || !id) {
+		if (!cell) {
 			return '';
 		}
-		return (<Link link={'factsheet/BusinessCapability/' + id} target='_blank' text={cell} />);
+		return (<Link link={'factsheet/BusinessCapability/' + row[idName]} target='_blank' text={cell} />);
 	}
 
 	render() {
 		if (this.state.data.length === 0) {
 			return null;
-		}		
+		}
 		return (
 			<BootstrapTable data={this.state.data} keyField='appMapL2ID'
-				striped hover search pagination ignoreSinglePage exportCSV 
+				striped hover search pagination ignoreSinglePage exportCSV
 				options={{ clearSearch: true }}>
+				<TableHeaderColumn hidden export
+					 dataField='appMapL1ID'
+					 csvHeader='appmap-domain-id'
+					>appMapL1ID</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					dataField='appMapL1Name'
 					dataAlign='left'
 					dataFormat={this._formatLink}
 					formatExtraData={'appMapL1ID'}
-					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 					csvHeader='appmap-domain'
+					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>AppMap Domain</TableHeaderColumn>
+				<TableHeaderColumn hidden export
+					 dataField='appMapL2ID'
+					 csvHeader='appmap-solution-area-id'
+					>appMapL2ID</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					dataField='appMapL2Name'
 					dataAlign='left'
 					dataFormat={this._formatLink}
 					formatExtraData={'appMapL2ID'}
-					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 					csvHeader='appmap-solution-area'
+					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>AppMap Solution Area</TableHeaderColumn>
+				<TableHeaderColumn hidden export
+					 dataField='platformL1ID'
+					 csvHeader='platform-layer-id'
+					>platformL1ID</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					dataField='platformL1Name'
 					dataAlign='left'
 					dataFormat={this._formatLink}
 					formatExtraData={'platformL1ID'}
-					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 					csvHeader='platform-layer'
+					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>Platform Layer</TableHeaderColumn>
+				<TableHeaderColumn hidden export
+					 dataField='platformL2ID'
+					 csvHeader='platform-id'
+					>platformL2ID</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					dataField='platformL2Name'
 					dataAlign='left'
 					dataFormat={this._formatLink}
 					formatExtraData={'platformL2ID'}
-					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 					csvHeader='platform'
+					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>Platform</TableHeaderColumn>
 			</BootstrapTable>
 		);
