@@ -24,7 +24,7 @@ class SubTables extends Component {
 		if (data.length < 1) {
 			return null;
 		}
-		// TODO make toolbar a little maller, if possible
+		// TODO make toolbar a little smaller, if possible
 		return (
 			<div>
 				<h4 className='text-center'>{title}</h4>

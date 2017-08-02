@@ -94,7 +94,7 @@ class Report extends Component {
 			}
 			const appMapL1 = appMapL2.relToParent ? appMapL2.relToParent.nodes[0] : undefined;
 			subIndex.nodes.forEach((e) => {
-				// please note: every process has a eTOM tag, no need to filter
+				// please note: every process has an eTOM tag, no need to filter
 				let etomL4 = e;
 				let etomL3 = etomL4.relToParent ? etomL4.relToParent.nodes[0] : undefined;
 				let etomL2 = etomL3 && etomL3.relToParent ? etomL3.relToParent.nodes[0] : undefined;
