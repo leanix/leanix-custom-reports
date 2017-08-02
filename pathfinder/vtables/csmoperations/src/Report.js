@@ -119,7 +119,7 @@ class Report extends Component {
 				domain: hierarchy.L1 ? hierarchy.L1.name : '',
 				name: hierarchy.L2 ? hierarchy.L2.name : '',
 				operation: hierarchy.L3 ? hierarchy.L3.name : '',
-				description: e.description ? e.description : '',
+				description: e.description,
 				operationStatus: this._getOperationStatusValue(operationStatus),
 				platforms: platformBCs.map((e2) => {
 					return e2.displayName;

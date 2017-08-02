@@ -102,12 +102,12 @@ class Report extends Component {
 				}
 			}
 			tableData.push({
-				domainID: parent && parent.id ? parent.id : '',
-				domainName: parent && parent.name ? parent.name : '',
-				domainDescription: parent && parent.description ? parent.description : '',
+				domainID: parent ? parent.id : '',
+				domainName: parent ? parent.name : '',
+				domainDescription: parent ? parent.description : '',
 				id: e.id,
-				name: e.name ? e.name : '',
-				description: e.description ? e.description : '',
+				name: e.name,
+				description: e.description,
 				landscapeAvailable: index.includesTag(e, 'Landscape Available') ? 0 : 1,
 				appMaps: appMapBCs.map((e2) => {
 					return e2.displayName;
