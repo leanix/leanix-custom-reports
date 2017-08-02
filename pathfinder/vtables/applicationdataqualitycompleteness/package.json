@@ -1,7 +1,7 @@
 {
 	"name": "applicationdataqualitycompleteness",
 	"version": "1.0.0",
-	"description": "TODO app_description",
+	"description": "A report that analyses applications based on a set of rules.",
 	"private": true,
 	"engines": {
 		"node": ">=6.11.1"

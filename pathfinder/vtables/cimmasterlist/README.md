@@ -1,6 +1,6 @@
 # CIM MasterList
 
-Shows a table with all DataObjects in their domain and all connections to AppMap BusinessCapabilities.
+Shows a table with all CIM entities in their domain and all connections to the AppMap framework.
 
 ## Table of Contents
 

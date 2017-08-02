@@ -1,7 +1,7 @@
 {
 	"name": "appmap2cim",
 	"version": "1.0.0",
-	"description": "Shows table with BusinassCapabilities and related DataObjects",
+	"description": "Shows a table outlining relations between the AppMap framework and CIM entities.",
 	"private": true,
 	"engines": {
 		"node": ">=6.11.1"

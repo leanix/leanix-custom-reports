@@ -1,6 +1,6 @@
 # AppMap 2 BCA
 
-Shows a table with the mapping of two different Business Capability frameworks.
+Shows a table outlining relations between AppMap and BCA frameworks.
 
 ## Table of Contents
 

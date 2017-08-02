@@ -1,6 +1,6 @@
 # Application Data Quality Completeness
 
-TODO app_description
+A report that analyses applications based on a set of rules.
 
 ## Table of Contents
 

@@ -1,6 +1,6 @@
 # AppMap 2 Platforms
 
-Shows a table with the mapping of two different Business Capability frameworks.
+Shows a table outlining relations between AppMap and Platform frameworks.
 
 ## Table of Contents
 

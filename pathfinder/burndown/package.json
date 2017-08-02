@@ -1,7 +1,7 @@
 {
 	"name": "burndown",
 	"version": "1.0.0",
-	"description": "A report that shows lifecyle information of LeanIX factsheets in a burndown chart.",
+	"description": "A report that shows lifecyle information of leanIX factsheets in a burndown chart.",
 	"private": true,
 	"engines": {
 		"node": ">=6.11.1"

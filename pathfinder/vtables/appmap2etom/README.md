@@ -1,6 +1,6 @@
 # AppMap 2 eTOM
 
-Shows a table with the mapping of Business Capability and Process framework.
+Shows a table outlining relations between the AppMap framework and eTOM entities.
 
 ## Table of Contents
 

@@ -1,7 +1,7 @@
 {
 	"name": "appmap2bca",
 	"version": "1.0.0",
-	"description": "Shows a table with the mapping of two different Business Capability frameworks.",
+	"description": "Shows a table outlining relations between AppMap and BCA frameworks.",
 	"private": true,
 	"engines": {
 		"node": ">=6.11.1"

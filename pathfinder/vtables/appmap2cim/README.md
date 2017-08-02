@@ -1,6 +1,6 @@
 # AppMap 2 CIM
 
-Shows a table with different BusinassCapabilities tagged with *AppMap* and their related DataObjects
+Shows a table outlining relations between the AppMap framework and CIM entities.
 
 ## Table of Contents
 

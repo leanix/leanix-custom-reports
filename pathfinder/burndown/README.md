@@ -1,6 +1,6 @@
-# CSM Operations
+# Factsheet Burndown Chart
 
-Shows a table outlining all CSM related operations.
+A report that shows lifecyle information of leanIX factsheets in a burndown chart.
 
 ## Table of Contents
 

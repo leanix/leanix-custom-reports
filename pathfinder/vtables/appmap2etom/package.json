@@ -1,7 +1,7 @@
 {
 	"name": "appmap2etom",
 	"version": "1.0.0",
-	"description": "Shows a table with the mapping of Business Capability and Process framework.",
+	"description": "Shows a table outlining relations between the AppMap framework and eTOM entities.",
 	"private": true,
 	"engines": {
 		"node": ">=6.11.1"
