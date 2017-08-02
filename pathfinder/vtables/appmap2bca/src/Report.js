@@ -59,16 +59,16 @@ class Report extends Component {
 					]}
 				) {
 					edges { node {
-						id fullName ${tagNameDef}
+						id name ${tagNameDef}
 						... on BusinessCapability {
-							relToParent { edges { node { factSheet { id fullName } } } }
-							relBusinessCapabilityToBCA { edges { node { factSheet { id fullName
+							relToParent { edges { node { factSheet { id name } } } }
+							relBusinessCapabilityToBCA { edges { node { factSheet { id name
 								... on BusinessCapability {
-									relToParent { edges { node { factSheet {id fullName
+									relToParent { edges { node { factSheet {id name
 										... on BusinessCapability {
-											relToParent { edges { node { factSheet {id fullName
+											relToParent { edges { node { factSheet {id name
 												... on BusinessCapability {
-													relToParent { edges { node { factSheet { id fullName } } } }
+													relToParent { edges { node { factSheet { id name } } } }
 												}
 											}}}}
 										}
@@ -97,17 +97,17 @@ class Report extends Component {
 				const bcaL1 = bcaL2 && bcaL2.relToParent ? bcaL2.relToParent.nodes[0] : undefined;
 				tableData.push({
 					appMapL1ID: appMapL1 && appMapL1.id ? appMapL1.id : '',
-					appMapL1Name: appMapL1 && appMapL1.fullName ? appMapL1.fullName : '',
+					appMapL1Name: appMapL1 && appMapL1.name ? appMapL1.name : '',
 					appMapL2ID: appMapL2.id,
-					appMapL2Name: appMapL2.fullName,
+					appMapL2Name: appMapL2.name,
 					bcaL1ID: bcaL1 && bcaL1.id ? bcaL1.id : '',
-					bcaL1Name: bcaL1 && bcaL1.fullName ? bcaL1.fullName : '',
+					bcaL1Name: bcaL1 && bcaL1.name ? bcaL1.name : '',
 					bcaL2ID: bcaL2 && bcaL2.id ? bcaL2.id : '',
-					bcaL2Name: bcaL2 && bcaL2.fullName ? bcaL2.fullName : '',
+					bcaL2Name: bcaL2 && bcaL2.name ? bcaL2.name : '',
 					bcaL3ID: bcaL3 && bcaL3.id ? bcaL3.id : '',
-					bcaL3Name: bcaL3 && bcaL3.fullName ? bcaL3.fullName : '',
+					bcaL3Name: bcaL3 && bcaL3.name ? bcaL3.name : '',
 					bcaL4ID: bcaL4.id,
-					bcaL4Name: bcaL4.fullName,
+					bcaL4Name: bcaL4.name,
 				});
 			});
 		});
