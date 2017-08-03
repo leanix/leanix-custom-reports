@@ -57,13 +57,19 @@ class Report extends Component {
 			tagNameDef = '';
 		}
 		return `{dataObjectsL1: allFactSheets(
-					filter: {facetFilters: [{facetKey: "FactSheetTypes", keys: ["DataObject"]}, {facetKey: "hierarchyLevel", keys: ["1"]}]}
+					filter: {facetFilters: [
+						{facetKey: "FactSheetTypes", keys: ["DataObject"]},
+						{facetKey: "hierarchyLevel", keys: ["1"]}
+					]}
 				) {
 					edges { node { id name description } }
 				}
 				dataObjectsL2: allFactSheets(
 					sort: {mode: BY_FIELD, key: "name", order: asc},
-					filter: {facetFilters: [{facetKey: "FactSheetTypes", keys: ["DataObject"]}, {facetKey: "hierarchyLevel", keys: ["2"]}]}
+					filter: {facetFilters: [
+						{facetKey: "FactSheetTypes", keys: ["DataObject"]},
+						{facetKey: "hierarchyLevel", keys: ["2"]}
+					]}
 				) {
 					edges { node {
 						id name description tags { name }
@@ -75,7 +81,8 @@ class Report extends Component {
 				}
 				businessCapabilities: allFactSheets(
 					filter: {facetFilters: [
-						{facetKey: "FactSheetTypes", keys: ["BusinessCapability"]} ${appMapIDFilter}
+						{facetKey: "FactSheetTypes", keys: ["BusinessCapability"]}
+						${appMapIDFilter}
 					]}
 				) {
 					edges { node { id displayName ${tagNameDef} } }
@@ -131,6 +138,13 @@ class Report extends Component {
 		return (<Link link={'factsheet/DataObject/' + (parent ? row.domainID : row.id)} target='_blank' text={cell} />);
 	}
 
+	_formatDescription(cell, row) {
+		if (!cell) {
+			return '';
+		}
+		return cell;
+	}
+
 	_formatArray(cell, row) {
 		if (!cell) {
 			return '';
@@ -179,11 +193,7 @@ class Report extends Component {
 			<BootstrapTable data={this.state.data} keyField='id'
 				 striped hover search exportCSV
 				 options={{ clearSearch: true }}>
-				<TableHeaderColumn row='0' colSpan='4'
-					 headerAlign='center'
-					 csvHeader='entity'
-					>Entity</TableHeaderColumn>
-				<TableHeaderColumn dataSort row='1'
+				<TableHeaderColumn dataSort
 					 dataField='domainName'
 					 width='200px'
 					 dataAlign='left'
@@ -192,43 +202,34 @@ class Report extends Component {
 					 csvHeader='domain-name'
 					 filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 					>Domain</TableHeaderColumn>
-				{/* a header column for csv export only */}
-				<TableHeaderColumn hidden export row='0'
-					 csvHeader='entity'
-					>Entity</TableHeaderColumn>
-				<TableHeaderColumn hidden export row='1'
-					 dataField='domainID'
-					 csvHeader='domain-id'
-					>domain-id</TableHeaderColumn>
-				<TableHeaderColumn row='1' tdStyle={{ fontSize: '.85em' }}
+				<TableHeaderColumn tdStyle={{ fontSize: '.85em' }}
 					 dataField='domainDescription'
 					 width='300px'
 					 dataAlign='left'
+					 dataFormat={this._formatDescription}
 					 csvHeader='domain-description'
+					 csvFormat={this._formatDescription}
 					 filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 					>Domain Description</TableHeaderColumn>
-				<TableHeaderColumn dataSort row='1'
+				<TableHeaderColumn dataSort
 					 dataField='name'
 					 width='250px'
 					 dataAlign='left'
 					 dataFormat={this._formatName}
 					 formatExtraData={false}
+					 csvHeader='entity-name'
 					 filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
-					>Name</TableHeaderColumn>
-				{/* a header column for csv export only */}
-				<TableHeaderColumn hidden export row='0'
-					 csvHeader='entity'
-					>Entity</TableHeaderColumn>
-				<TableHeaderColumn hidden export row='1'
-					 dataField='id'
-					>id</TableHeaderColumn>
-				<TableHeaderColumn row='1' tdStyle={{ fontSize: '.85em' }}
+					>Entity name</TableHeaderColumn>
+				<TableHeaderColumn tdStyle={{ fontSize: '.85em' }}
 					 dataField='description'
 					 width='300px'
 					 dataAlign='left'
+					 dataFormat={this._formatDescription}
+					 csvHeader='entity-description'
+					 csvFormat={this._formatDescription}
 					 filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
-					>Description</TableHeaderColumn>
-				<TableHeaderColumn dataSort row='0' rowSpan='2'
+					>Entity description</TableHeaderColumn>
+				<TableHeaderColumn dataSort
 					 dataField='landscapeAvailable'
 					 width='130px'
 					 dataAlign='left'
@@ -240,7 +241,7 @@ class Report extends Component {
 					 filterFormatted
 					 filter={{ type: 'SelectFilter', placeholder: 'Please choose', options: LANDSCAPE_OPTIONS }}
 					>Landscape Available?</TableHeaderColumn>
-				<TableHeaderColumn row='0' rowSpan='2'
+				<TableHeaderColumn
 					 dataField='appMaps'
 					 width='250px'
 					 dataAlign='left'
@@ -249,11 +250,6 @@ class Report extends Component {
 					 csvFormat={this._csvFormatArray}
 					 filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 					>Mappings to AppMap</TableHeaderColumn>
-				<TableHeaderColumn hidden export row='0' rowSpan='2'
-					 dataField='appMapIDs'
-					 csvHeader='appmap-ids'
-					 csvFormat={this._csvFormatAppMaps}
-					>appmap ids</TableHeaderColumn>
 			</BootstrapTable>
 		);
 	}

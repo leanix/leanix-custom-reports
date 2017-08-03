@@ -32,9 +32,6 @@ class SubTables extends Component {
 					 maxHeight='300px' scrollTop='Top'
 					 striped hover search exportCSV condensed
 					 options={{ clearSearch: true }}>
-					<TableHeaderColumn hidden export
-						 dataField='id'
-						>id</TableHeaderColumn>
 					<TableHeaderColumn dataSort
 						 dataField='name'
 						 dataAlign='left'

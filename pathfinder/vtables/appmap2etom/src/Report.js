@@ -62,15 +62,20 @@ class Report extends Component {
 						id name ${tagNameDef}
 						... on BusinessCapability {
 							relToParent {
-								edges { node { factSheet { id name }}}
+								edges { node { factSheet { id name } } }
 							}
-							relBusinessCapabilityToProcess { edges { node { factSheet { id name
+							relBusinessCapabilityToProcess { edges { node { factSheet {
+								id name
 								... on Process {
-									relToParent { edges { node { factSheet {id name
+									relToParent { edges { node { factSheet {
+										id name
 										... on Process {
-											relToParent { edges { node { factSheet {id name
+											relToParent { edges { node { factSheet {
+												id name
 												... on Process {
-													relToParent { edges { node { factSheet { id name }}}}
+													relToParent { edges { node {
+														factSheet { id name }
+													}}}
 												}
 											}}}}
 										}
@@ -150,10 +155,6 @@ class Report extends Component {
 			<BootstrapTable data={this.state.data} keyField='appMapL2ID'
 				striped hover search pagination ignoreSinglePage exportCSV
 				options={{ clearSearch: true }}>
-				<TableHeaderColumn hidden export
-					 dataField='appMapL1ID'
-					 csvHeader='appmap-L1-id'
-				>appMapL1ID</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					dataField='appMapL1Name'
 					dataAlign='left'
@@ -162,10 +163,6 @@ class Report extends Component {
 					csvHeader='appmap-L1'
 					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>App Map L1</TableHeaderColumn>
-				<TableHeaderColumn hidden export
-					 dataField='appMapL2ID'
-					 csvHeader='appmap-L2-id'
-				>appMapL2ID</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					dataField='appMapL2Name'
 					dataAlign='left'
@@ -174,10 +171,6 @@ class Report extends Component {
 					csvHeader='appmap-L2'
 					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>App Map L2</TableHeaderColumn>
-				<TableHeaderColumn hidden export
-					 dataField='etomL1ID'
-					 csvHeader='etom-L1-id'
-				>etomL1ID</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					dataField='etomL1Name'
 					dataAlign='left'
@@ -186,10 +179,6 @@ class Report extends Component {
 					csvHeader='etom-L1'
 					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>eTOM L1</TableHeaderColumn>
-				<TableHeaderColumn hidden export
-					 dataField='etomL2ID'
-					 csvHeader='etom-L2-id'
-				>etomL2ID</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					dataField='etomL2Name'
 					dataAlign='left'
@@ -198,10 +187,6 @@ class Report extends Component {
 					csvHeader='etom-L2'
 					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>eTOM L2</TableHeaderColumn>
-				<TableHeaderColumn hidden export
-					 dataField='etomL3ID'
-					 csvHeader='etom-L3-id'
-				>etomL3ID</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					dataField='etomL3Name'
 					dataAlign='left'
@@ -210,10 +195,6 @@ class Report extends Component {
 					csvHeader='etom-L3'
 					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>eTOM L3</TableHeaderColumn>
-				<TableHeaderColumn hidden export
-					 dataField='etomL4ID'
-					 csvHeader='etom-L4-id'
-				>etomL4ID</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					dataField='etomL4Name'
 					dataAlign='left'

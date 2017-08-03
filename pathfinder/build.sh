@@ -12,6 +12,7 @@ function build_report {
 build_report burndown
 cd vtables
 build_report applicationdataqualitycompleteness
+build_report applicationlifecycleprojects
 build_report appmap2bca
 build_report appmap2cim
 build_report appmap2etom

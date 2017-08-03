@@ -122,10 +122,6 @@ class Report extends Component {
 			<BootstrapTable data={this.state.data} keyField='appMapL2ID'
 				striped hover search pagination ignoreSinglePage exportCSV
 				options={{ clearSearch: true }}>
-				<TableHeaderColumn hidden export
-					 dataField='appMapL1ID'
-					 csvHeader='appmap-domain-id'
-					>appMapL1ID</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					dataField='appMapL1Name'
 					dataAlign='left'
@@ -134,10 +130,6 @@ class Report extends Component {
 					csvHeader='appmap-domain'
 					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>AppMap Domain</TableHeaderColumn>
-				<TableHeaderColumn hidden export
-					 dataField='appMapL2ID'
-					 csvHeader='appmap-solution-area-id'
-					>appMapL2ID</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					dataField='appMapL2Name'
 					dataAlign='left'
@@ -146,22 +138,6 @@ class Report extends Component {
 					csvHeader='appmap-solution-area'
 					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>AppMap Solution Area</TableHeaderColumn>
-				<TableHeaderColumn hidden export
-					 dataField='platformL1ID'
-					 csvHeader='platform-layer-id'
-					>platformL1ID</TableHeaderColumn>
-				<TableHeaderColumn dataSort
-					dataField='platformL1Name'
-					dataAlign='left'
-					dataFormat={this._formatLink}
-					formatExtraData={'platformL1ID'}
-					csvHeader='platform-layer'
-					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
-				>Platform Layer</TableHeaderColumn>
-				<TableHeaderColumn hidden export
-					 dataField='platformL2ID'
-					 csvHeader='platform-id'
-					>platformL2ID</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					dataField='platformL2Name'
 					dataAlign='left'
@@ -170,6 +146,14 @@ class Report extends Component {
 					csvHeader='platform'
 					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>Platform</TableHeaderColumn>
+				<TableHeaderColumn dataSort
+					dataField='platformL1Name'
+					dataAlign='left'
+					dataFormat={this._formatLink}
+					formatExtraData={'platformL1ID'}
+					csvHeader='platform-layer'
+					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
+				>Platform Layer</TableHeaderColumn>
 			</BootstrapTable>
 		);
 	}

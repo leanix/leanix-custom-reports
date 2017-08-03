@@ -91,15 +91,12 @@ class Report extends Component {
 						{facetKey: "category", keys: ["software"]}
 					]}
 				) {
-					edges {node {
-						id tags { name }
-					}}
+					edges { node { id tags { name } } }
 				}}`;
 	}
 
 	_handleData(index, applicationTagID, itTagID, appMapID) {
 		const tableData = [];
-		this.MARKET_OPTIONS = {};
 		let marketCount = 0;
 		// group applications by market
 		const groupedByMarket = {};
@@ -246,9 +243,6 @@ class Report extends Component {
 				 striped hover search exportCSV
 				 options={{ clearSearch: true }}
 				 trClassName={this._trClassname}>
-				<TableHeaderColumn hidden
-					 dataField='id'
-					>id</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='market'
 					 width='160px'

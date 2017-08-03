@@ -4,6 +4,7 @@ import CommonQueries from './CommonGraphQLQueries';
 import DataIndex from './DataIndex';
 import Link from './Link';
 import LinkList from './LinkList';
+import Utilities from './Utilities';
 
 const LEVEL_OPTIONS = [1, 2, 3];
 
@@ -64,7 +65,8 @@ class Report extends Component {
 					sort: {mode: BY_FIELD, key: "displayName", order: asc},
 					filter: {facetFilters: [
 						{facetKey: "FactSheetTypes", keys: ["Application"]},
-						{facetKey: "hierarchyLevel", operator: OR, keys: ["1", "2", "3"]} ${csmIDFilter}
+						{facetKey: "hierarchyLevel", operator: OR, keys: ["1", "2", "3"]}
+						${csmIDFilter}
 					]}
 				) {
 					edges { node {
@@ -77,7 +79,8 @@ class Report extends Component {
 				}
 				businessCapabilities: allFactSheets(
 					filter: {facetFilters: [
-						{facetKey: "FactSheetTypes", keys: ["BusinessCapability"]} ${platformIDFilter}
+						{facetKey: "FactSheetTypes", keys: ["BusinessCapability"]}
+						${platformIDFilter}
 					]}
 				) {
 					edges { node { id displayName ${tagNameDef} } }
@@ -138,12 +141,8 @@ class Report extends Component {
 		if (!operationStatus) {
 			return -1;
 		}
-		for (let key in this.OPERATION_STATUS_OPTIONS) {
-			if (this.OPERATION_STATUS_OPTIONS[key] === operationStatus.name) {
-				return key;
-			}
-		}
-		return -1;
+		const key = Utilities.getKeyToValue(this.OPERATION_STATUS_OPTIONS, operationStatus.name);
+		return key !== undefined && key !== null ? parseInt(key, 10) : -1;
 	}
 
 	/* formatting functions for the table */
@@ -153,6 +152,13 @@ class Report extends Component {
 			return '';
 		}
 		return (<Link link={'factsheet/Application/' + row.hierarchy[level].id} target='_blank' text={cell} />);
+	}
+
+	_formatDescription(cell, row) {
+		if (!cell) {
+			return '';
+		}
+		return cell;
 	}
 
 	_formatArray(cell, row) {
@@ -241,18 +247,13 @@ class Report extends Component {
 					 dataField='description'
 					 width='300px'
 					 dataAlign='left'
+					 dataFormat={this._formatDescription}
+					 csvFormat={this._formatDescription}
 					 filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 					>Description</TableHeaderColumn>
-				{/* a header column for csv export only */}
-				<TableHeaderColumn hidden export row='0'
-					 csvHeader='service'
-					>Service</TableHeaderColumn>
-				<TableHeaderColumn hidden export row='1'
-					 dataField='id'
-					>id</TableHeaderColumn>
 				<TableHeaderColumn dataSort row='1'
 					 dataField='operationStatus'
-					 width='150px'
+					 width='170px'
 					 dataAlign='left'
 					 dataFormat={this._formatEnum}
 					 formatExtraData={this.OPERATION_STATUS_OPTIONS}
@@ -270,11 +271,6 @@ class Report extends Component {
 					 csvFormat={this._csvFormatArray}
 					 filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 					>Platforms</TableHeaderColumn>
-				<TableHeaderColumn hidden export row='0' rowSpan='2'
-					 dataField='platformIDs'
-					 csvHeader='platform-ids'
-					 csvFormat={this._csvFormatArray}
-					>platform ids</TableHeaderColumn>
 			</BootstrapTable>
 		);
 	}

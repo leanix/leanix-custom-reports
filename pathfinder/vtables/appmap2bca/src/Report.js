@@ -62,13 +62,18 @@ class Report extends Component {
 						id name ${tagNameDef}
 						... on BusinessCapability {
 							relToParent { edges { node { factSheet { id name } } } }
-							relBusinessCapabilityToBCA { edges { node { factSheet { id name
+							relBusinessCapabilityToBCA { edges { node { factSheet {
+								id name
 								... on BusinessCapability {
-									relToParent { edges { node { factSheet {id name
+									relToParent { edges { node { factSheet {
+										id name
 										... on BusinessCapability {
-											relToParent { edges { node { factSheet {id name
+											relToParent { edges { node { factSheet {
+												id name
 												... on BusinessCapability {
-													relToParent { edges { node { factSheet { id name } } } }
+													relToParent { edges { node {
+														factSheet { id name }
+													}}}
 												}
 											}}}}
 										}
@@ -133,10 +138,6 @@ class Report extends Component {
 			<BootstrapTable data={this.state.data} keyField='appMapL2ID'
 				striped hover search pagination ignoreSinglePage exportCSV
 				options={{ clearSearch: true }}>
-				<TableHeaderColumn hidden export
-					 dataField='appMapL1ID'
-					 csvHeader='appmap-L1-id'
-				>appMapL1ID</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					dataField='appMapL1Name'
 					dataAlign='left'
@@ -145,10 +146,6 @@ class Report extends Component {
 					csvHeader='appmap-L1'
 					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>App Map L1</TableHeaderColumn>
-				<TableHeaderColumn hidden export
-					 dataField='appMapL2ID'
-					 csvHeader='appmap-L2-id'
-				>appMapL2ID</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					dataField='appMapL2Name'
 					dataAlign='left'
@@ -157,10 +154,6 @@ class Report extends Component {
 					csvHeader='appmap-L2'
 					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>App Map L2</TableHeaderColumn>
-				<TableHeaderColumn hidden export
-					 dataField='bcaL1ID'
-					 csvHeader='bca-L1-id'
-				>bcaL1ID</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					dataField='bcaL1Name'
 					dataAlign='left'
@@ -169,10 +162,6 @@ class Report extends Component {
 					csvHeader='bca-L1'
 					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>BCA L1</TableHeaderColumn>
-				<TableHeaderColumn hidden export
-					 dataField='bcaL2ID'
-					 csvHeader='bca-L2-id'
-				>bcaL2ID</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					dataField='bcaL2Name'
 					dataAlign='left'
@@ -181,10 +170,6 @@ class Report extends Component {
 					csvHeader='bca-L2'
 					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>BCA L2</TableHeaderColumn>
-				<TableHeaderColumn hidden export
-					 dataField='bcaL3ID'
-					 csvHeader='bca-L3-id'
-				>bcaL3ID</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					dataField='bcaL3Name'
 					dataAlign='left'
@@ -193,10 +178,6 @@ class Report extends Component {
 					csvHeader='bca-L3'
 					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>BCA L3</TableHeaderColumn>
-				<TableHeaderColumn hidden export
-					 dataField='bcaL4ID'
-					 csvHeader='bca-L4-id'
-				>bcaL4ID</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					dataField='bcaL4Name'
 					dataAlign='left'

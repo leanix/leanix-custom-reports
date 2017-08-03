@@ -129,10 +129,6 @@ class Report extends Component {
 			<BootstrapTable data={this.state.data} keyField='appMapL2ID'
 				striped hover search pagination ignoreSinglePage exportCSV
 				options={{ clearSearch: true }}>
-				<TableHeaderColumn hidden export
-					 dataField='appMapL1ID'
-					 csvHeader='appmap-domain-id'
-					>appMapL1ID</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					dataField='appMapL1Name'
 					dataAlign='left'
@@ -141,10 +137,6 @@ class Report extends Component {
 					csvHeader='appmap-domain'
 					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>AppMap Domain</TableHeaderColumn>
-				<TableHeaderColumn hidden export
-					 dataField='appMapL2ID'
-					 csvHeader='appmap-solution-area-id'
-					>appMapL2ID</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					dataField='appMapL2Name'
 					dataAlign='left'
@@ -153,10 +145,6 @@ class Report extends Component {
 					csvHeader='appmap-solution-area'
 					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>AppMap Solution Area</TableHeaderColumn>
-				<TableHeaderColumn hidden export
-					 dataField='cimL1ID'
-					 csvHeader='cim-domain-id'
-					>cimL1ID</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					dataField='cimL1Name'
 					dataAlign='left'
@@ -165,10 +153,6 @@ class Report extends Component {
 					csvHeader='cim-domain'
 					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>CIM Domain</TableHeaderColumn>
-				<TableHeaderColumn hidden export
-					 dataField='cimL2ID'
-					 csvHeader='cim-entity-id'
-					>cimL2ID</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					dataField='cimL2Name'
 					dataAlign='left'

@@ -42,7 +42,7 @@ function _createCategories() {
 		const next = result[i + 1];
 		if (!next) {
 			// special handling of the last element
-			const endName = (parseInt(e.name.substring(0, e.name.indexOf('-'))) + 1) + quarters[0];
+			const endName = (parseInt(e.name.substring(0, e.name.indexOf('-')), 10) + 1) + quarters[0];
 			return new Category(e.name, _getTimestamp(e.name, true), _getTimestamp(endName, false));
 		}
 		return new Category(e.name, _getTimestamp(e.name, true), _getTimestamp(next.name, false));

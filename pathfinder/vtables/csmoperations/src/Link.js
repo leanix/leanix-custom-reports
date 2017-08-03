@@ -17,7 +17,12 @@ class Link extends Component {
 		if (!this.props.link || !this.props.target || !this.props.text) {
 			return null;
 		}
-		return (<a href='#' onClick={this._handleClick}>{this.props.text}</a>);
+		switch (this.props.target) {
+			case '_blank':
+				return (<a href='#' title='Opens a new tab/window.' onClick={this._handleClick}>{this.props.text}</a>);
+			default:
+				return (<a href='#' onClick={this._handleClick}>{this.props.text}</a>);
+		}
 	}
 }
 

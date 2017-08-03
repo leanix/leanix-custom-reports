@@ -1,3 +1,5 @@
+import Utilities from './Utilities';
+
 class DataIndex {
 
 	constructor() {
@@ -168,8 +170,18 @@ function resolveNestedInRelations(node) {
 		node[key] = index;
 		value.edges.forEach((e) => {
 			let node = e.node;
+			let origNode = undefined;
 			if (node.factSheet) {
-				node = node.factSheet;
+				origNode = node;
+				node = Utilities.copyObject(node.factSheet);
+				// store rel attributes
+				node.relationAttr = {};
+				for (let key2 in origNode) {
+					if (key2 === 'factSheet') {
+						continue;
+					}
+					node.relationAttr[key2] = origNode[key2];
+				}
 			}
 			index.nodes.push(node);
 			resolveNestedInRelations(node);

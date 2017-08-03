@@ -1,14 +1,14 @@
 {
-	"name": "applicationdataqualitycompleteness",
+	"name": "applicationlifecycleprojects",
 	"version": "1.0.0",
-	"description": "A report that analyses applications based on a set of rules.",
+	"description": "A table report that shows applications with lifecycle information and relations to projects.",
 	"private": true,
 	"engines": {
 		"node": ">=6.11.1"
 	},
 	"leanixReport": {
-		"id": "net.leanix.vtables.dataqualitycompleteness",
-		"title": "Application Data Quality Completeness",
+		"id": "net.leanix.vtables.applicationlifecycleprojects",
+		"title": "Application lifecycle & projects",
 		"defaultConfig": {}
 	},
 	"scripts": {
