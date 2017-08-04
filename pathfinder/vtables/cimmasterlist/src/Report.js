@@ -36,9 +36,11 @@ class Report extends Component {
 			const index = new DataIndex();
 			index.put(tagGroups);
 			const appMapID = index.getFirstTagID('BC Type', 'AppMap');
-			lx.executeGraphQL(this._createQuery(appMapID)).then((data) => {
+			const cimID = index.getFirstTagID('Category', 'CIM');
+			console.log(this._createQuery(cimID, appMapID));
+			lx.executeGraphQL(this._createQuery(cimID, appMapID)).then((data) => {
 				index.put(data);
-				this._handleData(index, appMapID);
+				this._handleData(index, cimID, appMapID);
 			});
 		});
 	}
@@ -49,7 +51,8 @@ class Report extends Component {
 		};
 	}
 
-	_createQuery(appMapID) {
+	_createQuery(cimID, appMapID) {
+		const cimIDFilter = cimID ? `, {facetKey: "Category", keys: ["${cimID}"]}` : '';
 		let appMapIDFilter = ''; // initial assume tagGroup.name changed or the id couldn't be determined otherwise
 		let tagNameDef = 'tags { name }'; // initial assume to get it
 		if (appMapID) {
@@ -60,6 +63,7 @@ class Report extends Component {
 					filter: {facetFilters: [
 						{facetKey: "FactSheetTypes", keys: ["DataObject"]},
 						{facetKey: "hierarchyLevel", keys: ["1"]}
+						${cimIDFilter}
 					]}
 				) {
 					edges { node { id name description } }
@@ -69,6 +73,7 @@ class Report extends Component {
 					filter: {facetFilters: [
 						{facetKey: "FactSheetTypes", keys: ["DataObject"]},
 						{facetKey: "hierarchyLevel", keys: ["2"]}
+						${cimIDFilter}
 					]}
 				) {
 					edges { node {
@@ -89,9 +94,12 @@ class Report extends Component {
 				}}`;
 	}
 
-	_handleData(index, appMapID) {
+	_handleData(index, cimID, appMapID) {
 		const tableData = [];
 		index.dataObjectsL2.nodes.forEach((e) => {
+			if (!cimID && !index.includesTag(e, 'CIM')) {
+				return;
+			}
 			const parent = index.getParent('dataObjectsL2', e.id);
 			let appMapBCs = [];
 			const subIndex = e.relDataObjectToBusinessCapability;
