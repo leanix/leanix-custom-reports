@@ -156,8 +156,6 @@ class Report extends Component {
 		this.setState({
 			data: tableData
 		});
-		console.log('index: ', index);
-		console.log('tableData: ', tableData);
 	}
 
 	_getStatusValue(statusGroup, status) {
