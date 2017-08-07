@@ -89,7 +89,8 @@ class Report extends Component {
 
 	_handleData(index, appMapID) {
 		const tableData = [];
-		index.businessCapabilities.nodes.forEach((appMapL2) => {
+		index.businessCapabilities.nodes.forEach((e) => {
+			let appMapL2 = e;
 			if (!appMapID && !index.includesTag(appMapL2, 'AppMap')) {
 				return;
 			}
@@ -97,14 +98,18 @@ class Report extends Component {
 			if (!subIndex) {
 				return;
 			}
-			const appMapL1 = appMapL2.relToParent ? appMapL2.relToParent.nodes[0] : undefined;
-			subIndex.nodes.forEach((e) => {
+			let appMapL1 = appMapL2.relToParent ? appMapL2.relToParent.nodes[0] : undefined;
+			if (!appMapL1) {
+				appMapL1 = appMapL2;
+				appMapL2 = undefined;
+			}
+			subIndex.nodes.forEach((e2) => {
 				// please note: every process has an eTOM tag, no need to filter
-				let etomL4 = e;
+				let etomL4 = e2;
 				let etomL3 = etomL4.relToParent ? etomL4.relToParent.nodes[0] : undefined;
 				let etomL2 = etomL3 && etomL3.relToParent ? etomL3.relToParent.nodes[0] : undefined;
 				let etomL1 = etomL2 && etomL2.relToParent ? etomL2.relToParent.nodes[0] : undefined;
-				if (!etomL1) {
+				while (!etomL1) {
 					etomL1 = etomL2;
 					etomL2 = etomL3;
 					etomL3 = etomL4;
@@ -113,8 +118,8 @@ class Report extends Component {
 				tableData.push({
 					appMapL1ID: appMapL1 ? appMapL1.id : '',
 					appMapL1Name: appMapL1 ? appMapL1.name : '',
-					appMapL2ID: appMapL2.id,
-					appMapL2Name: appMapL2.name,
+					appMapL2ID: appMapL2 ? appMapL2.id : '',
+					appMapL2Name: appMapL2 ? appMapL2.name : '',
 					etomL1ID: etomL1 ? etomL1.id : '',
 					etomL1Name: etomL1 ? etomL1.name : '',
 					etomL2ID: etomL2 ? etomL2.id : '',
@@ -133,18 +138,11 @@ class Report extends Component {
 
 	/* formatting functions for the table */
 
-	_formatLinkBC(cell, row, idName) {
+	_formatLink(cell, row, extraData) {
 		if (!cell) {
 			return '';
 		}
-		return (<Link link={'factsheet/BusinessCapability/' + row[idName]} target='_blank' text={cell} />);
-	}
-
-	_formatLinkPr(cell, row, idName) {
-		if (!cell) {
-			return '';
-		}
-		return (<Link link={'factsheet/Process/' + row[idName]} target='_blank' text={cell} />);
+		return (<Link link={'factsheet/' + extraData.type + '/' + row[extraData.id]} target='_blank' text={cell} />);
 	}
 
 	render() {
@@ -158,48 +156,48 @@ class Report extends Component {
 				<TableHeaderColumn dataSort
 					dataField='appMapL1Name'
 					dataAlign='left'
-					dataFormat={this._formatLinkBC}
-					formatExtraData={'appMapL1ID'}
+					dataFormat={this._formatLink}
+					formatExtraData={{ type: 'BusinessCapability', id: 'appMapL1ID' }}
 					csvHeader='appmap-L1'
 					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>App Map L1</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					dataField='appMapL2Name'
 					dataAlign='left'
-					dataFormat={this._formatLinkBC}
-					formatExtraData={'appMapL2ID'}
+					dataFormat={this._formatLink}
+					formatExtraData={{ type: 'BusinessCapability', id: 'appMapL2ID' }}
 					csvHeader='appmap-L2'
 					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>App Map L2</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					dataField='etomL1Name'
 					dataAlign='left'
-					dataFormat={this._formatLinkPr}
-					formatExtraData={'etomL1ID'}
+					dataFormat={this._formatLink}
+					formatExtraData={{ type: 'Process', id: 'etomL1ID' }}
 					csvHeader='etom-L1'
 					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>eTOM L1</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					dataField='etomL2Name'
 					dataAlign='left'
-					dataFormat={this._formatLinkPr}
-					formatExtraData={'etomL2ID'}
+					dataFormat={this._formatLink}
+					formatExtraData={{ type: 'Process', id: 'etomL2ID' }}
 					csvHeader='etom-L2'
 					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>eTOM L2</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					dataField='etomL3Name'
 					dataAlign='left'
-					dataFormat={this._formatLinkPr}
-					formatExtraData={'etomL3ID'}
+					dataFormat={this._formatLink}
+					formatExtraData={{ type: 'Process', id: 'etomL3ID' }}
 					csvHeader='etom-L3'
 					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>eTOM L3</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					dataField='etomL4Name'
 					dataAlign='left'
-					dataFormat={this._formatLinkPr}
-					formatExtraData={'etomL4ID'}
+					dataFormat={this._formatLink}
+					formatExtraData={{ type: 'Process', id: 'etomL4ID' }}
 					csvHeader='etom-L4'
 					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>eTOM L4</TableHeaderColumn>

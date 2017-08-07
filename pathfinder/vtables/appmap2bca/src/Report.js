@@ -87,7 +87,8 @@ class Report extends Component {
 
 	_handleData(index, appMapID) {
 		const tableData = [];
-		index.businessCapabilities.nodes.forEach((appMapL2) => {
+		index.businessCapabilities.nodes.forEach((e) => {
+			let appMapL2 = e;
 			if (!appMapID && !index.includesTag(appMapL2, 'AppMap')) {
 				return;
 			}
@@ -95,24 +96,35 @@ class Report extends Component {
 			if (!subIndex) {
 				return;
 			}
-			const appMapL1 = appMapL2.relToParent ? appMapL2.relToParent.nodes[0] : undefined;
-			subIndex.nodes.forEach((bcaL4) => {
-				const bcaL3 = bcaL4.relToParent ? bcaL4.relToParent.nodes[0] : undefined;
-				const bcaL2 = bcaL3 && bcaL3.relToParent ? bcaL3.relToParent.nodes[0] : undefined;
-				const bcaL1 = bcaL2 && bcaL2.relToParent ? bcaL2.relToParent.nodes[0] : undefined;
+			let appMapL1 = appMapL2.relToParent ? appMapL2.relToParent.nodes[0] : undefined;
+			if (!appMapL1) {
+				appMapL1 = appMapL2;
+				appMapL2 = undefined;
+			}
+			subIndex.nodes.forEach((e2) => {
+				let bcaL4 = e2;
+				let bcaL3 = bcaL4.relToParent ? bcaL4.relToParent.nodes[0] : undefined;
+				let bcaL2 = bcaL3 && bcaL3.relToParent ? bcaL3.relToParent.nodes[0] : undefined;
+				let bcaL1 = bcaL2 && bcaL2.relToParent ? bcaL2.relToParent.nodes[0] : undefined;
+				while (!bcaL1) {
+					bcaL1 = bcaL2;
+					bcaL2 = bcaL3;
+					bcaL3 = bcaL4;
+					bcaL4 = undefined;
+				}
 				tableData.push({
 					appMapL1ID: appMapL1 ? appMapL1.id : '',
 					appMapL1Name: appMapL1 ? appMapL1.name : '',
-					appMapL2ID: appMapL2.id,
-					appMapL2Name: appMapL2.name,
+					appMapL2ID: appMapL2 ? appMapL2.id : '',
+					appMapL2Name: appMapL2 ? appMapL2.name : '',
 					bcaL1ID: bcaL1 ? bcaL1.id : '',
 					bcaL1Name: bcaL1 ? bcaL1.name : '',
 					bcaL2ID: bcaL2 ? bcaL2.id : '',
 					bcaL2Name: bcaL2 ? bcaL2.name : '',
 					bcaL3ID: bcaL3 ? bcaL3.id : '',
 					bcaL3Name: bcaL3 ? bcaL3.name : '',
-					bcaL4ID: bcaL4.id,
-					bcaL4Name: bcaL4.name
+					bcaL4ID: bcaL4 ? bcaL4.id : '',
+					bcaL4Name: bcaL4 ? bcaL4.name : ''
 				});
 			});
 		});
@@ -123,11 +135,11 @@ class Report extends Component {
 
 	/* formatting functions for the table */
 
-	_formatLink(cell, row, idName) {
+	_formatLink(cell, row, extraData) {
 		if (!cell) {
 			return '';
 		}
-		return (<Link link={'factsheet/BusinessCapability/' + row[idName]} target='_blank' text={cell} />);
+		return (<Link link={'factsheet/' + extraData.type + '/' + row[extraData.id]} target='_blank' text={cell} />);
 	}
 
 	render() {
@@ -142,7 +154,7 @@ class Report extends Component {
 					dataField='appMapL1Name'
 					dataAlign='left'
 					dataFormat={this._formatLink}
-					formatExtraData={'appMapL1ID'}
+					formatExtraData={{ type: 'BusinessCapability', id: 'appMapL1ID' }}
 					csvHeader='appmap-L1'
 					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>App Map L1</TableHeaderColumn>
@@ -150,7 +162,7 @@ class Report extends Component {
 					dataField='appMapL2Name'
 					dataAlign='left'
 					dataFormat={this._formatLink}
-					formatExtraData={'appMapL2ID'}
+					formatExtraData={{ type: 'BusinessCapability', id: 'appMapL2ID' }}
 					csvHeader='appmap-L2'
 					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>App Map L2</TableHeaderColumn>
@@ -158,7 +170,7 @@ class Report extends Component {
 					dataField='bcaL1Name'
 					dataAlign='left'
 					dataFormat={this._formatLink}
-					formatExtraData={'bcaL1ID'}
+					formatExtraData={{ type: 'BusinessCapability', id: 'bcaL1ID' }}
 					csvHeader='bca-L1'
 					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>BCA L1</TableHeaderColumn>
@@ -166,7 +178,7 @@ class Report extends Component {
 					dataField='bcaL2Name'
 					dataAlign='left'
 					dataFormat={this._formatLink}
-					formatExtraData={'bcaL2ID'}
+					formatExtraData={{ type: 'BusinessCapability', id: 'bcaL2ID' }}
 					csvHeader='bca-L2'
 					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>BCA L2</TableHeaderColumn>
@@ -174,7 +186,7 @@ class Report extends Component {
 					dataField='bcaL3Name'
 					dataAlign='left'
 					dataFormat={this._formatLink}
-					formatExtraData={'bcaL3ID'}
+					formatExtraData={{ type: 'BusinessCapability', id: 'bcaL3ID' }}
 					csvHeader='bca-L3'
 					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>BCA L3</TableHeaderColumn>
@@ -182,7 +194,7 @@ class Report extends Component {
 					dataField='bcaL4Name'
 					dataAlign='left'
 					dataFormat={this._formatLink}
-					formatExtraData={'bcaL4ID'}
+					formatExtraData={{ type: 'BusinessCapability', id: 'bcaL4ID' }}
 					csvHeader='bca-L4'
 					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>BCA L4</TableHeaderColumn>
