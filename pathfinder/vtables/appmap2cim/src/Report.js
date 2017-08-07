@@ -63,7 +63,7 @@ class Report extends Component {
 						... on BusinessCapability {
 							relBusinessCapabilityToDataObject {
 								edges { node { factSheet {
-									id name
+									id name tags { name }
 									... on DataObject {
 										relToParent { edges { node { factSheet { id name } } } }
 									}
@@ -77,7 +77,8 @@ class Report extends Component {
 
 	_handleData(index, appMapID) {
 		const tableData = [];
-		index.businessCapabilities.nodes.forEach((appMapL2) => {
+		index.businessCapabilities.nodes.forEach((e) => {
+			let appMapL2 = e;
 			if (!appMapID && !index.includesTag(appMapL2, 'AppMap')) {
 				return;
 			}
@@ -85,18 +86,30 @@ class Report extends Component {
 			if (!subIndex) {
 				return;
 			}
-			const appMapL1 = appMapL2.relToParent ? appMapL2.relToParent.nodes[0] : undefined;
-			subIndex.nodes.forEach((cimL2) => {
-				const cimL1 = cimL2.relToParent ? cimL2.relToParent.nodes[0] : undefined;
+			let appMapL1 = appMapL2.relToParent ? appMapL2.relToParent.nodes[0] : undefined;
+			if (!appMapL1) {
+				appMapL1 = appMapL2;
+				appMapL2 = undefined;
+			}
+			subIndex.nodes.forEach((e2) => {
+				let cimL2 = e2;
+				if (!index.includesTag(cimL2, 'CIM')) {
+					return;
+				}
+				let cimL1 = cimL2.relToParent ? cimL2.relToParent.nodes[0] : undefined;
+				if (!cimL1) {
+					cimL1 = cimL2;
+					cimL2 = undefined;
+				}
 				tableData.push({
 					appMapL1ID: appMapL1 ? appMapL1.id : '',
 					appMapL1Name: appMapL1 ? appMapL1.name : '',
-					appMapL2ID: appMapL2.id,
-					appMapL2Name: appMapL2.name,
+					appMapL2ID: appMapL2 ? appMapL2.id : '',
+					appMapL2Name: appMapL2 ? appMapL2.name : '',
 					cimL1ID: cimL1 ? cimL1.id : '',
 					cimL1Name: cimL1 ? cimL1.name : '',
-					cimL2ID: cimL2.id,
-					cimL2Name: cimL2.name
+					cimL2ID: cimL2 ? cimL2.id : '',
+					cimL2Name: cimL2 ? cimL2.name : ''
 				});
 			});
 		});
@@ -107,18 +120,11 @@ class Report extends Component {
 
 	/* formatting functions for the table */
 
-	_formatLinkBC(cell, row, idName) {
+	_formatLink(cell, row, extraData) {
 		if (!cell) {
 			return '';
 		}
-		return (<Link link={'factsheet/BusinessCapability/' + row[idName]} target='_blank' text={cell} />);
-	}
-
-	_formatLinkDO(cell, row, idName) {
-		if (!cell) {
-			return '';
-		}
-		return (<Link link={'factsheet/DataObject/' + row[idName]} target='_blank' text={cell} />);
+		return (<Link link={'factsheet/' + extraData.type + '/' + row[extraData.id]} target='_blank' text={cell} />);
 	}
 
 	render() {
@@ -132,32 +138,32 @@ class Report extends Component {
 				<TableHeaderColumn dataSort
 					dataField='appMapL1Name'
 					dataAlign='left'
-					dataFormat={this._formatLinkBC}
-					formatExtraData={'appMapL1ID'}
+					dataFormat={this._formatLink}
+					formatExtraData={{ type: 'BusinessCapability', id: 'appMapL1ID' }}
 					csvHeader='appmap-domain'
 					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>AppMap Domain</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					dataField='appMapL2Name'
 					dataAlign='left'
-					dataFormat={this._formatLinkBC}
-					formatExtraData={'appMapL2ID'}
+					dataFormat={this._formatLink}
+					formatExtraData={{ type: 'BusinessCapability', id: 'appMapL2ID' }}
 					csvHeader='appmap-solution-area'
 					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>AppMap Solution Area</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					dataField='cimL1Name'
 					dataAlign='left'
-					dataFormat={this._formatLinkDO}
-					formatExtraData={'cimL1ID'}
+					dataFormat={this._formatLink}
+					formatExtraData={{ type: 'DataObject', id: 'cimL1ID' }}
 					csvHeader='cim-domain'
 					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>CIM Domain</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					dataField='cimL2Name'
 					dataAlign='left'
-					dataFormat={this._formatLinkDO}
-					formatExtraData={'cimL2ID'}
+					dataFormat={this._formatLink}
+					formatExtraData={{ type: 'DataObject', id: 'cimL2ID' }}
 					csvHeader='cim-entity'
 					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>CIM Entity</TableHeaderColumn>
