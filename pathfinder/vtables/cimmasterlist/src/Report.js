@@ -37,7 +37,6 @@ class Report extends Component {
 			index.put(tagGroups);
 			const appMapID = index.getFirstTagID('BC Type', 'AppMap');
 			const cimID = index.getFirstTagID('Category', 'CIM');
-			console.log(this._createQuery(cimID, appMapID));
 			lx.executeGraphQL(this._createQuery(cimID, appMapID)).then((data) => {
 				index.put(data);
 				this._handleData(index, cimID, appMapID);
@@ -194,9 +193,6 @@ class Report extends Component {
 	}
 
 	render() {
-		if (this.state.data.length === 0) {
-			return null;
-		}
 		return (
 			<BootstrapTable data={this.state.data} keyField='id'
 				 striped hover search exportCSV

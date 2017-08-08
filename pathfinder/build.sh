@@ -19,4 +19,5 @@ build_report appmap2etom
 build_report appmap2platforms
 build_report cimmasterlist
 build_report csmoperations
+build_report csmservices
 cd ..
