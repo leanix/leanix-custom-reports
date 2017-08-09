@@ -159,10 +159,10 @@ class Report extends Component {
 
 	_getStatusValue(statusGroup, status) {
 		if (!status) {
-			return -1;
+			return undefined;
 		}
 		const key = Utilities.getKeyToValue(statusGroup, status.name);
-		return key !== undefined && key !== null ? parseInt(key, 10) : -1;
+		return key !== undefined && key !== null ? parseInt(key, 10) : undefined;
 	}
 
 	/* formatting functions for the table */
@@ -192,7 +192,7 @@ class Report extends Component {
 	}
 
 	_formatEnum(cell, row, enums) {
-		if (cell < 0) {
+		if (!cell && cell !== 0) {
 			return '';
 		}
 		return enums[cell];
@@ -244,7 +244,6 @@ class Report extends Component {
 					 csvHeader='serviceClassification'
 					 csvFormat={this._formatEnum}
 					 csvFormatExtraData={this.SERVICE_CLASSIFICATION_OPTIONS}
-					 filterFormatted
 					 filter={{ type: 'SelectFilter', placeholder: 'Select Service Classifikation', options: this.SERVICE_CLASSIFICATION_OPTIONS }}
 				>Service Classification</TableHeaderColumn>
 				<TableHeaderColumn dataSort
@@ -265,7 +264,6 @@ class Report extends Component {
 					 csvHeader='serviceOrigin'
 					 csvFormat={this._formatEnum}
 					 csvFormatExtraData={this.SERVICE_ORIGIN_OPTIONS}
-					 filterFormatted
 					 filter={{ type: 'SelectFilter', placeholder: 'Select Service Origin', options: this.SERVICE_ORIGIN_OPTIONS }}
 				>Service Origin</TableHeaderColumn>
 				<TableHeaderColumn dataSort  tdStyle={{ fontSize: '.85em' }}
@@ -286,7 +284,6 @@ class Report extends Component {
 					 csvHeader='status'
 					 csvFormat={this._formatEnum}
 					 csvFormatExtraData={this.SERVICE_STATUS_OPTIONS}
-					 filterFormatted
 					 filter={{ type: 'SelectFilter', placeholder: 'Select Service Status', options: this.SERVICE_STATUS_OPTIONS }}
 				>Service Status</TableHeaderColumn>
 				<TableHeaderColumn dataSort

@@ -139,10 +139,10 @@ class Report extends Component {
 
 	_getOperationStatusValue(operationStatus) {
 		if (!operationStatus) {
-			return -1;
+			return undefined;
 		}
 		const key = Utilities.getKeyToValue(this.OPERATION_STATUS_OPTIONS, operationStatus.name);
-		return key !== undefined && key !== null ? parseInt(key, 10) : -1;
+		return key !== undefined && key !== null ? parseInt(key, 10) : undefined;
 	}
 
 	/* formatting functions for the table */
@@ -179,7 +179,7 @@ class Report extends Component {
 	}
 
 	_formatEnum(cell, row, enums) {
-		if (cell < 0) {
+		if (!cell && cell !== 0) {
 			return '';
 		}
 		return enums[cell];
@@ -256,7 +256,6 @@ class Report extends Component {
 					 formatExtraData={this.OPERATION_STATUS_OPTIONS}
 					 csvFormat={this._formatEnum}
 					 csvFormatExtraData={this.OPERATION_STATUS_OPTIONS}
-					 filterFormatted
 					 filter={{ type: 'SelectFilter', placeholder: 'Please choose', options: this.OPERATION_STATUS_OPTIONS }}
 					>Operation Status</TableHeaderColumn>
 				<TableHeaderColumn row='0' rowSpan='2'

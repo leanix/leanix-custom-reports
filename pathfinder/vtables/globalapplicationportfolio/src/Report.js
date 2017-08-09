@@ -6,9 +6,6 @@ import Link from './Link';
 import LinkList from './LinkList';
 import Utilities from './Utilities';
 
-import $ from 'jquery';
-import _ from 'lodash';
-
 class Report extends Component {
 
 	constructor(props) {
@@ -107,7 +104,7 @@ class Report extends Component {
 	}
 
 	_formatEnum(cell, row, enums) {
-		if (!cell && cell !== 0) {
+		if (cell < 0) {
 			return '';
 		}
 		return enums[cell];
@@ -130,15 +127,6 @@ class Report extends Component {
 	}
 
 	render() {
-		const products = [{
-				id: 1,
-				name: "Item name 1",
-				price: 100
-			}, {
-				id: 2,
-				name: "Item name 2",
-				price: 100
-			}];
 		return (
 			<BootstrapTable data={this.state.data} keyField='id'
 				 striped hover search exportCSV pagination ignoreSinglePage

@@ -122,6 +122,8 @@ class Report extends Component {
 				const projectImpact = e.relationAttr.projectImpact;
 				const projectType = this._getOptionKeyFromValue(
 					this.PROJECT_TYPE_OPTIONS, this._getTagFromGroup(index, project, 'Project Type'));
+				console.log(project);
+				console.log(this._getTagFromGroup(index, project, 'Project Type'));
 				if (check(projectName, projectImpact)) {
 					const copiedItem = Utilities.copyObject(outputItem);
 					copiedItem.itemId += '-' + idPrefix + '-' + projectId;
@@ -154,8 +156,8 @@ class Report extends Component {
 					deployment: deployment,
 					projectId: '',
 					projectName: '',
-					projectImpact: -1,
-					projectType: -1,
+					projectImpact: undefined,
+					projectType: undefined,
 					lifecyclePhase: this._getOptionKeyFromValue(
 						this.LIFECYCLE_PHASE_OPTIONS, e2.phase),
 					lifecycleStart: new Date(e2.startDate)
@@ -198,6 +200,8 @@ class Report extends Component {
 				}
 			});
 		});
+		console.log(this.DEPLOYMENT_OPTIONS);
+		console.log(tableData);
 		this.setState({
 			data: tableData
 		});
@@ -205,10 +209,10 @@ class Report extends Component {
 
 	_getOptionKeyFromValue(options, value) {
 		if (!value) {
-			return -1;
+			return undefined;
 		}
 		const key = Utilities.getKeyToValue(options, value);
-		return key !== undefined && key !== null ? parseInt(key, 10) : -1;
+		return key !== undefined && key !== null ? parseInt(key, 10) : undefined;
 	}
 
 	_getTagFromGroup(index, node, tagGroupName) {
@@ -233,7 +237,7 @@ class Report extends Component {
 	}
 
 	_formatEnum(cell, row, enums) {
-		if (cell < 0) {
+		if (!cell && cell !== 0) {
 			return '';
 		}
 		return enums[cell];
@@ -282,7 +286,6 @@ class Report extends Component {
 					 csvHeader='cost-centre'
 					 csvFormat={this._formatEnum}
 					 csvFormatExtraData={this.COST_CENTRE_OPTIONS}
-					 filterFormatted
 					 filter={{ type: 'SelectFilter', placeholder: 'Please choose', options: this.COST_CENTRE_OPTIONS }}
 					>Cost Centre</TableHeaderColumn>
 				<TableHeaderColumn dataSort row='0' rowSpan='2'
@@ -293,7 +296,6 @@ class Report extends Component {
 					 formatExtraData={this.DEPLOYMENT_OPTIONS}
 					 csvFormat={this._formatEnum}
 					 csvFormatExtraData={this.DEPLOYMENT_OPTIONS}
-					 filterFormatted
 					 filter={{ type: 'SelectFilter', placeholder: 'Please choose', options: this.DEPLOYMENT_OPTIONS }}
 					>Deployment</TableHeaderColumn>
 				<TableHeaderColumn dataSort row='0' rowSpan='2'
@@ -305,7 +307,6 @@ class Report extends Component {
 					 csvHeader='lifecycle-phase'
 					 csvFormat={this._formatEnum}
 					 csvFormatExtraData={this.LIFECYCLE_PHASE_OPTIONS}
-					 filterFormatted
 					 filter={{ type: 'SelectFilter', placeholder: 'Please choose', options: this.LIFECYCLE_PHASE_OPTIONS }}
 					>Phase</TableHeaderColumn>
 				<TableHeaderColumn dataSort row='0' rowSpan='2'
@@ -340,7 +341,6 @@ class Report extends Component {
 					 csvHeader='project-impact'
 					 csvFormat={this._formatEnum}
 					 csvFormatExtraData={this.PROJECT_IMPACT_OPTIONS}
-					 filterFormatted
 					 filter={{ type: 'SelectFilter', placeholder: 'Please choose', options: this.PROJECT_IMPACT_OPTIONS }}
 					>Impact</TableHeaderColumn>
 				<TableHeaderColumn dataSort row='1'
@@ -352,7 +352,6 @@ class Report extends Component {
 					 csvHeader='project-type'
 					 csvFormat={this._formatEnum}
 					 csvFormatExtraData={this.PROJECT_TYPE_OPTIONS}
-					 filterFormatted
 					 filter={{ type: 'SelectFilter', placeholder: 'Please choose', options: this.PROJECT_TYPE_OPTIONS }}
 					>Type</TableHeaderColumn>
 			</BootstrapTable>

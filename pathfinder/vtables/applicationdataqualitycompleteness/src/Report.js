@@ -176,7 +176,7 @@ class Report extends Component {
 	/* formatting functions for the table */
 
 	_formatEnum(cell, row, enums) {
-		if (cell < 0) {
+		if (!cell && cell !== 0) {
 			return '';
 		}
 		return enums[cell];
@@ -226,7 +226,8 @@ class Report extends Component {
 
 	_expandComponent(row) {
 		return (
-			<SubTables data={{ compliantApps: row.compliantApps, nonCompliantApps: row.nonCompliantApps }} />
+			{/* <SubTables data={{ compliantApps: row.compliantApps, nonCompliantApps: row.nonCompliantApps }} /> */}
+			<div>Dummy element</div>
 		);
 	}
 

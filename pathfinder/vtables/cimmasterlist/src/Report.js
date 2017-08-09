@@ -170,7 +170,7 @@ class Report extends Component {
 	}
 
 	_formatEnum(cell, row, enums) {
-		if (cell < 0) {
+		if (!cell && cell !== 0) {
 			return '';
 		}
 		return enums[cell];
@@ -242,7 +242,6 @@ class Report extends Component {
 					 csvHeader='landscape-available'
 					 csvFormat={this._formatEnum}
 					 csvFormatExtraData={LANDSCAPE_OPTIONS}
-					 filterFormatted
 					 filter={{ type: 'SelectFilter', placeholder: 'Please choose', options: LANDSCAPE_OPTIONS }}
 					>Landscape Available?</TableHeaderColumn>
 				<TableHeaderColumn
