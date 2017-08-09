@@ -122,8 +122,6 @@ class Report extends Component {
 				const projectImpact = e.relationAttr.projectImpact;
 				const projectType = this._getOptionKeyFromValue(
 					this.PROJECT_TYPE_OPTIONS, this._getTagFromGroup(index, project, 'Project Type'));
-				console.log(project);
-				console.log(this._getTagFromGroup(index, project, 'Project Type'));
 				if (check(projectName, projectImpact)) {
 					const copiedItem = Utilities.copyObject(outputItem);
 					copiedItem.itemId += '-' + idPrefix + '-' + projectId;
@@ -200,8 +198,6 @@ class Report extends Component {
 				}
 			});
 		});
-		console.log(this.DEPLOYMENT_OPTIONS);
-		console.log(tableData);
 		this.setState({
 			data: tableData
 		});
