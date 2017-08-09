@@ -146,9 +146,6 @@ class Report extends Component {
 	}
 
 	render() {
-		if (this.state.data.length === 0) {
-			return null;
-		}
 		return (
 			<BootstrapTable data={this.state.data} keyField='appMapL2ID'
 				striped hover search pagination ignoreSinglePage exportCSV

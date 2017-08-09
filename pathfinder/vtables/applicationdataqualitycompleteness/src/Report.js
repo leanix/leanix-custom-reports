@@ -231,9 +231,6 @@ class Report extends Component {
 	}
 
 	render() {
-		if (this.state.data.length === 0) {
-			return null;
-		}
 		// TODO root csv export must have the ids aswell?
 		return (
 			<BootstrapTable data={this.state.data} keyField='id'

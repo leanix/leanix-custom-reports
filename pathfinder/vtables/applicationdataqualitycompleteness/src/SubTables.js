@@ -49,14 +49,16 @@ class SubTables extends Component {
 				<div style={{
 					width: '50%',
 					display: 'inline-block',
-					padding: '0px 2% 0px 10%'
+					padding: '0px 2% 0px 10%',
+					verticalAlign: 'top'
 				}}>
 					{this._createTable(this.props.data.compliantApps, 'Compliant Applications')}
 				</div>
 				<div style={{
 					width: '50%',
 					display: 'inline-block',
-					padding: '0px 10% 0px 2%'
+					padding: '0px 10% 0px 2%',
+					verticalAlign: 'top'
 				}}>
 					{this._createTable(this.props.data.nonCompliantApps, 'Non-Compliant Applications')}
 				</div>

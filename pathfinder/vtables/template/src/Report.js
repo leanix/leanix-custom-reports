@@ -130,9 +130,6 @@ class Report extends Component {
 	}
 
 	render() {
-		if (this.state.data.length === 0) {
-			//return null;
-		}
 		const products = [{
 				id: 1,
 				name: "Item name 1",

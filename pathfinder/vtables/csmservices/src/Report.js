@@ -95,23 +95,22 @@ class Report extends Component {
 				return;
 			}
 			const appMapL1 = appMapL2.relToParent ? appMapL2.relToParent.nodes[0] : undefined;
-			const platfProdByBCs = appMapL2.relApplicationToPlatform.nodes;
+			const platfProdByBCs = appMapL2.relApplicationToPlatform ? appMapL2.relApplicationToPlatform.nodes : [];
 			// if COBRA works fine it should not be neccessary to filter for tag name 'Platform'
-			const platfConsByBCs = appMapL2.relToRequiredBy.nodes.filter((e) => {
+			const platfConsByBCs = appMapL2.relToRequiredBy ? appMapL2.relToRequiredBy.nodes.filter((e) => {
 				// filter for tag name (unfortunately not possible in query on relation)
 				return index.includesTag(e, 'Platform');
-			});
-			const bcaBCs = appMapL2.relApplicationToBCA.nodes;
+			}) : [];
+			const bcaBCs = appMapL2.relApplicationToBCA ? appMapL2.relApplicationToBCA.nodes : [];
 			// if COBRA works fine it should not be neccessary to filter for tag name 'BCA'
-			const tmfAPPs = appMapL2.relToRequires.nodes.filter((e) => {
+			const tmfAPPs = appMapL2.relToRequires ? appMapL2.relToRequires.nodes.filter((e) => {
 				// filter for tag name (unfortunately not possible in query on relation)
 				return index.includesTag(e, 'TMF Open API');
-			});
-			const cimDOs = appMapL2.relApplicationToDataObject.nodes.filter((e) => {
+			}) : [];
+			const cimDOs = appMapL2.relApplicationToDataObject ? appMapL2.relApplicationToDataObject.nodes.filter((e) => {
 				// filter for tag name (unfortunately not possible in query on relation)
 				return index.includesTag(e, 'CIM');
-			});
-			
+			}) : [];
 			tableData.push({
 				appMapL1ID: appMapL1 ? appMapL1.id : '',
 				appMapL1Name: appMapL1 ? appMapL1.name : '',
@@ -151,7 +150,7 @@ class Report extends Component {
 				cimDOsIDs: cimDOs.map((e) => {
 					return e.id;
 				})
-			});			
+			});
 		});
 		this.setState({
 			data: tableData
@@ -165,7 +164,7 @@ class Report extends Component {
 		const key = Utilities.getKeyToValue(statusGroup, status.name);
 		return key !== undefined && key !== null ? parseInt(key, 10) : -1;
 	}
-	
+
 	/* formatting functions for the table */
 
 	_formatLink(cell, row, extraData) {
@@ -215,7 +214,7 @@ class Report extends Component {
 		}
 		cell.forEach((e) => {
 			if (names.length) {
-				names += ' | ';
+				names += '\n';
 			}
 			names += e;
 		});
@@ -223,12 +222,9 @@ class Report extends Component {
 	}
 
 	render() {
-		if (this.state.data.length === 0) {
-			return null;
-		}
 		return (
 			<BootstrapTable data={this.state.data} keyField='appMapL2ID'
-				 striped={false} hover={false} search exportCSV
+				 striped hover search exportCSV
 				 options={{ clearSearch: true }}>
 				<TableHeaderColumn dataSort
 					 dataField='appMapL1Name'
@@ -272,7 +268,7 @@ class Report extends Component {
 					 filterFormatted
 					 filter={{ type: 'SelectFilter', placeholder: 'Select Service Origin', options: this.SERVICE_ORIGIN_OPTIONS }}
 				>Service Origin</TableHeaderColumn>
-				<TableHeaderColumn dataSort
+				<TableHeaderColumn dataSort  tdStyle={{ fontSize: '.85em' }}
 					 dataField='appMapL2Desc'
 					 width='200px'
 					 dataAlign='left'
