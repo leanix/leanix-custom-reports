@@ -142,7 +142,7 @@ class Report extends Component {
 		if (!cell) {
 			return '';
 		}
-		return (<Link link={'factsheet/' + extraData.type + '/' + row[extraData.id]} target='_blank' text={cell} />);
+		return (<Link link={this.state.setup.settings.baseUrl + '/factsheet/' + extraData.type + '/' + row[extraData.id]} target='_blank' text={cell} />);
 	}
 
 	render() {

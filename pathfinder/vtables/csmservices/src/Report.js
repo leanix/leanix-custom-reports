@@ -171,7 +171,7 @@ class Report extends Component {
 		if (!cell) {
 			return '';
 		}
-		return (<Link link={'factsheet/' + extraData.type + '/' + row[extraData.id]} target='_blank' text={cell} />);
+		return (<Link link={this.state.setup.settings.baseUrl + '/factsheet/' + extraData.type + '/' + row[extraData.id]} target='_blank' text={cell} />);
 	}
 
 	_formatArray(cell, row, extraData) {
@@ -182,7 +182,7 @@ class Report extends Component {
 			<LinkList links={
 				cell.reduce((arr, e, i) => {
 					arr.push({
-						link: 'factsheet/' + extraData.type + '/' + row[extraData.ids][i],
+						link: this.state.setup.settings.baseUrl + '/factsheet/' + extraData.type + '/' + row[extraData.ids][i],
 						target: '_blank',
 						text: e
 					});

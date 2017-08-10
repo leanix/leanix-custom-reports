@@ -224,9 +224,9 @@ class Report extends Component {
 		}
 		switch (idProperty) {
 			case 'id':
-				return (<Link link={'factsheet/Application/' + row[idProperty]} target='_blank' text={cell} />);
+				return (<Link link={this.state.setup.settings.baseUrl + '/factsheet/Application/' + row[idProperty]} target='_blank' text={cell} />);
 			case 'projectId':
-				return (<Link link={'factsheet/Project/' + row[idProperty]} target='_blank' text={cell} />);
+				return (<Link link={this.state.setup.settings.baseUrl + '/factsheet/Project/' + row[idProperty]} target='_blank' text={cell} />);
 			default:
 				return '';
 		}

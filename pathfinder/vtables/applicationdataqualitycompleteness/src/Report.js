@@ -225,19 +225,18 @@ class Report extends Component {
 	}
 
 	_expandComponent(row) {
-		/* <SubTables data={{ compliantApps: row.compliantApps, nonCompliantApps: row.nonCompliantApps }} /> */
 		return (
-			<div>Dummy element</div>
+			<SubTables data={{ compliantApps: row.compliantApps, nonCompliantApps: row.nonCompliantApps }} />
 		);
 	}
 
 	render() {
 		// TODO root csv export must have the ids aswell?
+		// expandableRow={this._isExpandableRow}
+		// expandComponent={this._expandComponent}
+		// expandColumnOptions={{ expandColumnVisible: true }}
 		return (
 			<BootstrapTable data={this.state.data} keyField='id'
-				 expandableRow={this._isExpandableRow}
-				 expandComponent={this._expandComponent}
-				 expandColumnOptions={{ expandColumnVisible: true }}
 				 striped hover search exportCSV
 				 options={{ clearSearch: true }}
 				 trClassName={this._trClassname}>

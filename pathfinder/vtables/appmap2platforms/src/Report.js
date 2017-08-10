@@ -111,7 +111,7 @@ class Report extends Component {
 		if (!cell) {
 			return '';
 		}
-		return (<Link link={'factsheet/BusinessCapability/' + row[idName]} target='_blank' text={cell} />);
+		return (<Link link={this.state.setup.settings.baseUrl + '/factsheet/BusinessCapability/' + row[idName]} target='_blank' text={cell} />);
 	}
 
 	render() {

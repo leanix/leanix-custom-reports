@@ -163,7 +163,7 @@ function resolveNestedInRelations(node) {
 			continue;
 		}
 		const index = {
-			readData: value,
+			realData: value,
 			nodes: [],
 			byID: {}
 		};

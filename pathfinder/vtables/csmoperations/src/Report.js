@@ -151,7 +151,7 @@ class Report extends Component {
 		if (!cell) {
 			return '';
 		}
-		return (<Link link={'factsheet/Application/' + row.hierarchy[level].id} target='_blank' text={cell} />);
+		return (<Link link={this.state.setup.settings.baseUrl + '/factsheet/Application/' + row.hierarchy[level].id} target='_blank' text={cell} />);
 	}
 
 	_formatDescription(cell, row) {
@@ -169,7 +169,7 @@ class Report extends Component {
 			<LinkList links={
 				cell.reduce((arr, e, i) => {
 					arr.push({
-						link: 'factsheet/BusinessCapability/' + row.platformIDs[i],
+						link: this.state.setup.settings.baseUrl + '/factsheet/BusinessCapability/' + row.platformIDs[i],
 						target: '_blank',
 						text: e
 					});

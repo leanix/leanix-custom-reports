@@ -79,7 +79,7 @@ function isProductionPhase(lifecycle) {
 	}
 }
 
-const marketRE = /^([A-Z]{2,3})_/;
+const marketRE = /^([A-Z]+)_/;
 
 function getMarket(application) {
 	if (!application) {
