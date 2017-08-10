@@ -248,7 +248,7 @@ class Report extends Component {
 					 formatExtraData={this.MARKET_OPTIONS}
 					 csvFormat={this._formatEnum}
 					 csvFormatExtraData={this.MARKET_OPTIONS}
-					 filter={{ type: 'SelectFilter', placeholder: 'Please choose', options: this.MARKET_OPTIONS }}
+					 filter={{ type: 'SelectFilter', condition: 'eq', placeholder: 'Please choose', options: this.MARKET_OPTIONS }}
 					>Market</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='rule'

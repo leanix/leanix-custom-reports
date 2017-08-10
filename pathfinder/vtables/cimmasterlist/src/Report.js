@@ -242,7 +242,7 @@ class Report extends Component {
 					 csvHeader='landscape-available'
 					 csvFormat={this._formatEnum}
 					 csvFormatExtraData={LANDSCAPE_OPTIONS}
-					 filter={{ type: 'SelectFilter', placeholder: 'Please choose', options: LANDSCAPE_OPTIONS }}
+					 filter={{ type: 'SelectFilter', condition: 'eq', placeholder: 'Please choose', options: LANDSCAPE_OPTIONS }}
 					>Landscape Available?</TableHeaderColumn>
 				<TableHeaderColumn
 					 dataField='appMaps'

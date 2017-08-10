@@ -19,7 +19,7 @@ class Report extends Component {
 		this.TECHNOP_STATE = {
 			0: '',
 			1: 'URL',
-			2: 'Ignored', 
+			2: 'Ignored',
 			3: 'Missing'
 		};
 		this.state = {
@@ -96,7 +96,7 @@ class Report extends Component {
 						id name ${tagNameDef}
 						... on Application {
 							relApplicationToITComponent {
-								edges { node { factSheet { 
+								edges { node { factSheet {
 									id fullName type
 									documents {
 										edges{ node{ name url } }
@@ -113,7 +113,7 @@ class Report extends Component {
 					}}
 				}}`;
 	}
-	
+
 	_getITCmpCountInOtherMarkets(itcmp, market) {
 		if (!itcmp || !itcmp.relITComponentToApplication || !market) {
 			return 0;
@@ -127,7 +127,7 @@ class Report extends Component {
 		});
 		return count;
 	}
-	
+
 	_getOptionKeyFromValue(options, value) {
 		if (!value) {
 			return undefined;
@@ -213,7 +213,7 @@ class Report extends Component {
 						}
 					}
 				});
-				
+
 				tableData.push({
 					appName: app.name,
 					appID: app.id,
@@ -289,7 +289,7 @@ class Report extends Component {
 					csvHeader='resourceName'
 					csvFormat={this._formatEnum}
 					csvFormatExtraData={this.ITCMP_CATEGORY}
-					filter={{ type: 'SelectFilter', placeholder: 'Select a type', options: this.ITCMP_CATEGORY }}
+					filter={{ type: 'SelectFilter', condition: 'eq', placeholder: 'Please choose', options: this.ITCMP_CATEGORY }}
 				>IT Component type</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					dataField='state'
@@ -297,7 +297,7 @@ class Report extends Component {
 					dataAlign='left'
 					dataFormat={this._formatState}
 					formatExtraData={this.TECHNOP_STATE}
-					filter={{ type: 'SelectFilter', placeholder: 'Select a status', options: this.TECHNOP_STATE }}
+					filter={{ type: 'SelectFilter', condition: 'eq', placeholder: 'Please choose', options: this.TECHNOP_STATE }}
 				>Technopedia status</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					dataField='count'

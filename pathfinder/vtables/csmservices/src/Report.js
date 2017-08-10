@@ -244,7 +244,7 @@ class Report extends Component {
 					 csvHeader='serviceClassification'
 					 csvFormat={this._formatEnum}
 					 csvFormatExtraData={this.SERVICE_CLASSIFICATION_OPTIONS}
-					 filter={{ type: 'SelectFilter', placeholder: 'Select Service Classifikation', options: this.SERVICE_CLASSIFICATION_OPTIONS }}
+					 filter={{ type: 'SelectFilter', condition: 'eq', placeholder: 'Please choose', options: this.SERVICE_CLASSIFICATION_OPTIONS }}
 				>Service Classification</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='appMapL2Name'
@@ -264,7 +264,7 @@ class Report extends Component {
 					 csvHeader='serviceOrigin'
 					 csvFormat={this._formatEnum}
 					 csvFormatExtraData={this.SERVICE_ORIGIN_OPTIONS}
-					 filter={{ type: 'SelectFilter', placeholder: 'Select Service Origin', options: this.SERVICE_ORIGIN_OPTIONS }}
+					 filter={{ type: 'SelectFilter', condition: 'eq', placeholder: 'Please choose', options: this.SERVICE_ORIGIN_OPTIONS }}
 				>Service Origin</TableHeaderColumn>
 				<TableHeaderColumn dataSort  tdStyle={{ fontSize: '.85em' }}
 					 dataField='appMapL2Desc'
@@ -284,7 +284,7 @@ class Report extends Component {
 					 csvHeader='status'
 					 csvFormat={this._formatEnum}
 					 csvFormatExtraData={this.SERVICE_STATUS_OPTIONS}
-					 filter={{ type: 'SelectFilter', placeholder: 'Select Service Status', options: this.SERVICE_STATUS_OPTIONS }}
+					 filter={{ type: 'SelectFilter', condition: 'eq', placeholder: 'Please choose', options: this.SERVICE_STATUS_OPTIONS }}
 				>Service Status</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='bcaBCsNames'

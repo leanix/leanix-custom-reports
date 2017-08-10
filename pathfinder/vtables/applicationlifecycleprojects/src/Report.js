@@ -282,7 +282,7 @@ class Report extends Component {
 					 csvHeader='cost-centre'
 					 csvFormat={this._formatEnum}
 					 csvFormatExtraData={this.COST_CENTRE_OPTIONS}
-					 filter={{ type: 'SelectFilter', placeholder: 'Please choose', options: this.COST_CENTRE_OPTIONS }}
+					 filter={{ type: 'SelectFilter', condition: 'eq', placeholder: 'Please choose', options: this.COST_CENTRE_OPTIONS }}
 					>Cost Centre</TableHeaderColumn>
 				<TableHeaderColumn dataSort row='0' rowSpan='2'
 					 dataField='deployment'
@@ -292,7 +292,7 @@ class Report extends Component {
 					 formatExtraData={this.DEPLOYMENT_OPTIONS}
 					 csvFormat={this._formatEnum}
 					 csvFormatExtraData={this.DEPLOYMENT_OPTIONS}
-					 filter={{ type: 'SelectFilter', placeholder: 'Please choose', options: this.DEPLOYMENT_OPTIONS }}
+					 filter={{ type: 'SelectFilter', condition: 'eq', placeholder: 'Please choose', options: this.DEPLOYMENT_OPTIONS }}
 					>Deployment</TableHeaderColumn>
 				<TableHeaderColumn dataSort row='0' rowSpan='2'
 					 dataField='lifecyclePhase'
@@ -303,7 +303,7 @@ class Report extends Component {
 					 csvHeader='lifecycle-phase'
 					 csvFormat={this._formatEnum}
 					 csvFormatExtraData={this.LIFECYCLE_PHASE_OPTIONS}
-					 filter={{ type: 'SelectFilter', placeholder: 'Please choose', options: this.LIFECYCLE_PHASE_OPTIONS }}
+					 filter={{ type: 'SelectFilter', condition: 'eq', placeholder: 'Please choose', options: this.LIFECYCLE_PHASE_OPTIONS }}
 					>Phase</TableHeaderColumn>
 				<TableHeaderColumn dataSort row='0' rowSpan='2'
 					 dataField='lifecycleStart'
@@ -337,7 +337,7 @@ class Report extends Component {
 					 csvHeader='project-impact'
 					 csvFormat={this._formatEnum}
 					 csvFormatExtraData={this.PROJECT_IMPACT_OPTIONS}
-					 filter={{ type: 'SelectFilter', placeholder: 'Please choose', options: this.PROJECT_IMPACT_OPTIONS }}
+					 filter={{ type: 'SelectFilter', condition: 'eq', placeholder: 'Please choose', options: this.PROJECT_IMPACT_OPTIONS }}
 					>Impact</TableHeaderColumn>
 				<TableHeaderColumn dataSort row='1'
 					 dataField='projectType'
@@ -348,7 +348,7 @@ class Report extends Component {
 					 csvHeader='project-type'
 					 csvFormat={this._formatEnum}
 					 csvFormatExtraData={this.PROJECT_TYPE_OPTIONS}
-					 filter={{ type: 'SelectFilter', placeholder: 'Please choose', options: this.PROJECT_TYPE_OPTIONS }}
+					 filter={{ type: 'SelectFilter', condition: 'eq', placeholder: 'Please choose', options: this.PROJECT_TYPE_OPTIONS }}
 					>Type</TableHeaderColumn>
 			</BootstrapTable>
 		);

@@ -256,7 +256,7 @@ class Report extends Component {
 					 formatExtraData={this.OPERATION_STATUS_OPTIONS}
 					 csvFormat={this._formatEnum}
 					 csvFormatExtraData={this.OPERATION_STATUS_OPTIONS}
-					 filter={{ type: 'SelectFilter', placeholder: 'Please choose', options: this.OPERATION_STATUS_OPTIONS }}
+					 filter={{ type: 'SelectFilter', condition: 'eq', placeholder: 'Please choose', options: this.OPERATION_STATUS_OPTIONS }}
 					>Operation Status</TableHeaderColumn>
 				<TableHeaderColumn row='0' rowSpan='2'
 					 dataField='platforms'
