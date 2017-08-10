@@ -225,8 +225,8 @@ class Report extends Component {
 	}
 
 	_expandComponent(row) {
+		/* <SubTables data={{ compliantApps: row.compliantApps, nonCompliantApps: row.nonCompliantApps }} /> */
 		return (
-			{/* <SubTables data={{ compliantApps: row.compliantApps, nonCompliantApps: row.nonCompliantApps }} /> */}
 			<div>Dummy element</div>
 		);
 	}
