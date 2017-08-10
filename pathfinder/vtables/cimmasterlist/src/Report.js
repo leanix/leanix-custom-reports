@@ -173,7 +173,7 @@ class Report extends Component {
 		if (!cell && cell !== 0) {
 			return '';
 		}
-		return enums[cell];
+		return enums[cell] ? enums[cell] : '';
 	}
 
 	/* formatting functions for the csv export */

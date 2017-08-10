@@ -195,7 +195,7 @@ class Report extends Component {
 		if (!cell && cell !== 0) {
 			return '';
 		}
-		return enums[cell];
+		return enums[cell] ? enums[cell] : '';
 	}
 
 	_formatDescription(cell, row) {
