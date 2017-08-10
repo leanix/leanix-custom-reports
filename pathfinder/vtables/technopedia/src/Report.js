@@ -13,15 +13,14 @@ class Report extends Component {
 		this._initReport = this._initReport.bind(this);
 		this._handleData = this._handleData.bind(this);
 		this._formatLink = this._formatLink.bind(this);
-		this.ITCMP_CATEGORY = {
-			software: 'Software',
-			hardware: 'Hardware'
-		};
+		this.ITCMP_CATEGORY = {};
+		this.ITCMP_CATEGORY_EXCLUDE = 'service';
+		// TODO: get Technopedia state from model as soon as it is available as attribute
 		this.TECHNOP_STATE = {
-			empty: ' ',
-			url: 'URL',
-			ignored: 'Ignored', 
-			missing: 'Missing'
+			0: '',
+			1: 'URL',
+			2: 'Ignored', 
+			3: 'Missing'
 		};
 		this.state = {
 			setup: null,
@@ -38,6 +37,15 @@ class Report extends Component {
 		this.setState({
 			setup: setup
 		});
+		// get categories of ITComponents from data model
+		this.ITCMP_CATEGORY = this._getITCmpCategory(setup).
+			filter((e) => {
+				return e !== this.ITCMP_CATEGORY_EXCLUDE;
+			}).
+			reduce((r, e, i) => {
+				r[i] = e;
+				return r;
+		}, {});
 		// get all tags, then the data
 		lx.executeGraphQL(CommonQueries.tagGroups).then((tagGroups) => {
 			const index = new DataIndex();
@@ -48,6 +56,19 @@ class Report extends Component {
 				this._handleData(index, appTagID);
 			});
 		});
+	}
+
+	_getITCmpCategory(setup) {
+		const relationModel = setup.settings.dataModel.factSheets;
+		if (!relationModel ||
+			!relationModel.ITComponent ||
+			!relationModel.ITComponent.fields ||
+			!relationModel.ITComponent.fields.category ||
+			!Array.isArray(relationModel.ITComponent.fields.category.values)
+		   ) {
+			return [];
+		}
+		return relationModel.ITComponent.fields.category.values;
 	}
 
 	_createConfig() {
@@ -93,6 +114,28 @@ class Report extends Component {
 				}}`;
 	}
 	
+	_getITCmpCountInOtherMarkets(itcmp, market) {
+		if (!itcmp || !itcmp.relITComponentToApplication || !market) {
+			return 0;
+		}
+		let count = 0;
+		itcmp.relITComponentToApplication.nodes.forEach((app) => {
+			const appmarket = Utilities.getMarket(app);
+			if (appmarket && appmarket !== market) {
+				count++;
+			}
+		});
+		return count;
+	}
+	
+	_getOptionKeyFromValue(options, value) {
+		if (!value) {
+			return undefined;
+		}
+		const key = Utilities.getKeyToValue(options, value);
+		return key !== undefined && key !== null ? parseInt(key, 10) : undefined;
+	}
+
 	/* a workaround for doc testing only because 'allFactSheets' don't deliver documents */
 	_getDocuments(what) {
 		const nodes = [];
@@ -130,20 +173,6 @@ class Report extends Component {
 		return nodes;
 	}
 
-	_getITCmpCountInOtherMarkets(itcmp, market) {
-		if (!itcmp || !itcmp.relITComponentToApplication || !market) {
-			return 0;
-		}
-		let count = 0;
-		itcmp.relITComponentToApplication.nodes.forEach((app) => {
-			const appmarket = Utilities.getMarket(app);
-			if (appmarket && appmarket !== market) {
-				count++;
-			}
-		});
-		return count;
-	}
-	
 	_handleData(index, appTagID) {
 		const tableData = [];
 		let tmpDocChoice = 0; // for doc test only
@@ -156,24 +185,30 @@ class Report extends Component {
 				return;
 			}
 			subIndex.nodes.forEach((itcmp) => {
-				if (!this.ITCMP_CATEGORY[itcmp.category]) {
+				if (itcmp.category === this.ITCMP_CATEGORY_EXCLUDE) {
 					return;
 				}
-// excluded in cause of 'for doc test only'				const documents = itcmp.documents ? itcmp.documents.nodes : [];
+/* excluded in cause of 'for doc test only'
+				const documents = itcmp.documents ? itcmp.documents.nodes : [];
+*/
 				const documents = this._getDocuments(tmpDocChoice);  // for doc test only
 				if (tmpDocChoice > 5) {tmpDocChoice = 0} else {tmpDocChoice++};  // for doc test only
-				let doc = { state: 'empty', ref: '' };
+				let doc = { state: 0, ref: '' };
 				documents.forEach((e) => {
+					/* TODO:
+						use attribute for state as soon as it is available
+						instead of parsing document name
+					*/
 					if (!e.name.startsWith('Technopedia entry')) {
 						return;
 					}
 					if (e.name.endsWith('ignored')) {
-						doc.state = 'ignored';
+						doc.state = 2;
 					} else {
 						if (e.name.endsWith('missing')) {
-							doc.state = 'missing';
+							doc.state = 3;
 						} else {
-							doc.state = 'url';
+							doc.state = 1;
 							doc.ref = e.url ? e.url : '';
 						}
 					}
@@ -184,7 +219,7 @@ class Report extends Component {
 					appID: app.id,
 					itcmpName: itcmp.fullName,
 					itcmpID: itcmp.id,
-					itcmpCategory: itcmp.category,
+					itcmpCategory: this._getOptionKeyFromValue(this.ITCMP_CATEGORY, itcmp.category),
 					state: doc.state,
 					stateRef: doc.ref,
 					count: this._getITCmpCountInOtherMarkets(itcmp, Utilities.getMarket(app))
@@ -199,24 +234,24 @@ class Report extends Component {
 	/* formatting functions for the table */
 
 	_formatLink(cell, row, extraData) {
-		if (!cell) {
+		if (!cell && cell !== 0) {
 			return '';
 		}
 		return (<Link link={this.state.setup.settings.baseUrl + '/factsheet/' + extraData.type + '/' + row[extraData.id]} target='_blank' text={cell} />);
 	}
 
-	_formatObj(cell, row, obj) {
-		if (!cell) {
+	_formatEnum(cell, row, enums) {
+		if (!cell && cell !== 0) {
 			return '';
 		}
-		return obj[cell] ? obj[cell] : '';
+		return enums[cell] ? enums[cell] : '';
 	}
 
 	_formatState(cell, row, status) {
 		if (!cell) {
 			return '';
 		}
-		if (cell === 'url') {
+		if (cell === 1) {
 			return (<Link link={row.stateRef} target='_blank' text={status[cell]} />);
 		}
 		return status[cell] ? status[cell] : '';
@@ -249,12 +284,11 @@ class Report extends Component {
 					dataField='itcmpCategory'
 					width='180px'
 					dataAlign='left'
-					dataFormat={this._formatObj}
+					dataFormat={this._formatEnum}
 					formatExtraData={this.ITCMP_CATEGORY}
 					csvHeader='resourceName'
-					csvFormat={this._formatObj}
+					csvFormat={this._formatEnum}
 					csvFormatExtraData={this.ITCMP_CATEGORY}
-					filterFormatted
 					filter={{ type: 'SelectFilter', placeholder: 'Select a type', options: this.ITCMP_CATEGORY }}
 				>IT Component type</TableHeaderColumn>
 				<TableHeaderColumn dataSort
@@ -263,7 +297,6 @@ class Report extends Component {
 					dataAlign='left'
 					dataFormat={this._formatState}
 					formatExtraData={this.TECHNOP_STATE}
-					filterFormatted
 					filter={{ type: 'SelectFilter', placeholder: 'Select a status', options: this.TECHNOP_STATE }}
 				>Technopedia status</TableHeaderColumn>
 				<TableHeaderColumn dataSort
