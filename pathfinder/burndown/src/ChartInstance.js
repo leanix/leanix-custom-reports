@@ -33,7 +33,7 @@ class ChartInstance {
 					},
 					empty: {
 						label: {
-							text: 'No data'
+							text: 'Loading data ...'
 						}
 					}
 				},
