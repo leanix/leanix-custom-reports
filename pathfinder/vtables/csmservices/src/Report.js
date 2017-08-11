@@ -12,6 +12,8 @@ class Report extends Component {
 		super(props);
 		this._initReport = this._initReport.bind(this);
 		this._handleData = this._handleData.bind(this);
+		this._formatLink = this._formatLink.bind(this);
+		this._formatArray = this._formatArray.bind(this);
 		this.SERVICE_STATUS_OPTIONS = {},
 		this.SERVICE_CLASSIFICATION_OPTIONS = {},
 		this.SERVICE_ORIGIN_OPTIONS = {}
@@ -30,28 +32,72 @@ class Report extends Component {
 		this.setState({
 			setup: setup
 		});
+		// get service status|classification|origin of CSM from data model
+		this.SERVICE_STATUS_OPTIONS = this._getCsmServiceStatus(setup).
+			reduce((r, e, i) => {
+				r[i] = e;
+				return r;
+		}, {});
+		this.SERVICE_CLASSIFICATION_OPTIONS = this._getCsmServiceClassification(setup).
+			reduce((r, e, i) => {
+				r[i] = e;
+				return r;
+		}, {});
+		this.SERVICE_ORIGIN_OPTIONS = this._getCsmServiceOrigin(setup).
+			reduce((r, e, i) => {
+				r[i] = e;
+				return r;
+		}, {});
 		// get all tags, then the data
 		lx.executeGraphQL(CommonQueries.tagGroups).then((tagGroups) => {
 			const index = new DataIndex();
 			index.put(tagGroups);
+			// TODO: use correct tagGroup name ('CSM Type'?)
 			const csmID = index.getFirstTagID('Application Type', 'CSM');
-			this.SERVICE_STATUS_OPTIONS = index.getTags('Service Status').reduce((r, e, i) => {
-				r[i] = e.name;
-				return r;
-			}, {});
-			this.SERVICE_CLASSIFICATION_OPTIONS = index.getTags('Service Classification').reduce((r, e, i) => {
-				r[i] = e.name;
-				return r;
-			}, {});
-			this.SERVICE_ORIGIN_OPTIONS = index.getTags('Service Origin').reduce((r, e, i) => {
-				r[i] = e.name;
-				return r;
-			}, {});
 			lx.executeGraphQL(this._createQuery(csmID)).then((data) => {
 				index.put(data);
 				this._handleData(index, csmID);
 			});
 		});
+	}
+
+	_getCsmServiceStatus(setup) {
+		const factsheetsModel = setup.settings.dataModel.factSheets;
+		if (!factsheetsModel ||
+			!factsheetsModel.CSM ||
+			!factsheetsModel.CSM.fields ||
+			!factsheetsModel.CSM.fields.serviceStatus ||
+			!Array.isArray(factsheetsModel.CSM.fields.serviceStatus.values)
+		   ) {
+			return [];
+		}
+		return factsheetsModel.CSM.fields.serviceStatus.values;
+	}
+
+	_getCsmServiceClassification(setup) {
+		const factsheetsModel = setup.settings.dataModel.factSheets;
+		if (!factsheetsModel ||
+			!factsheetsModel.CSM ||
+			!factsheetsModel.CSM.fields ||
+			!factsheetsModel.CSM.fields.serviceClassification ||
+			!Array.isArray(factsheetsModel.CSM.fields.serviceClassification.values)
+		   ) {
+			return [];
+		}
+		return factsheetsModel.CSM.fields.serviceClassification.values;
+	}
+
+	_getCsmServiceOrigin(setup) {
+		const factsheetsModel = setup.settings.dataModel.factSheets;
+		if (!factsheetsModel ||
+			!factsheetsModel.CSM ||
+			!factsheetsModel.CSM.fields ||
+			!factsheetsModel.CSM.fields.serviceOrigin ||
+			!Array.isArray(factsheetsModel.CSM.fields.serviceOrigin.values)
+		   ) {
+			return [];
+		}
+		return factsheetsModel.CSM.fields.serviceOrigin.values;
 	}
 
 	_createConfig() {
@@ -61,28 +107,31 @@ class Report extends Component {
 	}
 
 	_createQuery(csmID) {
-		const csmIDFilter = csmID ? `, {facetKey: "Application Type", keys: ["${csmID}"]}` : '';
-		return `{applications: allFactSheets(
+		let csmIDFilter = ''; // initial assume tagGroup.name changed or the id couldn't be determined otherwise
+		let tagNameDef = 'tags { name }'; // initial assume to get it
+		if (csmID) {
+			// query filtering only bc with tag 'CSM'
+			// TODO: use correct tagGroup name ('CSM Type'?)
+			csmIDFilter = `, {facetKey: "Application Type", keys: ["${csmID}"]}`;
+			tagNameDef = '';
+		}
+		return `{csm: allFactSheets(
 					sort: {mode: BY_FIELD, key: "displayName", order: asc},
 					filter: {facetFilters: [
-						{facetKey: "FactSheetTypes", keys: ["Application"]},
+						{facetKey: "FactSheetTypes", keys: ["CSM"]},
 						{facetKey: "hierarchyLevel", keys: ["2"]}
 						${csmIDFilter}
 					]}
 				) {
 					edges { node {
-						id name description tags { name }
-						... on Application {
+						id name description ${tagNameDef}
+						... on CSM {
+							serviceStatus serviceClassification serviceOrigin
 							relToParent { edges { node { factSheet { id name } } } }
-							relApplicationToPlatform { edges { node { factSheet { id name } } } }
-							relToRequiredBy (facetFilters: [
-								{facetKey: "FactSheetTypes", keys: ["BusinessCapability"]}
-							]) { edges { node { factSheet { id name tags { name } } } } }
-							relApplicationToBCA { edges { node { factSheet { id name } } } }
 							relToRequires (facetFilters: [
 								{facetKey: "FactSheetTypes", keys: ["Application"]}
 							]) { edges { node { factSheet { id name tags { name } } } } }
-							relApplicationToDataObject { edges { node { factSheet { id name tags { name } } } } }
+							relCSMToDataObject { edges { node { factSheet { id name } } } }
 						}
 					}}
 				}}`;
@@ -90,36 +139,32 @@ class Report extends Component {
 
 	_handleData(index, csmID) {
 		const tableData = [];
-		index.applications.nodes.forEach((appMapL2) => {
-			if (!csmID && !index.includesTag(appMapL2, 'CSM')) {
+		index.csm.nodes.forEach((csmL2) => {
+			console.log('csmL2: ', csmL2);
+			if (!csmID && !index.includesTag(csmL2, 'CSM')) {
 				return;
 			}
-			const appMapL1 = appMapL2.relToParent ? appMapL2.relToParent.nodes[0] : undefined;
-			const platfProdByBCs = appMapL2.relApplicationToPlatform ? appMapL2.relApplicationToPlatform.nodes : [];
-			// if COBRA works fine it should not be neccessary to filter for tag name 'Platform'
-			const platfConsByBCs = appMapL2.relToRequiredBy ? appMapL2.relToRequiredBy.nodes.filter((e) => {
-				// filter for tag name (unfortunately not possible in query on relation)
-				return index.includesTag(e, 'Platform');
-			}) : [];
-			const bcaBCs = appMapL2.relApplicationToBCA ? appMapL2.relApplicationToBCA.nodes : [];
-			// if COBRA works fine it should not be neccessary to filter for tag name 'BCA'
-			const tmfAPPs = appMapL2.relToRequires ? appMapL2.relToRequires.nodes.filter((e) => {
+			const csmL1 = csmL2.relToParent ? csmL2.relToParent.nodes[0] : undefined;
+			const platfProdByBCs = []; // TODO
+			const platfConsByBCs = []; // TODO
+			const bcaBCs = []; // TODO
+			const tmfAPPs = csmL2.relToRequires ? csmL2.relToRequires.nodes.filter((e) => {
 				// filter for tag name (unfortunately not possible in query on relation)
 				return index.includesTag(e, 'TMF Open API');
 			}) : [];
-			const cimDOs = appMapL2.relApplicationToDataObject ? appMapL2.relApplicationToDataObject.nodes.filter((e) => {
+			const cimDOs = csmL2.relCSMToDataObject ? csmL2.relCSMToDataObject.nodes.filter((e) => {
 				// filter for tag name (unfortunately not possible in query on relation)
 				return index.includesTag(e, 'CIM');
 			}) : [];
 			tableData.push({
-				appMapL1ID: appMapL1 ? appMapL1.id : '',
-				appMapL1Name: appMapL1 ? appMapL1.name : '',
-				appMapL2ID: appMapL2.id,
-				appMapL2Name: appMapL2.name,
-				appMapL2Desc: appMapL2.description,
-				serviceStatus: this._getStatusValue(this.SERVICE_STATUS_OPTIONS, index.getFirstTagFromGroup(appMapL2, 'Service Status')),
-				serviceClass: this._getStatusValue(this.SERVICE_CLASSIFICATION_OPTIONS, index.getFirstTagFromGroup(appMapL2, 'Service Classification')),
-				serviceOrigin: this._getStatusValue(this.SERVICE_ORIGIN_OPTIONS, index.getFirstTagFromGroup(appMapL2, 'Service Origin')),
+				csmL1ID: csmL1 ? csmL1.id : '',
+				csmL1Name: csmL1 ? csmL1.name : '',
+				csmL2ID: csmL2.id,
+				csmL2Name: csmL2.name,
+				csmL2Desc: csmL2.description,
+				serviceStatus: this._getOptionKeyFromValue(this.SERVICE_STATUS_OPTIONS, csmL2.serviceStatus),
+				serviceClass: this._getOptionKeyFromValue(this.SERVICE_CLASSIFICATION_OPTIONS, csmL2.serviceClassification),
+				serviceOrigin: this._getOptionKeyFromValue(this.SERVICE_ORIGIN_OPTIONS, csmL2.serviceOrigin),
 				platfProdByBCsNames: platfProdByBCs.map((e) => {
 					return e.name;
 				}),
@@ -157,11 +202,11 @@ class Report extends Component {
 		});
 	}
 
-	_getStatusValue(statusGroup, status) {
-		if (!status) {
+	_getOptionKeyFromValue(options, value) {
+		if (!value) {
 			return undefined;
 		}
-		const key = Utilities.getKeyToValue(statusGroup, status.name);
+		const key = Utilities.getKeyToValue(options, value);
 		return key !== undefined && key !== null ? parseInt(key, 10) : undefined;
 	}
 
@@ -223,15 +268,15 @@ class Report extends Component {
 
 	render() {
 		return (
-			<BootstrapTable data={this.state.data} keyField='appMapL2ID'
+			<BootstrapTable data={this.state.data} keyField='csmL2ID'
 				 striped hover search exportCSV
 				 options={{ clearSearch: true }}>
 				<TableHeaderColumn dataSort
-					 dataField='appMapL1Name'
+					 dataField='csmL1Name'
 					 width='200px'
 					 dataAlign='left'
 					 dataFormat={this._formatLink}
-					 formatExtraData={{ type: 'Application', id: 'appMapL1ID' }}
+					 formatExtraData={{ type: 'CSM', id: 'csmL1ID' }}
 					 csvHeader='hierarchyL0Name'
 					 filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>Service Domain</TableHeaderColumn>
@@ -247,11 +292,11 @@ class Report extends Component {
 					 filter={{ type: 'SelectFilter', condition: 'eq', placeholder: 'Please choose', options: this.SERVICE_CLASSIFICATION_OPTIONS }}
 				>Service Classification</TableHeaderColumn>
 				<TableHeaderColumn dataSort
-					 dataField='appMapL2Name'
+					 dataField='csmL2Name'
 					 width='200px'
 					 dataAlign='left'
 					 dataFormat={this._formatLink}
-					 formatExtraData={{ type: 'Application', id: 'appMapL2ID' }}
+					 formatExtraData={{ type: 'CSM', id: 'csmL2ID' }}
 					 csvHeader='hierarchyL1Name'
 					 filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>Service Name</TableHeaderColumn>
@@ -267,7 +312,7 @@ class Report extends Component {
 					 filter={{ type: 'SelectFilter', condition: 'eq', placeholder: 'Please choose', options: this.SERVICE_ORIGIN_OPTIONS }}
 				>Service Origin</TableHeaderColumn>
 				<TableHeaderColumn dataSort  tdStyle={{ fontSize: '.85em' }}
-					 dataField='appMapL2Desc'
+					 dataField='csmL2Desc'
 					 width='200px'
 					 dataAlign='left'
 					 dataFormat={this._formatDescription}
