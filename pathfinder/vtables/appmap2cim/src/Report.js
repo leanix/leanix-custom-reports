@@ -10,6 +10,7 @@ class Report extends Component {
 		super(props);
 		this._initReport = this._initReport.bind(this);
 		this._handleData = this._handleData.bind(this);
+		this._formatLink = this._formatLink.bind(this);
 		this.state = {
 			setup: null,
 			data: []

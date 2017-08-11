@@ -11,6 +11,7 @@ class Report extends Component {
 		super(props);
 		this._initReport = this._initReport.bind(this);
 		this._handleData = this._handleData.bind(this);
+		this._formatName = this._formatName.bind(this);
 		this.COST_CENTRE_OPTIONS = {};
 		this.DEPLOYMENT_OPTIONS = {};
 		this.LIFECYCLE_PHASE_OPTIONS = {};
