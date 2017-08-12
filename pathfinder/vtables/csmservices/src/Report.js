@@ -316,7 +316,7 @@ class Report extends Component {
 					 width='200px'
 					 dataAlign='left'
 					 dataFormat={this._formatDescription}
-					 csvHeader='Service-description'
+					 csvHeader='service-description'
 					 csvFormat={this._formatDescription}
 					 filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>Service Description</TableHeaderColumn>
