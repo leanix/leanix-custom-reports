@@ -20,4 +20,6 @@ build_report appmap2platforms
 build_report cimmasterlist
 build_report csmoperations
 build_report csmservices
+build_report globalapplicationportfolio
+build_report technopedia
 cd ..
