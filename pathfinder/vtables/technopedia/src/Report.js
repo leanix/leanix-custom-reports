@@ -90,16 +90,16 @@ class Report extends Component {
 					filter: { facetFilters: [
 						{facetKey: "FactSheetTypes", keys: ["Application"]}
 						${appTagIDFilter}
-					] }
+					]}
 				) {
 					edges { node {
 						id name ${tagNameDef}
 						... on Application {
 							relApplicationToITComponent {
 								edges { node { factSheet {
-									id fullName type
+									id name type
 									documents {
-										edges{ node{ name url } }
+										edges { node { name url } }
 									}
 									... on ITComponent {
 										category
@@ -107,7 +107,7 @@ class Report extends Component {
 											edges { node { factSheet { name } } }
 										}
  									}
-								} } }
+								}}}
 							}
 						}
 					}}
@@ -188,12 +188,12 @@ class Report extends Component {
 				if (itcmp.category === this.ITCMP_CATEGORY_EXCLUDE) {
 					return;
 				}
-/* excluded in cause of 'for doc test only'
-				const documents = itcmp.documents ? itcmp.documents.nodes : [];
-*/
+				/* excluded in cause of 'for doc test only'
+				 * const documents = itcmp.documents ? itcmp.documents.nodes : [];
+				 */
 				const documents = this._getDocuments(tmpDocChoice);  // for doc test only
 				if (tmpDocChoice > 5) {tmpDocChoice = 0} else {tmpDocChoice++};  // for doc test only
-				let doc = { state: 0, ref: '' };
+				const doc = { state: 0, ref: '' };
 				documents.forEach((e) => {
 					/* TODO:
 						use attribute for state as soon as it is available
@@ -204,20 +204,17 @@ class Report extends Component {
 					}
 					if (e.name.endsWith('ignored')) {
 						doc.state = 2;
+					} else if (e.name.endsWith('missing')) {
+						doc.state = 3;
 					} else {
-						if (e.name.endsWith('missing')) {
-							doc.state = 3;
-						} else {
-							doc.state = 1;
-							doc.ref = e.url ? e.url : '';
-						}
+						doc.state = 1;
+						doc.ref = e.url ? e.url : '';
 					}
 				});
-
 				tableData.push({
 					appName: app.name,
 					appID: app.id,
-					itcmpName: itcmp.fullName,
+					itcmpName: itcmp.name,
 					itcmpID: itcmp.id,
 					itcmpCategory: this._getOptionKeyFromValue(this.ITCMP_CATEGORY, itcmp.category),
 					state: doc.state,
@@ -234,7 +231,7 @@ class Report extends Component {
 	/* formatting functions for the table */
 
 	_formatLink(cell, row, extraData) {
-		if (!cell && cell !== 0) {
+		if (!cell) {
 			return '';
 		}
 		return (<Link link={this.state.setup.settings.baseUrl + '/factsheet/' + extraData.type + '/' + row[extraData.id]} target='_blank' text={cell} />);
@@ -257,8 +254,6 @@ class Report extends Component {
 		return status[cell] ? status[cell] : '';
 	}
 
-	/* formatting functions for the csv export */
-
 	render() {
 		return (
 			<BootstrapTable data={this.state.data} keyField='appID'
@@ -269,7 +264,7 @@ class Report extends Component {
 					dataAlign='left'
 					dataFormat={this._formatLink}
 					formatExtraData={{ type: 'Application', id: 'appID' }}
-					csvHeader='name'
+					csvHeader='application-name'
 					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>Application name</TableHeaderColumn>
 				<TableHeaderColumn dataSort
@@ -277,7 +272,7 @@ class Report extends Component {
 					dataAlign='left'
 					dataFormat={this._formatLink}
 					formatExtraData={{ type: 'ITComponent', id: 'itcmpID' }}
-					csvHeader='resourceName'
+					csvHeader='it-component-name'
 					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>IT Component name</TableHeaderColumn>
 				<TableHeaderColumn dataSort
@@ -286,7 +281,7 @@ class Report extends Component {
 					dataAlign='left'
 					dataFormat={this._formatEnum}
 					formatExtraData={this.ITCMP_CATEGORY}
-					csvHeader='resourceName'
+					csvHeader='it-component-type'
 					csvFormat={this._formatEnum}
 					csvFormatExtraData={this.ITCMP_CATEGORY}
 					filter={{ type: 'SelectFilter', condition: 'eq', placeholder: 'Please choose', options: this.ITCMP_CATEGORY }}
@@ -297,13 +292,15 @@ class Report extends Component {
 					dataAlign='left'
 					dataFormat={this._formatState}
 					formatExtraData={this.TECHNOP_STATE}
+					csvHeader='technopedia-status'
 					filter={{ type: 'SelectFilter', condition: 'eq', placeholder: 'Please choose', options: this.TECHNOP_STATE }}
 				>Technopedia status</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					dataField='count'
 					width='200'
 					dataAlign='right'
-					filter={{ type: 'NumberFilter', placeholder: 'Please enter a value', delay: 500 }}
+					csvHeader='count-in-other-markets'
+					filter={{ type: 'NumberFilter', placeholder: 'Please enter a value' }}
 				>Count in other markets</TableHeaderColumn>
 			</BootstrapTable>
 		);

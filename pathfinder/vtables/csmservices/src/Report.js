@@ -110,7 +110,7 @@ class Report extends Component {
 		let csmIDFilter = ''; // initial assume tagGroup.name changed or the id couldn't be determined otherwise
 		let tagNameDef = 'tags { name }'; // initial assume to get it
 		if (csmID) {
-			// query filtering only bc with tag 'CSM'
+			// query filtering only CSM with tag 'CSM'
 			// TODO: use correct tagGroup name ('CSM Type'?)
 			csmIDFilter = `, {facetKey: "Application Type", keys: ["${csmID}"]}`;
 			tagNameDef = '';
@@ -131,7 +131,7 @@ class Report extends Component {
 							relToRequires (facetFilters: [
 								{facetKey: "FactSheetTypes", keys: ["Application"]}
 							]) { edges { node { factSheet { id name tags { name } } } } }
-							relCSMToDataObject { edges { node { factSheet { id name } } } }
+							relCSMToDataObject { edges { node { factSheet { id name tags { name } } } } }
 						}
 					}}
 				}}`;
@@ -277,7 +277,7 @@ class Report extends Component {
 					 dataAlign='left'
 					 dataFormat={this._formatLink}
 					 formatExtraData={{ type: 'CSM', id: 'csmL1ID' }}
-					 csvHeader='hierarchyL0Name'
+					 csvHeader='serive-domain'
 					 filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>Service Domain</TableHeaderColumn>
 				<TableHeaderColumn dataSort
@@ -286,7 +286,7 @@ class Report extends Component {
 					 dataAlign='left'
 					 dataFormat={this._formatEnum}
 					 formatExtraData={this.SERVICE_CLASSIFICATION_OPTIONS}
-					 csvHeader='serviceClassification'
+					 csvHeader='service-classification'
 					 csvFormat={this._formatEnum}
 					 csvFormatExtraData={this.SERVICE_CLASSIFICATION_OPTIONS}
 					 filter={{ type: 'SelectFilter', condition: 'eq', placeholder: 'Please choose', options: this.SERVICE_CLASSIFICATION_OPTIONS }}
@@ -297,7 +297,7 @@ class Report extends Component {
 					 dataAlign='left'
 					 dataFormat={this._formatLink}
 					 formatExtraData={{ type: 'CSM', id: 'csmL2ID' }}
-					 csvHeader='hierarchyL1Name'
+					 csvHeader='service-name'
 					 filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>Service Name</TableHeaderColumn>
 				<TableHeaderColumn dataSort
@@ -306,17 +306,17 @@ class Report extends Component {
 					 dataAlign='left'
 					 dataFormat={this._formatEnum}
 					 formatExtraData={this.SERVICE_ORIGIN_OPTIONS}
-					 csvHeader='serviceOrigin'
+					 csvHeader='service-origin'
 					 csvFormat={this._formatEnum}
 					 csvFormatExtraData={this.SERVICE_ORIGIN_OPTIONS}
 					 filter={{ type: 'SelectFilter', condition: 'eq', placeholder: 'Please choose', options: this.SERVICE_ORIGIN_OPTIONS }}
 				>Service Origin</TableHeaderColumn>
-				<TableHeaderColumn dataSort  tdStyle={{ fontSize: '.85em' }}
+				<TableHeaderColumn dataSort tdStyle={{ fontSize: '.85em' }}
 					 dataField='csmL2Desc'
 					 width='200px'
 					 dataAlign='left'
 					 dataFormat={this._formatDescription}
-					 csvHeader='description'
+					 csvHeader='Service-description'
 					 csvFormat={this._formatDescription}
 					 filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>Service Description</TableHeaderColumn>
@@ -326,7 +326,7 @@ class Report extends Component {
 					 dataAlign='left'
 					 dataFormat={this._formatEnum}
 					 formatExtraData={this.SERVICE_STATUS_OPTIONS}
-					 csvHeader='status'
+					 csvHeader='service-status'
 					 csvFormat={this._formatEnum}
 					 csvFormatExtraData={this.SERVICE_STATUS_OPTIONS}
 					 filter={{ type: 'SelectFilter', condition: 'eq', placeholder: 'Please choose', options: this.SERVICE_STATUS_OPTIONS }}
@@ -337,7 +337,7 @@ class Report extends Component {
 					 dataAlign='left'
 					 dataFormat={this._formatArray}
 					 formatExtraData={{ type: 'BusinessCapability', ids: 'bcaBCsIDs' }}
-					 csvHeader='bcaName'
+					 csvHeader='bca'
 					 csvFormat={this._csvFormatArray}
 					 filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>BCA</TableHeaderColumn>
@@ -347,7 +347,7 @@ class Report extends Component {
 					 dataAlign='left'
 					 dataFormat={this._formatArray}
 					 formatExtraData={{ type: 'DataObject', ids: 'cimDOsIDs' }}
-					 csvHeader='cimName'
+					 csvHeader='cim'
 					 csvFormat={this._csvFormatArray}
 					 filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>CIM</TableHeaderColumn>
@@ -357,27 +357,27 @@ class Report extends Component {
 					 dataAlign='left'
 					 dataFormat={this._formatArray}
 					 formatExtraData={{ type: 'BusinessCapability', ids: 'platfProdByBCsIDs' }}
-					 csvHeader='platformName'
+					 csvHeader='platform-produced-by'
 					 csvFormat={this._csvFormatArray}
 					 filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
-				>Platform (Produced By)</TableHeaderColumn>
+				>Platform (produced by)</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='platfConsByBCsNames'
 					 width='210px'
 					 dataAlign='left'
 					 dataFormat={this._formatArray}
 					 formatExtraData={{ type: 'BusinessCapability', ids: 'platfConsByBCsIDs' }}
-					 csvHeader='platform2Name'
+					 csvHeader='platform-consumed-by'
 					 csvFormat={this._csvFormatArray}
 					 filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
-				>Platform (Consumed By)</TableHeaderColumn>
+				>Platform (consumed by)</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='tmfAPPsNames'
 					 width='200px'
 					 dataAlign='left'
 					 dataFormat={this._formatArray}
 					 formatExtraData={{ type: 'Application', ids: 'tmfAPPsIDs' }}
-					 csvHeader='tmfName'
+					 csvHeader='tmf-open-api'
 					 csvFormat={this._csvFormatArray}
 					 filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
 				>TMF Open API</TableHeaderColumn>
