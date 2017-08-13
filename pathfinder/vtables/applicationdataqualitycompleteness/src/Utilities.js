@@ -27,10 +27,14 @@ function getLifecycleModel(setup, factsheetName) {
 	}
 	if (factsheetName) {
 		const factsheetModel = setup.settings.dataModel.factSheets[factsheetName];
-		if (!factsheetModel || !factsheetModel.fields || !factsheetModel.fields.lifecycle
-			 || factsheetModel.fields.lifecycle.type !== 'LIFECYCLE'
-			 || !factsheetModel.fields.lifecycle.inView || !factsheetModel.fields.lifecycle.inFacet
-			 || !Array.isArray(factsheetModel.fields.lifecycle.values)) {
+		if (!factsheetModel ||
+			!factsheetModel.fields ||
+			!factsheetModel.fields.lifecycle ||
+			factsheetModel.fields.lifecycle.type !== 'LIFECYCLE' ||
+			!factsheetModel.fields.lifecycle.inView ||
+			!factsheetModel.fields.lifecycle.inFacet ||
+			!Array.isArray(factsheetModel.fields.lifecycle.values)
+		) {
 			return [];
 		}
 		return factsheetModel.fields.lifecycle.values;

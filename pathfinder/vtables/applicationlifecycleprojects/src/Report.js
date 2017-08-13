@@ -69,8 +69,11 @@ class Report extends Component {
 
 	_getProjectImpacts(setup) {
 		const relationModel = setup.settings.dataModel.relations.applicationProjectRelation;
-		if (!relationModel || !relationModel.fields || !relationModel.fields.projectImpact
-			 || !Array.isArray(relationModel.fields.projectImpact.values)) {
+		if (!relationModel ||
+			!relationModel.fields ||
+			!relationModel.fields.projectImpact ||
+			!Array.isArray(relationModel.fields.projectImpact.values)
+		) {
 			return [];
 		}
 		return relationModel.fields.projectImpact.values;

@@ -27,10 +27,12 @@ function getLifecycleModel(setup, factsheetName) {
 	}
 	if (factsheetName) {
 		const factsheetModel = setup.settings.dataModel.factSheets[factsheetName];
-		if (!factsheetModel || !factsheetModel.fields || !factsheetModel.fields.lifecycle
-			 || factsheetModel.fields.lifecycle.type !== 'LIFECYCLE'
-			 || !factsheetModel.fields.lifecycle.inView || !factsheetModel.fields.lifecycle.inFacet
-			 || !Array.isArray(factsheetModel.fields.lifecycle.values)) {
+		if (!factsheetModel ||
+			!factsheetModel.fields ||
+			!factsheetModel.fields.lifecycle ||
+			factsheetModel.fields.lifecycle.type !== 'LIFECYCLE' ||
+			!Array.isArray(factsheetModel.fields.lifecycle.values)
+		) {
 			return [];
 		}
 		return factsheetModel.fields.lifecycle.values;
@@ -50,6 +52,36 @@ function getLifecycles(node) {
 			startDate: Date.parse(e.startDate + ' 00:00:00')
 		};
 	});;
+}
+
+function getFrom(obj, path, defaultValue) {
+	if (!obj) {
+		return defaultValue;
+	}
+	const pathArray = path.split(/\./);
+	let result = obj;
+	for (let i = 0; i < pathArray.length; i++) {
+		const e = pathArray[i];
+		result = result[pathArray[i]];
+		if (!result) {
+			break;
+		}
+	}
+	return result ? result : defaultValue;
+}
+
+function createOptionsObj(optionValues) {
+	if (!optionValues || !Array.isArray(optionValues)) {
+		return {};
+	}
+	return optionValues.reduce((r, e, i) => {
+		r[i] = e;
+		return r;
+	}, {});
+}
+
+function createOptionsObjFrom(obj, path) {
+	return createOptionsObj(getFrom(obj, path, []));
 }
 
 function getKeyToValue(obj, value) {
@@ -107,6 +139,9 @@ export default {
 	getCurrentLifecycle: getCurrentLifecycle,
 	getLifecycleModel: getLifecycleModel,
 	getLifecycles: getLifecycles,
+	getFrom: getFrom,
+	createOptionsObj: createOptionsObj,
+	createOptionsObjFrom: createOptionsObjFrom,
 	getKeyToValue: getKeyToValue,
 	isProductionPhase: isProductionPhase,
 	getMarket: getMarket,

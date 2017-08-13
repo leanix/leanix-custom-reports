@@ -68,7 +68,7 @@ class Report extends Component {
 			!factsheetsModel.CSM.fields ||
 			!factsheetsModel.CSM.fields.serviceStatus ||
 			!Array.isArray(factsheetsModel.CSM.fields.serviceStatus.values)
-		   ) {
+		) {
 			return [];
 		}
 		return factsheetsModel.CSM.fields.serviceStatus.values;
@@ -81,7 +81,7 @@ class Report extends Component {
 			!factsheetsModel.CSM.fields ||
 			!factsheetsModel.CSM.fields.serviceClassification ||
 			!Array.isArray(factsheetsModel.CSM.fields.serviceClassification.values)
-		   ) {
+		) {
 			return [];
 		}
 		return factsheetsModel.CSM.fields.serviceClassification.values;
@@ -94,7 +94,7 @@ class Report extends Component {
 			!factsheetsModel.CSM.fields ||
 			!factsheetsModel.CSM.fields.serviceOrigin ||
 			!Array.isArray(factsheetsModel.CSM.fields.serviceOrigin.values)
-		   ) {
+		) {
 			return [];
 		}
 		return factsheetsModel.CSM.fields.serviceOrigin.values;

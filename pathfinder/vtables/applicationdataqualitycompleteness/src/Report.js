@@ -66,7 +66,7 @@ class Report extends Component {
 						${itTagIDFilter}
 					]}
 				) {
-					edges {node {
+					edges { node {
 						id name description tags { name }
 						subscriptions { edges { node { roles { name } } } }
 						... on Application {
@@ -80,7 +80,8 @@ class Report extends Component {
 				}
 				businessCapabilities: allFactSheets(
 					filter: {facetFilters: [
-						{facetKey: "FactSheetTypes", keys: ["BusinessCapability"]} ${appMapIDFilter}
+						{facetKey: "FactSheetTypes", keys: ["BusinessCapability"]}
+						${appMapIDFilter}
 					]}
 				) {
 					edges { node { id ${tagNameDef} } }
@@ -117,6 +118,9 @@ class Report extends Component {
 			}
 			groupedByMarket[market].push(e);
 		});
+		const ruleConfig = {
+			appMapID: appMapID
+		};
 		for (let market in groupedByMarket) {
 			const allApplications = groupedByMarket[market];
 			const onlyActive = allApplications.filter((e) => {
@@ -137,9 +141,9 @@ class Report extends Component {
 			RuleSet.forEach((e) => {
 				let ruleResult = undefined;
 				if (e.overall) {
-					ruleResult = e.compute(compliants, nonCompliants);
+					ruleResult = e.compute(compliants, nonCompliants, ruleConfig);
 				} else {
-					ruleResult = e.compute(index, applications);
+					ruleResult = e.compute(index, applications, ruleConfig);
 					compliants[e.name] = ruleResult.compliant.length;
 					nonCompliants[e.name] = ruleResult.nonCompliant.length;
 				}

@@ -65,7 +65,7 @@ class Report extends Component {
 			!relationModel.ITComponent.fields ||
 			!relationModel.ITComponent.fields.category ||
 			!Array.isArray(relationModel.ITComponent.fields.category.values)
-		   ) {
+		) {
 			return [];
 		}
 		return relationModel.ITComponent.fields.category.values;

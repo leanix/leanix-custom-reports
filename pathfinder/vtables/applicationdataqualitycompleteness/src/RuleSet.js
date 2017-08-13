@@ -2,7 +2,7 @@ import Utilities from './Utilities';
 
 export default [{
 		name: 'Adding applications, but no project',
-		compute: (index, applications) => {
+		compute: (index, applications, config) => {
 			const result = {
 				compliant: [],
 				nonCompliant: []
@@ -26,7 +26,7 @@ export default [{
 		}
 	}, {
 		name: 'Retiring applications, but no project',
-		compute: (index, applications) => {
+		compute: (index, applications, config) => {
 			const result = {
 				compliant: [],
 				nonCompliant: []
@@ -50,7 +50,7 @@ export default [{
 		}
 	}, {
 		name: 'has COBRA (only active, exactly one)',
-		compute: (index, applications) => {
+		compute: (index, applications, config) => {
 			const result = {
 				compliant: [],
 				nonCompliant: []
@@ -62,8 +62,9 @@ export default [{
 					return;
 				}
 				const compliantBCs = subIndex.nodes.filter((e2) => {
+					// access businessCapabilities
 					const bc = index.byID[e2.id];
-					return bc && index.includesTag(bc, 'AppMap');
+					return bc && (!config.appMapID ? index.includesTag(bc, 'AppMap') : true);
 				});
 				if (compliantBCs.length === 1) {
 					result.compliant.push(e);
@@ -75,7 +76,7 @@ export default [{
 		}
 	}, {
 		name: 'has COTS Package (only active)',
-		compute: (index, applications) => {
+		compute: (index, applications, config) => {
 			const result = {
 				compliant: [],
 				nonCompliant: []
@@ -91,7 +92,7 @@ export default [{
 		}
 	}, {
 		name: 'has Software Product (only active, w/ COTS Package)',
-		compute: (index, applications) => {
+		compute: (index, applications, config) => {
 			const result = {
 				compliant: [],
 				nonCompliant: []
@@ -103,6 +104,7 @@ export default [{
 					return;
 				}
 				const compliantITComp = subIndex.nodes.find((e2) => {
+					// access itComponents
 					return index.byID[e2.id];
 				});
 				if (compliantITComp) {
@@ -115,7 +117,7 @@ export default [{
 		}
 	}, {
 		name: 'has Software Product, but no Placeholder (only active, w/ COTS Package)',
-		compute: (index, applications) => {
+		compute: (index, applications, config) => {
 			const result = {
 				compliant: [],
 				nonCompliant: []
@@ -126,8 +128,10 @@ export default [{
 					return;
 				}
 				const compliantITComp = subIndex.nodes.find((e2) => {
+					// access itComponents
 					return index.byID[e2.id];
 				});
+				// access itComponents
 				if (index.includesTag(compliantITComp ? index.byID[compliantITComp.id] : undefined, 'Placeholder')) {
 					result.nonCompliant.push(e);
 				} else {
@@ -138,7 +142,7 @@ export default [{
 		}
 	}, {
 		name: 'has Description (only active)',
-		compute: (index, applications) => {
+		compute: (index, applications, config) => {
 			const result = {
 				compliant: [],
 				nonCompliant: []
@@ -154,7 +158,7 @@ export default [{
 		}
 	}, {
 		name: 'has Lifecycle',
-		compute: (index, applications) => {
+		compute: (index, applications, config) => {
 			const result = {
 				compliant: [],
 				nonCompliant: []
@@ -170,7 +174,7 @@ export default [{
 		}
 	}, {
 		name: 'has IT Owner (only active)',
-		compute: (index, applications) => {
+		compute: (index, applications, config) => {
 			const result = {
 				compliant: [],
 				nonCompliant: []
@@ -186,7 +190,7 @@ export default [{
 		}
 	}, {
 		name: 'has SPOC (only active)',
-		compute: (index, applications) => {
+		compute: (index, applications, config) => {
 			const result = {
 				compliant: [],
 				nonCompliant: []
@@ -202,7 +206,7 @@ export default [{
 		}
 	}, {
 		name: 'has Business Value (only active)',
-		compute: (index, applications) => {
+		compute: (index, applications, config) => {
 			const result = {
 				compliant: [],
 				nonCompliant: []
@@ -218,7 +222,7 @@ export default [{
 		}
 	}, {
 		name: 'has Technical Condition (only active)',
-		compute: (index, applications) => {
+		compute: (index, applications, config) => {
 			const result = {
 				compliant: [],
 				nonCompliant: []
@@ -234,7 +238,7 @@ export default [{
 		}
 	}, {
 		name: 'has Cost Centre (only active)',
-		compute: (index, applications) => {
+		compute: (index, applications, config) => {
 			const result = {
 				compliant: [],
 				nonCompliant: []
@@ -251,7 +255,7 @@ export default [{
 	}, {
 		name: 'Overall Quality',
 		overall: true,
-		compute: (compliants, nonCompliants) => {
+		compute: (compliants, nonCompliants, config) => {
 			const result = {
 				compliant: 0,
 				nonCompliant: 0
@@ -294,11 +298,10 @@ function _hasSubscriptionRole(application, subscriptionRole) {
 	if (!subIndex || subIndex.nodes.length < 1) {
 		return false;
 	}
-	const compliantSubscription = subIndex.nodes.find((e) => {
+	return subIndex.nodes.find((e) => {
 		const roles = e.roles;
 		return roles && roles.find((e2) => {
 			return e2.name === subscriptionRole;
 		});
 	});
-	return compliantSubscription;
 }
