@@ -107,7 +107,6 @@ class Report extends Component {
 			appMapIDFilter = `, {facetKey: "BC Type", keys: ["${appMapID}"]}`;
 			tagNameDef = '';
 		}
-
 		// TODO primaryTypeID fehlt an relApplicationToITComponent
 		// bc w/ AppMap only
 		return `{applications: allFactSheets(
