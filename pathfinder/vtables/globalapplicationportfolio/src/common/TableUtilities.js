@@ -8,11 +8,12 @@ function formatLinkFactsheet(setup) {
 		if (!cell) {
 			return '';
 		}
-		return (<Link
-			link={setup.settings.baseUrl + '/factsheet/' + extraData.type + '/' + row[extraData.id]}
-			target='_blank'
-			text={cell} />);
-
+		return (
+			<Link
+				link={setup.settings.baseUrl + '/factsheet/' + extraData.type + '/' + row[extraData.id]}
+				target='_blank'
+				text={cell} />
+		);
 	};
 }
 
@@ -103,7 +104,7 @@ const dateFilter = {
 	type: 'DateFilter'
 };
 
-/* PropTypes.options */
+/* custom PropTypes */
 
 function options(props, propName, componentName) {
 	const options = props[propName];
