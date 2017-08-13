@@ -18,7 +18,7 @@ class Table  extends Component {
 					 dataField='name'
 					 width='300px'
 					 dataAlign='left'
-					 dataFormat={TableUtilities.formatLinkFactsheet(this.state.setup)}
+					 dataFormat={TableUtilities.formatLinkFactsheet(this.props.setup)}
 					 formatExtraData={{ type: 'Application', id: 'id' }}
 					 csvHeader='application-name'
 					 filter={TableUtilities.textFilter}
@@ -36,7 +36,7 @@ class Table  extends Component {
 					 dataField='cobraNames'
 					 width='300px'
 					 dataAlign='left'
-					 dataFormat={TableUtilities.formatLinkArrayFactsheets(this.state.setup)}
+					 dataFormat={TableUtilities.formatLinkArrayFactsheets(this.props.setup)}
 					 formatExtraData={{ type: 'BusinessCapability', id: 'cobraIds' }}
 					 csvHeader='cobra'
 					 csvFormat={TableUtilities.formatArray}
@@ -143,7 +143,7 @@ class Table  extends Component {
 					 dataField='cotsSoftware'
 					 width='300px'
 					 dataAlign='left'
-					 dataFormat={TableUtilities.formatLinkArrayFactsheets(this.state.setup)}
+					 dataFormat={TableUtilities.formatLinkArrayFactsheets(this.props.setup)}
 					 formatExtraData={{ type: 'ITComponent', id: 'cotsSoftwareIds' }}
 					 csvHeader='cots-software'
 					 csvFormat={TableUtilities.formatArray}
@@ -186,7 +186,7 @@ class Table  extends Component {
 					 dataField='supportNames'
 					 width='300px'
 					 dataAlign='left'
-					 dataFormat={TableUtilities.formatLinkArrayFactsheets(this.state.setup)}
+					 dataFormat={TableUtilities.formatLinkArrayFactsheets(this.props.setup)}
 					 formatExtraData={{ type: 'ITComponent', id: 'supportIds' }}
 					 csvHeader='supported-by'
 					 csvFormat={TableUtilities.formatArray}
@@ -482,7 +482,8 @@ Table.propTypes = {
 		deployment: TableUtilities.PropTypes.options,
 		soxPci: TableUtilities.PropTypes.options,
 		accessType: TableUtilities.PropTypes.options
-	}).isRequired
+	}).isRequired,
+	setup: PropTypes.object.isRequired
 };
 
 export default Table;

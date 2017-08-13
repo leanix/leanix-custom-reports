@@ -237,25 +237,27 @@ class Report extends Component {
 
 	render() {
 		return (
-			<Table data={this.state.data} options={{
-				lifecyclePhase: this.LIFECYCLE_PHASE_OPTIONS,
-				recommendation: this.RECOMMENDATION_OPTIONS,
-				market: this.MARKET_OPTIONS,
-				costCentre: this.COST_CENTRE_OPTIONS,
-				stack: this.STACK_OPTIONS,
-				admScope: this.ADM_SCOPE_OPTIONS,
-				cotsPackage: this.COTS_PACKAGE_OPTIONS,
-				lastMajorUpgrade: this.LAST_MAJOR_UPGRADE_OPTIONS,
-				customisation: this.CUSTOMISATION_LEVEL_OPTIONS,
-				functionalSuitability: this.FUNCTIONAL_SUITABILITY_OPTIONS,
-				technicalSuitability: this.TECHNICAL_SUITABILITY_OPTIONS,
-				applicationComplexity: this.APPLICATION_COMPLEXITY_OPTIONS,
-				businessCriticality: this.BUSINESS_CRITICALITY_OPTIONS,
-				applicationUsage: this.APPLICATION_USAGE_OPTIONS,
-				deployment: this.DEPLOYMENT_OPTIONS,
-				soxPci: this.SOX_PCI_OPTIONS,
-				accessType: this.ACCESS_TYPE_OPTIONS
-			}} />
+			<Table data={this.state.data}
+				options={{
+					lifecyclePhase: this.LIFECYCLE_PHASE_OPTIONS,
+					recommendation: this.RECOMMENDATION_OPTIONS,
+					market: this.MARKET_OPTIONS,
+					costCentre: this.COST_CENTRE_OPTIONS,
+					stack: this.STACK_OPTIONS,
+					admScope: this.ADM_SCOPE_OPTIONS,
+					cotsPackage: this.COTS_PACKAGE_OPTIONS,
+					lastMajorUpgrade: this.LAST_MAJOR_UPGRADE_OPTIONS,
+					customisation: this.CUSTOMISATION_LEVEL_OPTIONS,
+					functionalSuitability: this.FUNCTIONAL_SUITABILITY_OPTIONS,
+					technicalSuitability: this.TECHNICAL_SUITABILITY_OPTIONS,
+					applicationComplexity: this.APPLICATION_COMPLEXITY_OPTIONS,
+					businessCriticality: this.BUSINESS_CRITICALITY_OPTIONS,
+					applicationUsage: this.APPLICATION_USAGE_OPTIONS,
+					deployment: this.DEPLOYMENT_OPTIONS,
+					soxPci: this.SOX_PCI_OPTIONS,
+					accessType: this.ACCESS_TYPE_OPTIONS
+				}}
+				setup={this.state.setup} />
 		);
 	}
 }
