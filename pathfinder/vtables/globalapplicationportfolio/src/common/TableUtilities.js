@@ -8,7 +8,7 @@ import LinkList from './LinkList';
 function formatLinkFactsheet(setup) {
 	const baseUrl = Utilities.getFrom(setup, 'settings.baseUrl');
 	return (cell, row, extraData) => {
-		if (!cell) {
+		if (!cell || !baseUrl) {
 			return '';
 		}
 		return (
@@ -23,7 +23,7 @@ function formatLinkFactsheet(setup) {
 function formatLinkArrayFactsheets(setup) {
 	const baseUrl = Utilities.getFrom(setup, 'settings.baseUrl');
 	return (cell, row, extraData) => {
-		if (!cell) {
+		if (!cell || !baseUrl) {
 			return '';
 		}
 		return (
