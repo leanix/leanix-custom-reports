@@ -32,21 +32,36 @@ class Report extends Component {
 		this.setState({
 			setup: setup
 		});
+		// get operation status of CSM from data model
+		this.OPERATION_STATUS_OPTIONS = this._getCsmServiceStatus(setup).
+			reduce((r, e, i) => {
+				r[i] = e;
+				return r;
+		}, {});
 		// get all tags, then the data
 		lx.executeGraphQL(CommonQueries.tagGroups).then((tagGroups) => {
 			const index = new DataIndex();
 			index.put(tagGroups);
+			// TODO: use correct tagGroup name ('CSM Type'?)
 			const csmID = index.getFirstTagID('Application Type', 'CSM');
 			const platformID = index.getFirstTagID('BC Type', 'Platform');
-			this.OPERATION_STATUS_OPTIONS = index.getTags('Service Status').reduce((r, e, i) => {
-				r[i] = e.name;
-				return r;
-			}, {});
 			lx.executeGraphQL(this._createQuery(csmID, platformID)).then((data) => {
 				index.put(data);
 				this._handleData(index, csmID, platformID);
 			});
 		});
+	}
+
+	_getCsmServiceStatus(setup) {
+		const factsheetModel = setup.settings.dataModel.factSheets['CSM'];
+		if (!factsheetModel ||
+			!factsheetModel.fields ||
+			!factsheetModel.fields.serviceStatus ||
+			!Array.isArray(factsheetModel.fields.serviceStatus.values)
+		   ) {
+			return [];
+		}
+		return factsheetModel.fields.serviceStatus.values;
 	}
 
 	_createConfig() {
@@ -56,26 +71,34 @@ class Report extends Component {
 	}
 
 	_createQuery(csmID, platformID) {
-		const csmIDFilter = csmID ? `, {facetKey: "Application Type", keys: ["${csmID}"]}` : '';
+		let csmIDFilter = ''; // initial assume tagGroup.name changed or the id couldn't be determined otherwise
+		let csmTagNameDef = 'tags { name }'; // initial assume to get it
+		if (csmID) {
+			// query filtering only CSM with tag 'CSM'
+			// TODO: use correct tagGroup name ('CSM Type'?)
+			csmIDFilter = `, {facetKey: "Application Type", keys: ["${csmID}"]}`;
+			csmTagNameDef = '';
+		}
 		let platformIDFilter = ''; // initial assume tagGroup.name changed or the id couldn't be determined otherwise
-		let tagNameDef = 'tags { name }'; // initial assume to get it
+		let platfTagNameDef = 'tags { name }'; // initial assume to get it
 		if (platformID) {
 			platformIDFilter = `, {facetKey: "BC Type", keys: ["${platformID}"]}`;
-			tagNameDef = '';
+			platfTagNameDef = '';
 		}
-		return `{applications: allFactSheets(
+		// TODO: add 'relation CSM to Platform' to the query
+		return `{csm: allFactSheets(
 					sort: {mode: BY_FIELD, key: "displayName", order: asc},
 					filter: {facetFilters: [
-						{facetKey: "FactSheetTypes", keys: ["Application"]},
+						{facetKey: "FactSheetTypes", keys: ["CSM"]},
 						{facetKey: "hierarchyLevel", operator: OR, keys: ["1", "2", "3"]}
 						${csmIDFilter}
 					]}
 				) {
 					edges { node {
-						id name description level tags { name }
-						... on Application {
+						id name description level ${csmTagNameDef}
+						... on CSM {
+							serviceStatus
 							relToParent { edges { node { factSheet { id } } } }
-							relApplicationToPlatform { edges { node { factSheet { id } } } }
 						}
 					}}
 				}
@@ -85,13 +108,13 @@ class Report extends Component {
 						${platformIDFilter}
 					]}
 				) {
-					edges { node { id displayName ${tagNameDef} } }
+					edges { node { id displayName ${platfTagNameDef} } }
 				}}`;
 	}
 
 	_handleData(index, csmID, platformID) {
 		const tableData = [];
-		index.applications.nodes.forEach((e) => {
+		index.csm.nodes.forEach((e) => {
 			if (!csmID && !index.includesTag(e, 'CSM')) {
 				return;
 			}
@@ -99,24 +122,23 @@ class Report extends Component {
 			let tmp = e;
 			while (tmp) {
 				hierarchy['L' + tmp.level] = tmp;
-				tmp = index.getParent('applications', tmp.id);
+				tmp = index.getParent('csm', tmp.id);
 			}
-			let platformBCs = [];
-			const subIndex = e.relApplicationToPlatform;
-			if (subIndex) {
-				platformBCs = subIndex.nodes.map((e2) => {
-					return index.businessCapabilities.byID[e2.id];
-				}).filter((e2) => {
-					return e2 !== undefined && e2 !== null;
-				});
-				if (!platformID) {
-					// filter for tag name
-					platformBCs = platformBCs.filter((e2) => {
-						return index.includesTag(e2, 'Platform');
-					});
-				}
-			}
-			const operationStatus = index.getFirstTagFromGroup(e, 'Service Status');
+			let platformBCs = []; // TODO: relation CSM to Platform
+//			const subIndex = e.relCsm?ToPlatform;
+//			if (subIndex) {
+//				platformBCs = subIndex.nodes.map((e2) => {
+//					return index.businessCapabilities.byID[e2.id];
+//				}).filter((e2) => {
+//					return e2 !== undefined && e2 !== null;
+//				});
+//				if (!platformID) {
+//					// filter for tag name
+//					platformBCs = platformBCs.filter((e2) => {
+//						return index.includesTag(e2, 'Platform');
+//					});
+//				}
+//			}
 			tableData.push({
 				id: e.id,
 				level: e.level,
@@ -125,7 +147,7 @@ class Report extends Component {
 				name: hierarchy.L2 ? hierarchy.L2.name : '',
 				operation: hierarchy.L3 ? hierarchy.L3.name : '',
 				description: e.description,
-				operationStatus: this._getOperationStatusValue(operationStatus),
+				operationStatus: this._getOptionKeyFromValue(this.OPERATION_STATUS_OPTIONS, e.serviceStatus),
 				platforms: platformBCs.map((e2) => {
 					return e2.displayName;
 				}),
@@ -139,11 +161,11 @@ class Report extends Component {
 		});
 	}
 
-	_getOperationStatusValue(operationStatus) {
-		if (!operationStatus) {
+	_getOptionKeyFromValue(options, value) {
+		if (!value) {
 			return undefined;
 		}
-		const key = Utilities.getKeyToValue(this.OPERATION_STATUS_OPTIONS, operationStatus.name);
+		const key = Utilities.getKeyToValue(options, value);
 		return key !== undefined && key !== null ? parseInt(key, 10) : undefined;
 	}
 
@@ -153,7 +175,7 @@ class Report extends Component {
 		if (!cell) {
 			return '';
 		}
-		return (<Link link={this.state.setup.settings.baseUrl + '/factsheet/Application/' + row.hierarchy[level].id} target='_blank' text={cell} />);
+		return (<Link link={this.state.setup.settings.baseUrl + '/factsheet/CSM/' + row.hierarchy[level].id} target='_blank' text={cell} />);
 	}
 
 	_formatDescription(cell, row) {
