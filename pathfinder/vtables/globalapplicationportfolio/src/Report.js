@@ -14,12 +14,12 @@ class Report extends Component {
 		this._handleData = this._handleData.bind(this);
 		this.LIFECYCLE_PHASE_OPTIONS = {};
 		this.RECOMMENDATION_OPTIONS = {};
-		this.MARKET_OPTIONS = {}; // TODO
+		this.MARKET_OPTIONS = {};
 		this.COST_CENTRE_OPTIONS = {};
 		this.ADM_SCOPE_OPTIONS = {};
 		this.STACK_OPTIONS = {};
 		this.COTS_PACKAGE_OPTIONS = {};
-		this.LAST_MAJOR_UPGRADE_OPTIONS = {}; // TODO
+		this.LAST_MAJOR_UPGRADE_OPTIONS = {};
 		this.CUSTOMISATION_LEVEL_OPTIONS = {};
 		this.FUNCTIONAL_SUITABILITY_OPTIONS = {};
 		this.TECHNICAL_SUITABILITY_OPTIONS = {};
@@ -29,7 +29,7 @@ class Report extends Component {
 		this.DEPLOYMENT_OPTIONS = {};
 		this.SOX_PCI_OPTIONS = {};
 		this.ACCESS_TYPE_OPTIONS = {};
-		this.NETWORK_TECHNICAL_PRODUCT_FAMILY_OPTIONS = {};
+		//this.NETWORK_TECHNICAL_PRODUCT_FAMILY_OPTIONS = {};
 		this.state = {
 			setup: null,
 			data: []
@@ -71,9 +71,6 @@ class Report extends Component {
 			factsheetModel, 'fields.soxPci.values');
 		this.ACCESS_TYPE_OPTIONS = Utilities.createOptionsObjFrom(
 			factsheetModel, 'fields.accessType.values');
-		// TODO falsch im data modell -> muss multi select sein
-		this.NETWORK_TECHNICAL_PRODUCT_FAMILY_OPTIONS = Utilities.createOptionsObjFrom(
-			factsheetModel, 'fields.networkTechnicalProductFamily.values');
 		// get all tags, then the data
 		lx.executeGraphQL(CommonQueries.tagGroups).then((tagGroups) => {
 			const index = new DataIndex();
@@ -83,9 +80,14 @@ class Report extends Component {
 			this.RECOMMENDATION_OPTIONS = Utilities.createOptionsObj(index.getTags('Recommendation'));
 			this.COST_CENTRE_OPTIONS = Utilities.createOptionsObj(index.getTags('CostCentre'));
 			this.COTS_PACKAGE_OPTIONS = Utilities.createOptionsObj(index.getTags('COTS Package'));
-			// TODO ist nun daten feld
+			// TODO replace w/ data field once data model is final (note: data type)
 			this.LAST_MAJOR_UPGRADE_OPTIONS = Utilities.createOptionsObj(
-				index.getTags('Last Major Upgrade'));
+				index.getTags('Last Major Upgrade').map((e) => {
+				return e.name;
+			}));
+			// TODO replace w/ data field once data model is final (note: multi select value)
+			//this.NETWORK_TECHNICAL_PRODUCT_FAMILY_OPTIONS = Utilities.createOptionsObjFrom(
+			//	index.getTags('Network Technical Product Family'));
 			lx.executeGraphQL(this._createQuery(applicationTagID, appMapID)).then((data) => {
 				index.put(data);
 				this._handleData(index, applicationTagID, appMapID);
@@ -108,7 +110,6 @@ class Report extends Component {
 			tagNameDef = '';
 		}
 		// TODO primaryTypeID fehlt an relApplicationToITComponent
-		// bc w/ AppMap only
 		return `{applications: allFactSheets(
 					sort: {mode: BY_FIELD, key: "displayName", order: asc},
 					filter: {facetFilters: [
@@ -121,12 +122,10 @@ class Report extends Component {
 						subscriptions { edges { node { roles { name } user { email } } } }
 						... on Application {
 							stack admScope
-							lastMajorUpgrade { asString phases { phase startDate } }
 							customisationLevel functionalSuitability technicalSuitability
 							applicationComplexity businessCriticality applicationUsage
 							deployment alias externalId { externalId }
-							soxPci accessType networkTechnicalProductFamily
-							lifecycle { asString phases { phase startDate } }
+							soxPci accessType lifecycle { asString phases { phase startDate } }
 							relApplicationToBusinessCapability { edges { node { factSheet { id } } } }
 							relApplicationToITComponent { edges { node { factSheet { id } } } }
 							relApplicationToUserGroup { edges { node { usageType factSheet { id } } } }
@@ -135,8 +134,7 @@ class Report extends Component {
 				}
 				itComponents: allFactSheets(
 					filter: {facetFilters: [
-						{facetKey: "FactSheetTypes", keys: ["ITComponent"]},
-						{facetKey: "category", operator: OR, keys: ["software", "hardware"]}
+						{facetKey: "FactSheetTypes", keys: ["ITComponent"]}
 					]}
 				) {
 					edges { node {
@@ -173,50 +171,215 @@ class Report extends Component {
 
 	_handleData(index, applicationTagID, appMapID) {
 		const tableData = [];
-		// TODO
-		const tableDataItem = {
-			id: '',
-			name: '',
-			description: '',
-			cobraIds: [],
-			cobraNames: [],
-			lifecyclePhase: 0,
-			golive: new Date(),
-			retired: new Date(),
-			recommendation: 0,
-			market: 0,
-			costCentre: 0,
-			stack: 0,
-			admScope: 0,
-			cotsPackage: 0,
-			cotsSoftwareIds: [],
-			cotsSoftware: [],
-			cotsVendor: '', // TODO koennte array sein
-			lastUpgrade: 0,
-			remedyNames: [],
-			supportIds: [],
-			supportNames: [],
-			customisation: 0,
-			businessValue: 0,
-			technicalCondition: 0,
-			complexity: 0,
-			businessCriticality: 0,
-			usage: 0,
-			alias: '',
-			externalId: '',
-			deployment: 0,
-			soxpciFlag: 0,
-			itOwner: [],
-			businessOwner: [],
-			spoc: [],
-			operationsOwner: [],
-			accessType: 0,
-			usedByMarkets: [],
-			usedBySegments: [],
-			networkProductFamilies: [],
-			backend: [],
-			frontend: []
-		};
+		const markets = [];
+		index.applications.nodes.forEach((e) => {
+			if (!applicationTagID && !index.includesTag(e, 'Application')) {
+				return;
+			}
+			const currentLifecycle = Utilities.getCurrentLifecycle(e);
+			const lifecycles = Utilities.getLifecycles(e);
+			const golive = Utilities.getLifecyclePhase(lifecycles, 'active');
+			const retired = Utilities.getLifecyclePhase(lifecycles, 'endOfLife');
+			const market = Utilities.getMarket(e);
+			if (market && !markets.includes(market)) {
+				markets.push(market);
+			}
+			const marketIndex = markets.indexOf(market);
+			const cobras = [];
+			const subIndexBCs = e.relApplicationToBusinessCapability;
+			if (subIndexBCs) {
+				subIndexBCs.nodes.forEach((e2) => {
+					// access businessCapabilities
+					const bc = index.byID[e2.id];
+					if (!bc || (!appMapID && !index.includesTag(bc, 'AppMap'))) {
+						return;
+					}
+					cobras.push(bc);
+				});
+			}
+			const cotsSoftware = [];
+			const remedies = [];
+			const supports = [];
+			const backends = [];
+			const frontends = [];
+			const subIndexITCs = e.relApplicationToITComponent;
+			if (subIndexITCs) {
+				subIndexITCs.nodes.forEach((e2) => {
+					// access itComponents
+					const itc = index.byID[e2.id];
+					if (!itc) {
+						return;
+					}
+					switch (itc.category) {
+						case 'software':
+							if (itc.name.endsWith('Software Product')) {
+								break;
+							}
+							const subIndexProv = itc.relITComponentToProvider;
+							let providerId = undefined;
+							let providerName = undefined;
+							if (subIndexProv) {
+								// v workspace note: only one provider possible
+								const provId = subIndexProv.nodes[0].id;
+								// access providers
+								const provider = index.byID[provId];
+								if (provider) {
+									providerId = provider.id;
+									providerName = provider.name;
+								}
+							}
+							cotsSoftware.push({
+								id: itc.id,
+								name: itc.name,
+								providerId: providerId,
+								provider: providerName
+							});
+							break;
+						case 'hardware':
+							remedies.push(itc);
+							break;
+						case 'service':
+							if (index.includesTag(itc, 'Development Technology')) {
+								if (itc.name.endsWith('(Back End)')) {
+									backends.push(itc.name.replace(' (Back End)' , ''));
+								} else if (itc.name.endsWith('(Front End)')) {
+									frontends.push(itc.name.replace(' (Front End)' , ''));
+								}
+							} else {
+								supports.push(itc);
+							}
+							break;
+					}
+				});
+			}
+			const cotsVendors = cotsSoftware.filter((e2) => {
+				return e2.providerId !== undefined && e2.providerId !== null;
+			}).reduce((r, e2, i) => {
+				if (!r.includes(e2.providerId)) {
+					r.push({
+						id: e2.providerId,
+						name: e2.provider
+					});
+				}
+				return r;
+			}, []);
+			const itOwners = [];
+			const businessOwners = [];
+			const spocs = [];
+			const operationsOwners = [];
+			const subIndexSubs = e.subscriptions;
+			if (subIndexSubs) {
+				subIndexSubs.nodes.forEach((e2) => {
+					const userEMail = Utilities.getFrom(e2, 'user.email');
+					if (!userEMail) {
+						return;
+					}
+					const roles = e2.roles;
+					if (!roles) {
+						return;
+					}
+					roles.forEach((e3) => {
+						switch (e3.name) {
+							case 'IT Owner':
+								itOwners.push(userEMail);
+								break;
+							case 'Business Owner':
+								businessOwners.push(userEMail);
+								break;
+							case 'SPOC':
+								spocs.push(userEMail);
+								break;
+							case 'Operations Owner':
+								operationsOwners.push(userEMail);
+								break;
+						}
+					});
+				});
+			}
+			const usedByMarkets = [];
+			const usedBySegments = [];
+			const subIndexUG = e.relApplicationToUserGroup;
+			if (subIndexUG) {
+				subIndexUG.nodes.forEach((e2) => {
+					// access userGroups
+					const userGroup = index.byID[e2.id];
+					if (!userGroup) {
+						return;
+					}
+					if (index.includesTag(userGroup, 'Segment')) {
+						usedBySegments.push(userGroup);
+					} else if (e2.relationAttr.usageType === 'user') {
+						usedByMarkets.push(userGroup);
+					}
+				});
+			}
+			tableData.push({
+				id: e.id,
+				name: e.name,
+				description: e.description,
+				cobraIds: cobras.map((e2) => {
+					return e2.id;
+				}),
+				cobraNames: cobras.map((e2) => {
+					return e2.name;
+				}),
+				lifecyclePhase: currentLifecycle ? this._getOptionKeyFromValue(this.LIFECYCLE_PHASE_OPTIONS, currentLifecycle.phase) : undefined,
+				golive: golive ? new Date(golive.startDate) : undefined,
+				retired: retired ? new Date(retired.startDate) : undefined,
+				recommendation: this._getOptionKeyFromValue(this.RECOMMENDATION_OPTIONS, this._getTagFromGroup(index, e, 'Recommendation')),
+				market: marketIndex < 0 ? undefined : marketIndex,
+				costCentre: this._getOptionKeyFromValue(this.COST_CENTRE_OPTIONS, this._getTagFromGroup(index, e, 'CostCentre')),
+				stack: this._getOptionKeyFromValue(this.STACK_OPTIONS, e.stack),
+				admScope: this._getOptionKeyFromValue(this.ADM_SCOPE_OPTIONS, e.admScope),
+				cotsPackage: this._getOptionKeyFromValue(this.COTS_PACKAGE_OPTIONS, this._getTagFromGroup(index, e, 'COTS Package')),
+				cotsSoftwareIds: cotsSoftware.map((e2) => {
+					return e2.id;
+				}),
+				cotsSoftware: cotsSoftware.map((e2) => {
+					return e2.name;
+				}),
+				cotsVendors: cotsVendors.map((e2) => {
+					return e2.name;
+				}),
+				lastUpgrade: this._getOptionKeyFromValue(this.LAST_MAJOR_UPGRADE_OPTIONS, this._getTagFromGroup(index, e, 'Last Major Upgrade')),
+				remedyNames: remedies.map((e2) => {
+					return e2.name;
+				}),
+				supportIds: supports.map((e2) => {
+					return e2.id;
+				}),
+				supportNames: supports.map((e2) => {
+					return e2.name;
+				}),
+				customisation: this._getOptionKeyFromValue(this.CUSTOMISATION_LEVEL_OPTIONS, e.customisationLevel),
+				businessValue: this._getOptionKeyFromValue(this.FUNCTIONAL_SUITABILITY_OPTIONS, e.functionalSuitability),
+				technicalCondition: this._getOptionKeyFromValue(this.TECHNICAL_SUITABILITY_OPTIONS, e.technicalSuitability),
+				complexity: this._getOptionKeyFromValue(this.APPLICATION_COMPLEXITY_OPTIONS, e.applicationComplexity),
+				businessCriticality: this._getOptionKeyFromValue(this.BUSINESS_CRITICALITY_OPTIONS, e.businessCriticality),
+				usage: this._getOptionKeyFromValue(this.APPLICATION_USAGE_OPTIONS, e.applicationUsage),
+				alias: e.alias,
+				externalId: Utilities.getFrom(e, 'externalId.externalId'),
+				deployment: this._getOptionKeyFromValue(this.DEPLOYMENT_OPTIONS, e.deployment),
+				soxpciFlag: this._getOptionKeyFromValue(this.SOX_PCI_OPTIONS, e.soxPci),
+				itOwners: itOwners,
+				businessOwners: businessOwners,
+				spocs:spocs,
+				operationsOwners: operationsOwners,
+				accessType: this._getOptionKeyFromValue(this.ACCESS_TYPE_OPTIONS, e.accessType),
+				usedByMarkets: usedByMarkets.map((e2) => {
+					return e2.name;
+				}),
+				usedBySegments: usedBySegments.map((e2) => {
+					return e2.name;
+				}),
+				networkProductFamilies: index.getTagsFromGroup(e, 'Network Technical Product Family').map((e2) => {
+					return e2.name;
+				}),
+				backends: backends,
+				frontends: frontends
+			});
+		});
+		this.MARKET_OPTIONS = Utilities.createOptionsObj(markets);
 		this.setState({
 			data: tableData
 		});

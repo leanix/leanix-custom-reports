@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 import TableUtilities from './common/TableUtilities';
 
-class Table  extends Component {
+class Table extends Component {
 
 	constructor(props) {
 		super(props);
@@ -38,14 +38,14 @@ class Table  extends Component {
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatLinkArrayFactsheets(this.props.setup)}
 					 formatExtraData={{ type: 'BusinessCapability', id: 'cobraIds' }}
-					 csvHeader='cobra'
+					 csvHeader='cobras'
 					 csvFormat={TableUtilities.formatArray}
-					 csvFormatExtraData=', '
+					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
-					>COBRA</TableHeaderColumn>
+					>COBRAs</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='lifecyclePhase'
-					 width='120px'
+					 width='100px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatEnum}
 					 formatExtraData={this.props.options.lifecyclePhase}
@@ -76,7 +76,7 @@ class Table  extends Component {
 					>Retired date</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='recommendation'
-					 width='150px'
+					 width='160px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatEnum}
 					 formatExtraData={this.props.options.recommendation}
@@ -87,7 +87,7 @@ class Table  extends Component {
 					>Recommendation</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='market'
-					 width='160px'
+					 width='100px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatEnum}
 					 formatExtraData={this.props.options.market}
@@ -97,7 +97,7 @@ class Table  extends Component {
 					>Market</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='costCentre'
-					 width='150px'
+					 width='160px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatEnum}
 					 formatExtraData={this.props.options.costCentre}
@@ -108,7 +108,7 @@ class Table  extends Component {
 					>Cost Centre</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='stack'
-					 width='150px'
+					 width='160px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatEnum}
 					 formatExtraData={this.props.options.stack}
@@ -130,7 +130,7 @@ class Table  extends Component {
 					>In AD&M Scope</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='cotsPackage'
-					 width='150px'
+					 width='160px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatEnum}
 					 formatExtraData={this.props.options.cotsPackage}
@@ -147,21 +147,23 @@ class Table  extends Component {
 					 formatExtraData={{ type: 'ITComponent', id: 'cotsSoftwareIds' }}
 					 csvHeader='cots-software'
 					 csvFormat={TableUtilities.formatArray}
-					 csvFormatExtraData=', '
+					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
 					>COTS Software</TableHeaderColumn>
 				<TableHeaderColumn dataSort
-					 dataField='cotsVendor'
+					 dataField='cotsVendors'
 					 width='300px'
 					 dataAlign='left'
-					 dataFormat={TableUtilities.formatOptionalText}
-					 csvHeader='cots-vendor'
-					 csvFormat={TableUtilities.formatOptionalText}
+					 dataFormat={TableUtilities.formatArray}
+					 formatExtraData='<br/>'
+					 csvHeader='cots-vendors'
+					 csvFormat={TableUtilities.formatArray}
+					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
-					>COTS Vendor</TableHeaderColumn>
+					>COTS Vendors</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='lastUpgrade'
-					 width='150px'
+					 width='140px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatEnum}
 					 formatExtraData={this.props.options.lastMajorUpgrade}
@@ -176,12 +178,12 @@ class Table  extends Component {
 					 width='300px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatArray}
-					 formatExtraData='\n'
-					 csvHeader='remedy-business-service'
+					 formatExtraData='<br/>'
+					 csvHeader='remedy-business-services'
 					 csvFormat={TableUtilities.formatArray}
-					 csvFormatExtraData=', '
+					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
-					>Remedy business service</TableHeaderColumn>
+					>Remedy business services</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='supportNames'
 					 width='300px'
@@ -190,7 +192,7 @@ class Table  extends Component {
 					 formatExtraData={{ type: 'ITComponent', id: 'supportIds' }}
 					 csvHeader='supported-by'
 					 csvFormat={TableUtilities.formatArray}
-					 csvFormatExtraData=', '
+					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
 					>Supported by</TableHeaderColumn>
 				<TableHeaderColumn dataSort
@@ -217,7 +219,7 @@ class Table  extends Component {
 					>Business value</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='technicalCondition'
-					 width='150px'
+					 width='140px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatEnum}
 					 formatExtraData={this.props.options.technicalSuitability}
@@ -228,7 +230,7 @@ class Table  extends Component {
 					>Technical condition</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='complexity'
-					 width='150px'
+					 width='130px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatEnum}
 					 formatExtraData={this.props.options.applicationComplexity}
@@ -239,7 +241,7 @@ class Table  extends Component {
 					>Application Complexity</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='businessCriticality'
-					 width='150px'
+					 width='170px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatEnum}
 					 formatExtraData={this.props.options.businessCriticality}
@@ -250,7 +252,7 @@ class Table  extends Component {
 					>Business Criticality</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='usage'
-					 width='150px'
+					 width='130px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatEnum}
 					 formatExtraData={this.props.options.applicationUsage}
@@ -259,18 +261,18 @@ class Table  extends Component {
 					 csvFormatExtraData={this.props.options.applicationUsage}
 					 filter={TableUtilities.selectFilter(this.props.options.applicationUsage)}
 					>Application Usage</TableHeaderColumn>
-				<TableHeaderColumn dataSort
+				<TableHeaderColumn dataSort tdStyle={{ fontSize: '.85em' }}
 					 dataField='alias'
-					 width='300px'
+					 width='250px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatOptionalText}
 					 csvHeader='alternate-names'
 					 csvFormat={TableUtilities.formatOptionalText}
 					 filter={TableUtilities.textFilter}
 					>Alternate names</TableHeaderColumn>
-				<TableHeaderColumn dataSort
+				<TableHeaderColumn dataSort tdStyle={{ fontSize: '.85em' }}
 					 dataField='externalId'
-					 width='300px'
+					 width='250px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatOptionalText}
 					 csvHeader='external-id'
@@ -279,7 +281,7 @@ class Table  extends Component {
 					>External ID</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='deployment'
-					 width='150px'
+					 width='250px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatEnum}
 					 formatExtraData={this.props.options.deployment}
@@ -289,7 +291,7 @@ class Table  extends Component {
 					>Deployment</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='soxpciFlag'
-					 width='150px'
+					 width='160px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatEnum}
 					 formatExtraData={this.props.options.soxPci}
@@ -298,53 +300,53 @@ class Table  extends Component {
 					 csvFormatExtraData={this.props.options.soxPci}
 					 filter={TableUtilities.selectFilter(this.props.options.soxPci)}
 					>SOX / PCI</TableHeaderColumn>
-				<TableHeaderColumn dataSort
-					 dataField='itOwner'
-					 width='300px'
+				<TableHeaderColumn dataSort tdStyle={{ fontSize: '.85em' }}
+					 dataField='itOwners'
+					 width='280px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatArray}
-					 formatExtraData='\n'
-					 csvHeader='it-owner'
+					 formatExtraData='<br/>'
+					 csvHeader='it-owners'
 					 csvFormat={TableUtilities.formatArray}
 					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
-					>IT Owner</TableHeaderColumn>
-				<TableHeaderColumn dataSort
-					 dataField='businessOwner'
-					 width='300px'
+					>IT Owners</TableHeaderColumn>
+				<TableHeaderColumn dataSort tdStyle={{ fontSize: '.85em' }}
+					 dataField='businessOwners'
+					 width='280px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatArray}
-					 formatExtraData='\n'
-					 csvHeader='business-owner'
+					 formatExtraData='<br/>'
+					 csvHeader='business-owners'
 					 csvFormat={TableUtilities.formatArray}
 					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
-					>Business Owner</TableHeaderColumn>
-				<TableHeaderColumn dataSort
-					 dataField='spoc'
-					 width='300px'
+					>Business Owners</TableHeaderColumn>
+				<TableHeaderColumn dataSort tdStyle={{ fontSize: '.85em' }}
+					 dataField='spocs'
+					 width='280px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatArray}
-					 formatExtraData='\n'
-					 csvHeader='spoc'
+					 formatExtraData='<br/>'
+					 csvHeader='spocs'
 					 csvFormat={TableUtilities.formatArray}
 					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
-					>SPOC</TableHeaderColumn>
-				<TableHeaderColumn dataSort
-					 dataField='operationsOwner'
-					 width='300px'
+					>SPOCs</TableHeaderColumn>
+				<TableHeaderColumn dataSort tdStyle={{ fontSize: '.85em' }}
+					 dataField='operationsOwners'
+					 width='280px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatArray}
-					 formatExtraData='\n'
-					 csvHeader='operations-owner'
+					 formatExtraData='<br/>'
+					 csvHeader='operations-owners'
 					 csvFormat={TableUtilities.formatArray}
 					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
-					>Operations Owner</TableHeaderColumn>
+					>Operations Owners</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='accessType'
-					 width='150px'
+					 width='130px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatEnum}
 					 formatExtraData={this.props.options.accessType}
@@ -355,61 +357,61 @@ class Table  extends Component {
 					>Access type</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='usedByMarkets'
-					 width='300px'
+					 width='250px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatArray}
 					 formatExtraData=', '
 					 csvHeader='used-by-markets'
 					 csvFormat={TableUtilities.formatArray}
-					 csvFormatExtraData=', '
+					 csvFormatExtraData=';'
 					 filterFormatted
 					 filter={TableUtilities.textFilter}
 					>Used by markets</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='usedBySegments'
-					 width='300px'
+					 width='250px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatArray}
-					 formatExtraData='\n'
+					 formatExtraData=', '
 					 csvHeader='used-by-segments'
 					 csvFormat={TableUtilities.formatArray}
-					 csvFormatExtraData=', '
+					 csvFormatExtraData=';'
 					 filterFormatted
 					 filter={TableUtilities.textFilter}
 					>Used by segments</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='networkProductFamilies'
-					 width='300px'
+					 width='220px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatArray}
-					 formatExtraData='\n'
+					 formatExtraData='<br/>'
 					 csvHeader='network-product-families'
 					 csvFormat={TableUtilities.formatArray}
-					 csvFormatExtraData=', '
+					 csvFormatExtraData=';'
 					 filterFormatted
 					 filter={TableUtilities.textFilter}
 					>Network Product Families</TableHeaderColumn>
-				<TableHeaderColumn dataSort
-					 dataField='backend'
-					 width='300px'
+				<TableHeaderColumn dataSort tdStyle={{ fontSize: '.85em' }}
+					 dataField='backends'
+					 width='250px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatArray}
 					 formatExtraData=', '
 					 csvHeader='backend-technologies'
 					 csvFormat={TableUtilities.formatArray}
-					 csvFormatExtraData=', '
+					 csvFormatExtraData=';'
 					 filterFormatted
 					 filter={TableUtilities.textFilter}
 					>Backend technologies</TableHeaderColumn>
-				<TableHeaderColumn dataSort
-					 dataField='frontend'
-					 width='300px'
+				<TableHeaderColumn dataSort tdStyle={{ fontSize: '.85em' }}
+					 dataField='frontends'
+					 width='250px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatArray}
 					 formatExtraData=', '
 					 csvHeader='frontend-technologies'
 					 csvFormat={TableUtilities.formatArray}
-					 csvFormatExtraData=', '
+					 csvFormatExtraData=';'
 					 filterFormatted
 					 filter={TableUtilities.textFilter}
 					>Frontend technologies</TableHeaderColumn>
@@ -437,7 +439,7 @@ Table.propTypes = {
 			cotsPackage: PropTypes.number,
 			cotsSoftwareIds: TableUtilities.PropTypes.idArray('cotsSoftware'),
 			cotsSoftware: PropTypes.arrayOf(PropTypes.string).isRequired,
-			cotsVendor: PropTypes.string, // TODO koennte array sein
+			cotsVendors: PropTypes.arrayOf(PropTypes.string).isRequired,
 			lastUpgrade: PropTypes.number,
 			remedyNames: PropTypes.arrayOf(PropTypes.string).isRequired,
 			supportIds: TableUtilities.PropTypes.idArray('supportNames'),
@@ -452,16 +454,16 @@ Table.propTypes = {
 			externalId: PropTypes.string,
 			deployment: PropTypes.number,
 			soxpciFlag: PropTypes.number,
-			itOwner: PropTypes.arrayOf(PropTypes.string).isRequired,
-			businessOwner: PropTypes.arrayOf(PropTypes.string).isRequired,
-			spoc: PropTypes.arrayOf(PropTypes.string).isRequired,
-			operationsOwner: PropTypes.arrayOf(PropTypes.string).isRequired,
+			itOwners: PropTypes.arrayOf(PropTypes.string).isRequired,
+			businessOwners: PropTypes.arrayOf(PropTypes.string).isRequired,
+			spocs: PropTypes.arrayOf(PropTypes.string).isRequired,
+			operationsOwners: PropTypes.arrayOf(PropTypes.string).isRequired,
 			accessType: PropTypes.number,
 			usedByMarkets: PropTypes.arrayOf(PropTypes.string).isRequired,
 			usedBySegments: PropTypes.arrayOf(PropTypes.string).isRequired,
 			networkProductFamilies: PropTypes.arrayOf(PropTypes.string).isRequired,
-			backend: PropTypes.arrayOf(PropTypes.string).isRequired,
-			frontend: PropTypes.arrayOf(PropTypes.string).isRequired
+			backends: PropTypes.arrayOf(PropTypes.string).isRequired,
+			frontends: PropTypes.arrayOf(PropTypes.string).isRequired
 		}).isRequired
 	).isRequired,
 	options: PropTypes.shape({
@@ -483,7 +485,7 @@ Table.propTypes = {
 		soxPci: TableUtilities.PropTypes.options,
 		accessType: TableUtilities.PropTypes.options
 	}).isRequired,
-	setup: PropTypes.object.isRequired
+	setup: PropTypes.object
 };
 
 export default Table;

@@ -114,7 +114,7 @@ class Report extends Component {
 	_handleData(index, applicationTagID) {
 		const tableData = [];
 		const decommissioningRE = /decommissioning/i;
-		const addSubNodes = function (subIndex, outputItem, idPrefix, check) {
+		const addSubNodes = (subIndex, outputItem, idPrefix, check) => {
 			let nothingAdded = true;
 			subIndex.nodes.forEach((e) => {
 				const project = index.byID[e.id];

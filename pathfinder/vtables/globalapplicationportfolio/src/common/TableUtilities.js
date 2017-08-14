@@ -1,16 +1,19 @@
+import React from 'react';
+import Utilities from './Utilities';
 import Link from './Link';
 import LinkList from './LinkList';
 
 /* formatting functions for the table */
 
 function formatLinkFactsheet(setup) {
+	const baseUrl = Utilities.getFrom(setup, 'settings.baseUrl');
 	return (cell, row, extraData) => {
 		if (!cell) {
 			return '';
 		}
 		return (
 			<Link
-				link={setup.settings.baseUrl + '/factsheet/' + extraData.type + '/' + row[extraData.id]}
+				link={baseUrl + '/factsheet/' + extraData.type + '/' + row[extraData.id]}
 				target='_blank'
 				text={cell} />
 		);
@@ -18,6 +21,7 @@ function formatLinkFactsheet(setup) {
 }
 
 function formatLinkArrayFactsheets(setup) {
+	const baseUrl = Utilities.getFrom(setup, 'settings.baseUrl');
 	return (cell, row, extraData) => {
 		if (!cell) {
 			return '';
@@ -26,7 +30,7 @@ function formatLinkArrayFactsheets(setup) {
 			<LinkList links={
 				cell.reduce((arr, e, i) => {
 					arr.push({
-						link: setup.settings.baseUrl + '/factsheet/' + extraData.type + '/' + row[extraData.ids][i],
+						link: baseUrl + '/factsheet/' + extraData.type + '/' + row[extraData.id][i],
 						target: '_blank',
 						text: e
 					});
@@ -88,6 +92,7 @@ function csvFormatDate(cell, row) {
 
 const textFilter = {
 	type: 'TextFilter',
+	condition: 'like',
 	placeholder: 'Please enter a value'
 };
 
@@ -113,8 +118,7 @@ function options(props, propName, componentName) {
 		return;
 	}
 	return new Error(
-		'Invalid prop "' + propName + '" supplied to' +
-		' "' + componentName + '". Validation failed.'
+		'Invalid prop "' + propName + '" supplied to "' + componentName + '". Validation failed.'
 	);
 }
 
@@ -122,11 +126,11 @@ const intRegExp = /^\d+$/;
 
 function checkKeysAndValues(options) {
 	for (let key in options) {
-		if (!intRegExp.test(key) {
+		if (!intRegExp.test(key)) {
 			return false;
 		}
 		const value = options[key];
-		if (typeof value !== 'string' && !(value instanceOf String)) {
+		if (typeof value !== 'string' && !(value instanceof String)) {
 			return false;
 		}
 	}
@@ -145,8 +149,7 @@ function idArray(namesPropName) {
 			return;
 		}
 		return new Error(
-			'Invalid prop "' + propName + '" supplied to' +
-			' "' + componentName + '". Validation failed.'
+			'Invalid prop "' + propName + '" supplied to "' + componentName + '". Validation failed.'
 		);
 	};
 }
@@ -154,7 +157,7 @@ function idArray(namesPropName) {
 function isStringArray(arr) {
 	for (let i = 0; i < arr.length; i++) {
 		const e = arr[i];
-		if (typeof e !== 'string' && !(e instanceOf String)) {
+		if (typeof e !== 'string' && !(e instanceof String)) {
 			return false;
 		}
 	}

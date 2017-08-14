@@ -12,12 +12,16 @@ function getCurrentLifecycle(application) {
 	} else {
 		// TODO analyse startDate
 	}
-	if (!result) {
+	return createLifecycleObj(result);
+}
+
+function createLifecycleObj(lifecyclePhase) {
+	if (!lifecyclePhase) {
 		return;
 	}
 	return {
-		phase: result.phase,
-		startDate: Date.parse(result.startDate + ' 00:00:00')
+		phase: lifecyclePhase.phase,
+		startDate: Date.parse(lifecyclePhase.startDate + ' 00:00:00')
 	};
 }
 
@@ -47,11 +51,20 @@ function getLifecycles(node) {
 		return [];
 	}
 	return node.lifecycle.phases.map((e) => {
-		return {
-			phase: e.phase,
-			startDate: Date.parse(e.startDate + ' 00:00:00')
-		};
-	});;
+		return createLifecycleObj(e);
+	});
+}
+
+function getLifecyclePhase(lifecycles, phase) {
+	if (!lifecycles || !phase) {
+		return;
+	}
+	for (let i = 0; i < lifecycles.length; i++) {
+		const lifecycle = lifecycles[i];
+		if (lifecycle && lifecycle.phase === phase) {
+			return lifecycle;
+		}
+	}
 }
 
 function getFrom(obj, path, defaultValue) {
@@ -61,7 +74,6 @@ function getFrom(obj, path, defaultValue) {
 	const pathArray = path.split(/\./);
 	let result = obj;
 	for (let i = 0; i < pathArray.length; i++) {
-		const e = pathArray[i];
 		result = result[pathArray[i]];
 		if (!result) {
 			break;
@@ -75,7 +87,7 @@ function createOptionsObj(optionValues) {
 		return {};
 	}
 	return optionValues.reduce((r, e, i) => {
-		r[i] = e;
+		r[i] = e.name ? e.name : e;
 		return r;
 	}, {});
 }
@@ -139,6 +151,7 @@ export default {
 	getCurrentLifecycle: getCurrentLifecycle,
 	getLifecycleModel: getLifecycleModel,
 	getLifecycles: getLifecycles,
+	getLifecyclePhase: getLifecyclePhase,
 	getFrom: getFrom,
 	createOptionsObj: createOptionsObj,
 	createOptionsObjFrom: createOptionsObjFrom,
