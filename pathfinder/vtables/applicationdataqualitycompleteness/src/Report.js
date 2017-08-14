@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
-import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
-import CommonQueries from './CommonGraphQLQueries';
-import DataIndex from './DataIndex';
-import Utilities from './Utilities';
+import CommonQueries from './common/CommonGraphQLQueries';
+import DataIndex from './common/DataIndex';
+import Utilities from './common/Utilities';
 import RuleSet from './RuleSet';
-import SubTables from './SubTables';
+import Table from './Table';
 
 class Report extends Component {
 
@@ -12,7 +11,6 @@ class Report extends Component {
 		super(props);
 		this._initReport = this._initReport.bind(this);
 		this._handleData = this._handleData.bind(this);
-		this._formatPercentage = this._formatPercentage.bind(this);
 		this.MARKET_OPTIONS = {};
 		this.state = {
 			setup: null,
@@ -177,115 +175,13 @@ class Report extends Component {
 		});
 	}
 
-	/* formatting functions for the table */
-
-	_formatEnum(cell, row, enums) {
-		if (!cell && cell !== 0) {
-			return '';
-		}
-		return enums[cell] ? enums[cell] : '';
-	}
-
-	_formatPercentage(cell, row) {
-		if (cell === undefined || cell === null) {
-			return '';
-		}
-		return (
-			<div className='label'
-				 style={{
-					 display: 'inline-block',
-					 textAlign: 'center',
-					 width: '50px',
-					 fontSize: '80%',
-					 paddingTop: '0.35em',
-					 color: 'inherit',
-					 backgroundColor: this._getGreenToRed(cell)
-				 }}
-			>{cell + ' %'}</div>
-		);
-	}
-
-	_getGreenToRed(percent) {
-		// TODO nicer color fade
-		const r = percent < 50 ? 255 : Math.floor(255 - (percent * 2 - 100) * 255 / 100);
-		const g = percent > 50 ? 255 : Math.floor((percent * 2) * 255 / 100);
-		return 'rgb(' + r + ',' + g + ',0)';
-	}
-
-	/* customizing for the table */
-
-	_trClassname(row, fieldValue, rowIdx, colIdx) {
-		if (row.overallRule) {
-			return 'info';
-		}
-		return '';
-	}
-
-	_isExpandableRow(row) {
-		if (row.overallRule || (row.compliant === 0 && row.nonCompliant === 0)) {
-			return false;
-		}
-		return true;
-	}
-
-	_expandComponent(row) {
-		return (
-			<SubTables data={{ compliantApps: row.compliantApps, nonCompliantApps: row.nonCompliantApps }} />
-		);
-	}
-
 	render() {
-		// TODO root csv export must have the ids aswell?
-		// expandableRow={this._isExpandableRow}
-		// expandComponent={this._expandComponent}
-		// expandColumnOptions={{ expandColumnVisible: true }}
 		return (
-			<BootstrapTable data={this.state.data} keyField='id'
-				 striped hover search exportCSV
-				 options={{ clearSearch: true }}
-				 trClassName={this._trClassname}>
-				<TableHeaderColumn dataSort
-					 dataField='market'
-					 width='160px'
-					 dataAlign='left'
-					 dataFormat={this._formatEnum}
-					 formatExtraData={this.MARKET_OPTIONS}
-					 csvFormat={this._formatEnum}
-					 csvFormatExtraData={this.MARKET_OPTIONS}
-					 filter={{ type: 'SelectFilter', condition: 'eq', placeholder: 'Please choose', options: this.MARKET_OPTIONS }}
-					>Market</TableHeaderColumn>
-				<TableHeaderColumn dataSort
-					 dataField='rule'
-					 width='400px'
-					 dataAlign='left'
-					 filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
-					>Rule</TableHeaderColumn>
-				<TableHeaderColumn hidden export
-					 dataField='overallRule'
-					 csvHeader='overall-rule'
-					>overallRule</TableHeaderColumn>
-				<TableHeaderColumn dataSort
-					 dataField='compliant'
-					 width='260px'
-					 dataAlign='left'
-					 filter={{ type: 'NumberFilter', placeholder: 'Please enter a value', defaultValue: { comparator: '<=' } }}
-					>Compliant</TableHeaderColumn>
-				<TableHeaderColumn dataSort
-					 dataField='nonCompliant'
-					 width='260px'
-					 dataAlign='left'
-					 csvHeader='non-compliant'
-					 filter={{ type: 'NumberFilter', placeholder: 'Please enter a value', defaultValue: { comparator: '<=' } }}
-					>Non-Compliant</TableHeaderColumn>
-				<TableHeaderColumn dataSort
-					 dataField='percentage'
-					 width='260px'
-					 dataAlign='left'
-					 dataFormat={this._formatPercentage}
-					 csvHeader='compliant-percentage'
-					 filter={{ type: 'NumberFilter', placeholder: 'Please enter a value', defaultValue: { comparator: '<=' } }}
-					>% Compliant</TableHeaderColumn>
-			</BootstrapTable>
+			<Table data={this.state.data}
+				pageSize={RuleSet.length}
+				options={{
+					market: this.MARKET_OPTIONS
+				}} />
 		);
 	}
 }

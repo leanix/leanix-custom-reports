@@ -12,12 +12,17 @@ function getCurrentLifecycle(application) {
 	} else {
 		// TODO analyse startDate
 	}
-	if (!result) {
+	return createLifecycleObj(result);
+}
+
+function createLifecycleObj(lifecyclePhase) {
+	if (!lifecyclePhase) {
 		return;
 	}
 	return {
-		phase: result.phase,
-		startDate: Date.parse(result.startDate + ' 00:00:00')
+		phase: lifecyclePhase.phase,
+		// that's a timestamp as number
+		startDate: Date.parse(lifecyclePhase.startDate + ' 00:00:00')
 	};
 }
 
@@ -31,8 +36,6 @@ function getLifecycleModel(setup, factsheetName) {
 			!factsheetModel.fields ||
 			!factsheetModel.fields.lifecycle ||
 			factsheetModel.fields.lifecycle.type !== 'LIFECYCLE' ||
-			!factsheetModel.fields.lifecycle.inView ||
-			!factsheetModel.fields.lifecycle.inFacet ||
 			!Array.isArray(factsheetModel.fields.lifecycle.values)
 		) {
 			return [];
@@ -49,11 +52,49 @@ function getLifecycles(node) {
 		return [];
 	}
 	return node.lifecycle.phases.map((e) => {
-		return {
-			phase: e.phase,
-			startDate: Date.parse(e.startDate + ' 00:00:00')
-		};
-	});;
+		return createLifecycleObj(e);
+	});
+}
+
+function getLifecyclePhase(lifecycles, phase) {
+	if (!lifecycles || !phase) {
+		return;
+	}
+	for (let i = 0; i < lifecycles.length; i++) {
+		const lifecycle = lifecycles[i];
+		if (lifecycle && lifecycle.phase === phase) {
+			return lifecycle;
+		}
+	}
+}
+
+function getFrom(obj, path, defaultValue) {
+	if (!obj) {
+		return defaultValue;
+	}
+	const pathArray = path.split(/\./);
+	let result = obj;
+	for (let i = 0; i < pathArray.length; i++) {
+		result = result[pathArray[i]];
+		if (!result) {
+			break;
+		}
+	}
+	return result ? result : defaultValue;
+}
+
+function createOptionsObj(optionValues) {
+	if (!optionValues || !Array.isArray(optionValues)) {
+		return {};
+	}
+	return optionValues.reduce((r, e, i) => {
+		r[i] = e.name ? e.name : e;
+		return r;
+	}, {});
+}
+
+function createOptionsObjFrom(obj, path) {
+	return createOptionsObj(getFrom(obj, path, []));
 }
 
 function getKeyToValue(obj, value) {
@@ -111,6 +152,10 @@ export default {
 	getCurrentLifecycle: getCurrentLifecycle,
 	getLifecycleModel: getLifecycleModel,
 	getLifecycles: getLifecycles,
+	getLifecyclePhase: getLifecyclePhase,
+	getFrom: getFrom,
+	createOptionsObj: createOptionsObj,
+	createOptionsObjFrom: createOptionsObjFrom,
 	getKeyToValue: getKeyToValue,
 	isProductionPhase: isProductionPhase,
 	getMarket: getMarket,

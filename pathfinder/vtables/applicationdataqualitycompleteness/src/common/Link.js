@@ -19,9 +19,20 @@ class Link extends Component {
 		}
 		switch (this.props.target) {
 			case '_blank':
-				return (<a href={this.props.link} title='Opens a new tab/window.' target={this.props.target} onClick={this._handleClick}>{this.props.text}</a>);
+				return (
+					<a href={this.props.link}
+						title='Opens a new tab/window.'
+						target={this.props.target}
+						onClick={this._handleClick}
+					>{this.props.text}</a>
+				);
 			default:
-				return (<a href={this.props.link} target={this.props.target} onClick={this._handleClick}>{this.props.text}</a>);
+				return (
+					<a href={this.props.link}
+						target={this.props.target}
+						onClick={this._handleClick}
+					>{this.props.text}</a>
+				);
 		}
 	}
 }

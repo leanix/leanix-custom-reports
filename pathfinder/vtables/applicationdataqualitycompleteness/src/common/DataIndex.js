@@ -77,16 +77,20 @@ class DataIndex {
 		return false;
 	}
 
-	getFirstTagFromGroup(node, tagGroupName) {
+	getTagsFromGroup(node, tagGroupName) {
 		if (!node || !node.tags || !Array.isArray(node.tags)) {
-			return;
+			return [];
 		}
 		const tags = this.getTags(tagGroupName).map((e) => {
 			return e.name;
 		});
-		const result = node.tags.filter((e) => {
+		return node.tags.filter((e) => {
 			return tags.includes(e.name);
 		});
+	}
+
+	getFirstTagFromGroup(node, tagGroupName) {
+		const result = this.getTagsFromGroup(node, tagGroupName);
 		return result.length > 0 ? result[0] : undefined;
 	}
 

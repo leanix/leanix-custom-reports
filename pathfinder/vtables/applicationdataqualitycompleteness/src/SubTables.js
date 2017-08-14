@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
-import Link from './Link';
+import Link from './common/Link';
 
 class SubTables extends Component {
 
@@ -69,12 +69,14 @@ class SubTables extends Component {
 
 SubTables.propTypes = {
 	data: PropTypes.shape({
-		compliantApps: PropTypes.arrayOf(PropTypes.shape({
+		compliantApps: PropTypes.arrayOf(
+			PropTypes.shape({
 				id: PropTypes.string.isRequired,
 				name: PropTypes.string.isRequired
 			}).isRequired
 		).isRequired,
-		nonCompliantApps: PropTypes.arrayOf(PropTypes.shape({
+		nonCompliantApps: PropTypes.arrayOf(
+			PropTypes.shape({
 				id: PropTypes.string.isRequired,
 				name: PropTypes.string.isRequired
 			}).isRequired

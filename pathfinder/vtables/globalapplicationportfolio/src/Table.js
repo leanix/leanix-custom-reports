@@ -30,6 +30,7 @@ class Table extends Component {
 					 dataFormat={TableUtilities.formatOptionalText}
 					 csvHeader='description'
 					 csvFormat={TableUtilities.formatOptionalText}
+					 csvFormatExtraData={true}
 					 filter={TableUtilities.textFilter}
 					>Description</TableHeaderColumn>
 				<TableHeaderColumn dataSort
@@ -268,6 +269,7 @@ class Table extends Component {
 					 dataFormat={TableUtilities.formatOptionalText}
 					 csvHeader='alternate-names'
 					 csvFormat={TableUtilities.formatOptionalText}
+					 csvFormatExtraData={true}
 					 filter={TableUtilities.textFilter}
 					>Alternate names</TableHeaderColumn>
 				<TableHeaderColumn dataSort tdStyle={{ fontSize: '.85em' }}
@@ -277,6 +279,7 @@ class Table extends Component {
 					 dataFormat={TableUtilities.formatOptionalText}
 					 csvHeader='external-id'
 					 csvFormat={TableUtilities.formatOptionalText}
+					 csvFormatExtraData={true}
 					 filter={TableUtilities.textFilter}
 					>External ID</TableHeaderColumn>
 				<TableHeaderColumn dataSort
@@ -364,7 +367,6 @@ class Table extends Component {
 					 csvHeader='used-by-markets'
 					 csvFormat={TableUtilities.formatArray}
 					 csvFormatExtraData=';'
-					 filterFormatted
 					 filter={TableUtilities.textFilter}
 					>Used by markets</TableHeaderColumn>
 				<TableHeaderColumn dataSort
@@ -376,7 +378,6 @@ class Table extends Component {
 					 csvHeader='used-by-segments'
 					 csvFormat={TableUtilities.formatArray}
 					 csvFormatExtraData=';'
-					 filterFormatted
 					 filter={TableUtilities.textFilter}
 					>Used by segments</TableHeaderColumn>
 				<TableHeaderColumn dataSort
@@ -388,7 +389,6 @@ class Table extends Component {
 					 csvHeader='network-product-families'
 					 csvFormat={TableUtilities.formatArray}
 					 csvFormatExtraData=';'
-					 filterFormatted
 					 filter={TableUtilities.textFilter}
 					>Network Product Families</TableHeaderColumn>
 				<TableHeaderColumn dataSort tdStyle={{ fontSize: '.85em' }}
@@ -400,7 +400,6 @@ class Table extends Component {
 					 csvHeader='backend-technologies'
 					 csvFormat={TableUtilities.formatArray}
 					 csvFormatExtraData=';'
-					 filterFormatted
 					 filter={TableUtilities.textFilter}
 					>Backend technologies</TableHeaderColumn>
 				<TableHeaderColumn dataSort tdStyle={{ fontSize: '.85em' }}
@@ -412,7 +411,6 @@ class Table extends Component {
 					 csvHeader='frontend-technologies'
 					 csvFormat={TableUtilities.formatArray}
 					 csvFormatExtraData=';'
-					 filterFormatted
 					 filter={TableUtilities.textFilter}
 					>Frontend technologies</TableHeaderColumn>
 			</BootstrapTable>

@@ -21,6 +21,7 @@ function createLifecycleObj(lifecyclePhase) {
 	}
 	return {
 		phase: lifecyclePhase.phase,
+		// that's a timestamp as number
 		startDate: Date.parse(lifecyclePhase.startDate + ' 00:00:00')
 	};
 }

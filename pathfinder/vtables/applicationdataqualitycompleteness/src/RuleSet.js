@@ -1,4 +1,4 @@
-import Utilities from './Utilities';
+import Utilities from './common/Utilities';
 
 export default [{
 		name: 'Adding applications, but no project',
