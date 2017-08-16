@@ -12,7 +12,7 @@ class Table extends Component {
 	}
 
 	_formatPercentage(cell, row) {
-		if (cell === undefined || cell === null) {
+		if (cell === undefined || cell === null || cell < 0) {
 			return '';
 		}
 		return (
@@ -86,10 +86,11 @@ class Table extends Component {
 					 dataField='rule'
 					 width='400px'
 					 dataAlign='left'
-					 dataFormat={TableUtilities.formatOptionalText}
-					 csvFormat={TableUtilities.formatOptionalText}
-					 csvFormatExtraData={true}
-					 filter={TableUtilities.textFilter}
+					 dataFormat={TableUtilities.formatEnum}
+					 formatExtraData={this.props.options.rule}
+					 csvFormat={TableUtilities.formatEnum}
+					 csvFormatExtraData={this.props.options.rule}
+					 filter={TableUtilities.selectFilter(this.props.options.rule)}
 					>Rule</TableHeaderColumn>
 				<TableHeaderColumn hidden export
 					 dataField='overallRule'
@@ -146,7 +147,8 @@ Table.propTypes = {
 		}).isRequired
 	).isRequired,
 	options: PropTypes.shape({
-		market: TableUtilities.PropTypes.options
+		market: TableUtilities.PropTypes.options,
+		rule: TableUtilities.PropTypes.options
 	}).isRequired,
 	setup: PropTypes.object
 };

@@ -5,6 +5,8 @@ import Utilities from './common/Utilities';
 import RuleSet from './RuleSet';
 import Table from './Table';
 
+const RULE_OPTIONS = Utilities.createOptionsObj(RuleSet);
+
 class Report extends Component {
 
 	constructor(props) {
@@ -149,18 +151,20 @@ class Report extends Component {
 				const nonCompliant = e.overall ? ruleResult.nonCompliant : ruleResult.nonCompliant.length;
 				const sum = compliant + nonCompliant;
 				let percentage = undefined;
-				if (sum === 0 || (compliant > 0 && nonCompliant === 0)) {
+				if (sum === 0) {
+					percentage = -1;
+				} else if (compliant > 0 && nonCompliant === 0) {
 					percentage = 100;
 				} else if (compliant === 0 && nonCompliant > 0) {
 					percentage = 0;
 				} else {
 					percentage = compliant * 100 / sum;
+					percentage = Math.floor(percentage);
 				}
-				percentage = Math.floor(percentage);
 				tableData.push({
 					id: market + '-' + e.name,
 					market: Utilities.getKeyToValue(this.MARKET_OPTIONS, market),
-					rule: e.name,
+					rule: Utilities.getKeyToValue(RULE_OPTIONS, e.name),
 					overallRule: e.overall === true,
 					compliant: compliant,
 					compliantApps: e.overall ? [] : ruleResult.compliant,
@@ -179,7 +183,8 @@ class Report extends Component {
 		return (
 			<Table data={this.state.data}
 				options={{
-					market: this.MARKET_OPTIONS
+					market: this.MARKET_OPTIONS,
+					rule: RULE_OPTIONS
 				}}
 				setup={this.state.setup} />
 		);
