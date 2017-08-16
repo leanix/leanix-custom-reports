@@ -156,8 +156,8 @@ class Table extends Component {
 					 dataField='cotsVendors'
 					 width='300px'
 					 dataAlign='left'
-					 dataFormat={TableUtilities.formatArray}
-					 formatExtraData='<br/>'
+					 dataFormat={TableUtilities.formatLinkArrayFactsheets(this.props.setup)}
+					 formatExtraData={{ type: 'Provider', id: 'cotsVendorIds' }}
 					 csvHeader='cots-vendors'
 					 csvFormat={TableUtilities.formatArray}
 					 csvFormatExtraData=';'
@@ -179,8 +179,8 @@ class Table extends Component {
 					 dataField='remedyNames'
 					 width='300px'
 					 dataAlign='left'
-					 dataFormat={TableUtilities.formatArray}
-					 formatExtraData='<br/>'
+					 dataFormat={TableUtilities.formatLinkArrayFactsheets(this.props.setup)}
+					 formatExtraData={{ type: 'ITComponent', id: 'remedyIds' }}
 					 csvHeader='remedy-business-services'
 					 csvFormat={TableUtilities.formatArray}
 					 csvFormatExtraData=';'
@@ -363,8 +363,8 @@ class Table extends Component {
 					 dataField='usedByMarkets'
 					 width='250px'
 					 dataAlign='left'
-					 dataFormat={TableUtilities.formatArray}
-					 formatExtraData=', '
+					 dataFormat={TableUtilities.formatLinkArrayFactsheets(this.props.setup)}
+					 formatExtraData={{ type: 'UserGroup', id: 'usedByMarketIds', delimiter: ', ' }}
 					 csvHeader='used-by-markets'
 					 csvFormat={TableUtilities.formatArray}
 					 csvFormatExtraData=';'
@@ -374,8 +374,8 @@ class Table extends Component {
 					 dataField='usedBySegments'
 					 width='250px'
 					 dataAlign='left'
-					 dataFormat={TableUtilities.formatArray}
-					 formatExtraData=', '
+					 dataFormat={TableUtilities.formatLinkArrayFactsheets(this.props.setup)}
+					 formatExtraData={{ type: 'UserGroup', id: 'usedBySegmentIds', delimiter: ', ' }}
 					 csvHeader='used-by-segments'
 					 csvFormat={TableUtilities.formatArray}
 					 csvFormatExtraData=';'
@@ -438,8 +438,10 @@ Table.propTypes = {
 			cotsPackage: PropTypes.number,
 			cotsSoftwareIds: TableUtilities.PropTypes.idArray('cotsSoftware'),
 			cotsSoftware: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
+			cotsVendorIds: TableUtilities.PropTypes.idArray('cotsVendors'),
 			cotsVendors: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
 			lastUpgrade: PropTypes.number,
+			remedyIds: TableUtilities.PropTypes.idArray('remedyNames'),
 			remedyNames: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
 			supportIds: TableUtilities.PropTypes.idArray('supportNames'),
 			supportNames: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
@@ -458,7 +460,9 @@ Table.propTypes = {
 			spocs: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
 			operationsOwners: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
 			accessType: PropTypes.number,
+			usedByMarketIds: TableUtilities.PropTypes.idArray('usedByMarkets'),
 			usedByMarkets: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
+			usedBySegmentIds: TableUtilities.PropTypes.idArray('usedBySegments'),
 			usedBySegments: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
 			networkProductFamilies: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
 			backends: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,

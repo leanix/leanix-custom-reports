@@ -338,10 +338,16 @@ class Report extends Component {
 				cotsSoftware: cotsSoftware.map((e2) => {
 					return e2.name;
 				}),
+				cotsVendorIds: cotsVendors.map((e2) => {
+					return e2.id;
+				}),
 				cotsVendors: cotsVendors.map((e2) => {
 					return e2.name;
 				}),
 				lastUpgrade: this._getOptionKeyFromValue(this.LAST_MAJOR_UPGRADE_OPTIONS, this._getTagFromGroup(index, e, 'Last Major Upgrade')),
+				remedyIds: remedies.map((e2) => {
+					return e2.id;
+				}),
 				remedyNames: remedies.map((e2) => {
 					return e2.name;
 				}),
@@ -366,8 +372,14 @@ class Report extends Component {
 				spocs:spocs,
 				operationsOwners: operationsOwners,
 				accessType: this._getOptionKeyFromValue(this.ACCESS_TYPE_OPTIONS, e.accessType),
+				usedByMarketIds: usedByMarkets.map((e2) => {
+					return e2.id;
+				}),
 				usedByMarkets: usedByMarkets.map((e2) => {
 					return e2.name;
+				}),
+				usedBySegmentIds: usedBySegments.map((e2) => {
+					return e2.id;
 				}),
 				usedBySegments: usedBySegments.map((e2) => {
 					return e2.name;

@@ -41,7 +41,8 @@ function formatLinkArrayFactsheets(setup) {
 							text: e
 						});
 						return arr;
-				}, [])} />
+				}, [])}
+				delimiter={extraData.delimiter} />
 			</div>
 		);
 	};
@@ -75,11 +76,8 @@ function formatDate(cell, row) {
 }
 
 function formatArray(cell, row, delimiter) {
-	if (!delimiter) {
-		delimiter = ', '
-	}
 	let result = '';
-	if (!cell) {
+	if (!cell || !delimiter) {
 		return result;
 	}
 	cell.forEach((e) => {
@@ -91,7 +89,7 @@ function formatArray(cell, row, delimiter) {
 	if (delimiter === '<br/>') {
 		return (
 			<div style={OVERFLOW_CELL_STYLE}
-			dangerouslySetInnerHTML={{ __html: result }} />
+				dangerouslySetInnerHTML={{ __html: result }} />
 		);
 	}
 	return result;

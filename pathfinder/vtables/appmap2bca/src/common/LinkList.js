@@ -12,6 +12,7 @@ class LinkList extends Component {
 		if (this.props.links.length < 1) {
 			return null;
 		}
+		const delimiter = !this.props.delimiter ? '<br/>' : this.props.delimiter;
 		return (
 			<span>
 				{this.props.links.map((e, i) => {
@@ -26,7 +27,7 @@ class LinkList extends Component {
 					}
 					return (
 						<span key={i}>
-							<br/>
+							<span dangerouslySetInnerHTML={{ __html: delimiter }} />
 							<Link link={e.link}
 								target={e.target}
 								text={e.text} />
@@ -45,7 +46,8 @@ LinkList.propTypes = {
 			target: PropTypes.string.isRequired,
 			text: PropTypes.string.isRequired
 		}).isRequired
-	).isRequired
+	).isRequired,
+	delimiter: PropTypes.string
 };
 
 export default LinkList;
