@@ -66,7 +66,7 @@ class Report extends Component {
 		}
 		// TODO: add 'relation CSM to Platform' to the query
 		return `{csm: allFactSheets(
-					sort: {mode: BY_FIELD, key: "displayName", order: asc},
+					sort: { mode: BY_FIELD, key: "displayName", order: asc },
 					filter: {facetFilters: [
 						{facetKey: "FactSheetTypes", keys: ["CSM"]},
 						{facetKey: "hierarchyLevel", operator: OR, keys: ["1", "2", "3"]}

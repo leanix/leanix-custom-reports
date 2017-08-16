@@ -50,7 +50,7 @@ class Report extends Component {
 			tagNameDef = '';
 		}
 		return `{businessCapabilities: allFactSheets(
-					sort: {mode: BY_FIELD, key: "displayName", order: asc},
+					sort: { mode: BY_FIELD, key: "displayName", order: asc },
 					filter: {facetFilters: [
 						{facetKey: "FactSheetTypes", keys: ["BusinessCapability"]}
 						${appMapIdFilter}

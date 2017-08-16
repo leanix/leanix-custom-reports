@@ -2,11 +2,20 @@
 set -e
 
 function install_report {
-	echo "installing $1"
+	echo -e "\033[0;32m>>> Installing $1 \033[0m"
 	cd $1
 	npm install
 	cd ..
 }
+
+echo -e "\033[0;32m>>> I'll install them all ... \033[0m"
+echo -e "            ((((     "
+echo -e "             ))))    "
+echo -e "          _ .---.    "
+echo -e "         ( |\`---'|  "
+echo -e "          \|     |   "
+echo -e "          : .___, :  \033[0;32m... Time for some coffee! \033[0m"
+echo -e "           \`-----'  "
 
 # List of custom reports to be built
 install_report burndown

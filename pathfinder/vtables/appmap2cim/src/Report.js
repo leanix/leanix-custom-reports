@@ -50,7 +50,7 @@ class Report extends Component {
 			tagNameDef = '';
 		}
 		return `{businessCapabilities: allFactSheets(
-					sort: {mode: BY_FIELD, key: "displayName", order: asc},
+					sort: { mode: BY_FIELD, key: "displayName", order: asc },
 					filter: {facetFilters: [
 						{facetKey: "FactSheetTypes", keys: ["BusinessCapability"]}
 						${appMapIdFilter}
@@ -100,7 +100,7 @@ class Report extends Component {
 					cimL2 = undefined;
 				}
 				tableData.push({
-					id: e.id + '-' e2.id +
+					id: e.id + '-' + e2.id,
 					appMapL1Id: appMapL1.id,
 					appMapL1Name: appMapL1.name,
 					appMapL2Id: appMapL2 ? appMapL2.id : '',

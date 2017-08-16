@@ -30,6 +30,7 @@ class Table extends Component {
 				 options={{ clearSearch: true }}>
 				<TableHeaderColumn dataSort
 					 dataField='appName'
+					 width='300px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatLinkFactsheet(this.props.setup)}
 					 formatExtraData={{ type: 'Application', id: 'appId' }}
@@ -38,6 +39,7 @@ class Table extends Component {
 					>Application name</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='itcmpName'
+					 width='300px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatLinkFactsheet(this.props.setup)}
 					 formatExtraData={{ type: 'ITComponent', id: 'itcmpId' }}
@@ -68,7 +70,7 @@ class Table extends Component {
 					>Technopedia status</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='count'
-					 width='200'
+					 width='200px'
 					 dataAlign='right'
 					 csvHeader='count-in-other-markets'
 					 filter={TableUtilities.numberFilter}

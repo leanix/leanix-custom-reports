@@ -62,7 +62,7 @@ class Report extends Component {
 	_createQuery(applicationTagId) {
 		const applicationTagIdFilter = applicationTagId ? `, {facetKey: "Application Type", keys: ["${applicationTagId}"]}` : '';
 		return `{applications: allFactSheets(
-					sort: {mode: BY_FIELD, key: "displayName", order: asc},
+					sort: { mode: BY_FIELD, key: "displayName", order: asc },
 					filter: {facetFilters: [
 						{facetKey: "FactSheetTypes", keys: ["Application"]}
 						${applicationTagIdFilter}

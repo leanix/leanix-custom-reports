@@ -111,7 +111,7 @@ class Report extends Component {
 		}
 		// TODO primaryTypeID fehlt an relApplicationToITComponent
 		return `{applications: allFactSheets(
-					sort: {mode: BY_FIELD, key: "displayName", order: asc},
+					sort: { mode: BY_FIELD, key: "displayName", order: asc },
 					filter: {facetFilters: [
 						{facetKey: "FactSheetTypes", keys: ["Application"]}
 						${applicationTagIdFilter}

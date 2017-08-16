@@ -63,11 +63,11 @@ class Report extends Component {
 		let applicationTagIdFilter = ''; // initial assume tagGroup.name changed or the id couldn't be determined otherwise
 		let tagNameDef = 'tags { name }'; // initial assume to get it
 		if (applicationTagId) {
-			applicationTagIdFilter = `, {facetKey: "BC Type", keys: ["${applicationTagId}"]}`;
+			applicationTagIdFilter = `, {facetKey: "Application Type", keys: ["${applicationTagId}"]}`;
 			tagNameDef = '';
 		}
 		return `{applications: allFactSheets(
-					sort: {mode: BY_FIELD, key: "displayName", order: asc},
+					sort: { mode: BY_FIELD, key: "displayName", order: asc },
 					filter: { facetFilters: [
 						{facetKey: "FactSheetTypes", keys: ["Application"]}
 						${applicationTagIdFilter}
@@ -77,18 +77,23 @@ class Report extends Component {
 						id name ${tagNameDef}
 						... on Application {
 							relApplicationToITComponent {
-								edges { node { factSheet {
-									id name type
-									documents {
-										edges { node { name url } }
-									}
-									... on ITComponent {
-										category
-										relITComponentToApplication {
-											edges { node { factSheet { name } } }
-										}
- 									}
-								}}}
+								edges { node { factSheet { id } } }
+							}
+						}
+					}}
+				}
+				itComponents: allFactSheets(
+					filter: {facetFilters: [
+						{facetKey: "FactSheetTypes", keys: ["ITComponent"]}
+						{facetKey: "category", operator: OR, keys: ["software", "hardware"]}
+					]}
+				) {
+					edges { node {
+						id name documents { edges { node { name url } } }
+						... on ITComponent {
+							category
+							relITComponentToApplication {
+								edges { node { factSheet { id } } }
 							}
 						}
 					}}
@@ -106,8 +111,10 @@ class Report extends Component {
 			if (!subIndex) {
 				return;
 			}
-			subIndex.nodes.forEach((itcmp) => {
-				if (itcmp.category === CATEGORY_EXCLUDE) {
+			subIndex.nodes.forEach((e2) => {
+				// access itComponents
+				const itcmp = index.byID[e2.id];
+				if (!itcmp) {
 					return;
 				}
 				/* excluded in cause of 'for doc test only'
@@ -142,7 +149,7 @@ class Report extends Component {
 					itcmpCategory: this._getOptionKeyFromValue(this.CATEGORY_OPTIONS, itcmp.category),
 					state: doc.state,
 					stateRef: doc.ref,
-					count: this._getCountInOtherMarkets(itcmp, Utilities.getMarket(app))
+					count: this._getCountInOtherMarkets(index, itcmp, Utilities.getMarket(app))
 				});
 			});
 		});
@@ -151,12 +158,14 @@ class Report extends Component {
 		});
 	}
 
-	_getCountInOtherMarkets(itcmp, market) {
+	_getCountInOtherMarkets(index, itcmp, market) {
 		if (!itcmp || !itcmp.relITComponentToApplication || !market) {
 			return 0;
 		}
 		let count = 0;
-		itcmp.relITComponentToApplication.nodes.forEach((app) => {
+		itcmp.relITComponentToApplication.nodes.forEach((e) => {
+			// access applications
+			const app = index.byID[e.id];
 			const appmarket = Utilities.getMarket(app);
 			if (appmarket && appmarket !== market) {
 				count++;

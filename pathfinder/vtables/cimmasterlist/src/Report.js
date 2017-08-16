@@ -66,7 +66,7 @@ class Report extends Component {
 					edges { node { id name description } }
 				}
 				dataObjectsL2: allFactSheets(
-					sort: {mode: BY_FIELD, key: "name", order: asc},
+					sort: { mode: BY_FIELD, key: "name", order: asc },
 					filter: {facetFilters: [
 						{facetKey: "FactSheetTypes", keys: ["DataObject"]},
 						{facetKey: "hierarchyLevel", keys: ["2"]}
