@@ -1,9 +1,7 @@
 import React, {	Component } from 'react';
-import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
-import CommonQueries from './CommonGraphQLQueries';
-import DataIndex from './DataIndex';
-import Link from './Link';
-import LinkList from './LinkList';
+import CommonQueries from './common/CommonGraphQLQueries';
+import DataIndex from './common/DataIndex';
+import Table from './Table';
 
 const LANDSCAPE_OPTIONS = {
 	0: 'Yes',
@@ -16,8 +14,6 @@ class Report extends Component {
 		super(props);
 		this._initReport = this._initReport.bind(this);
 		this._handleData = this._handleData.bind(this);
-		this._formatName = this._formatName.bind(this);
-		this._formatArray = this._formatArray.bind(this);
 		this.state = {
 			setup: null,
 			data: []
@@ -91,7 +87,7 @@ class Report extends Component {
 						${appMapIDFilter}
 					]}
 				) {
-					edges { node { id displayName ${tagNameDef} } }
+					edges { node { id name ${tagNameDef} } }
 				}}`;
 	}
 
@@ -102,20 +98,17 @@ class Report extends Component {
 				return;
 			}
 			const parent = index.getParent('dataObjectsL2', e.id);
-			let appMapBCs = [];
+			const appMapBCs = [];
 			const subIndex = e.relDataObjectToBusinessCapability;
 			if (subIndex) {
-				appMapBCs = subIndex.nodes.map((e2) => {
-					return index.businessCapabilities.byID[e2.id];
-				}).filter((e2) => {
-					return e2 !== undefined && e2 !== null;
+				subIndex.nodes.forEach((e2) => {
+					// access businessCapabilities
+					const bc = index.byID[e2.id];
+					if (!bc || (!appMapID && !index.includesTag(e2, 'AppMap'))) {
+						return;
+					}
+					appMapBCs.push(bc);
 				});
-				if (!appMapID) {
-					// filter for tag name
-					appMapBCs = appMapBCs.filter((e2) => {
-						return index.includesTag(e2, 'AppMap');
-					});
-				}
 			}
 			tableData.push({
 				domainID: parent ? parent.id : '',
@@ -126,7 +119,7 @@ class Report extends Component {
 				description: e.description,
 				landscapeAvailable: index.includesTag(e, 'Landscape Available') ? 0 : 1,
 				appMaps: appMapBCs.map((e2) => {
-					return e2.displayName;
+					return e2.name;
 				}),
 				appMapIDs: appMapBCs.map((e2) => {
 					return e2.id;
@@ -138,124 +131,13 @@ class Report extends Component {
 		});
 	}
 
-	/* formatting functions for the table */
-
-	_formatName(cell, row, parent) {
-		if (!cell) {
-			return '';
-		}
-		return (<Link link={this.state.setup.settings.baseUrl + '/factsheet/DataObject/' + (parent ? row.domainID : row.id)} target='_blank' text={cell} />);
-	}
-
-	_formatDescription(cell, row) {
-		if (!cell) {
-			return '';
-		}
-		return cell;
-	}
-
-	_formatArray(cell, row) {
-		if (!cell) {
-			return '';
-		}
-		return (
-			<LinkList links={
-				cell.reduce((arr, e, i) => {
-					arr.push({
-						link: this.state.setup.settings.baseUrl + '/factsheet/BusinessCapability/' + row.appMapIDs[i],
-						target: '_blank',
-						text: e
-					});
-					return arr;
-			}, [])} />
-		);
-	}
-
-	_formatEnum(cell, row, enums) {
-		if (!cell && cell !== 0) {
-			return '';
-		}
-		return enums[cell] ? enums[cell] : '';
-	}
-
-	/* formatting functions for the csv export */
-
-	_csvFormatArray(cell, row) {
-		let names = '';
-		if (!cell) {
-			return names;
-		}
-		cell.forEach((e) => {
-			if (names.length) {
-				names += '\n';
-			}
-			names += e;
-		});
-		return names;
-	}
-
 	render() {
 		return (
-			<BootstrapTable data={this.state.data} keyField='id'
-				 striped hover search exportCSV
-				 options={{ clearSearch: true }}>
-				<TableHeaderColumn dataSort
-					 dataField='domainName'
-					 width='200px'
-					 dataAlign='left'
-					 dataFormat={this._formatName}
-					 formatExtraData={true}
-					 csvHeader='domain-name'
-					 filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
-					>Domain</TableHeaderColumn>
-				<TableHeaderColumn tdStyle={{ fontSize: '.85em' }}
-					 dataField='domainDescription'
-					 width='300px'
-					 dataAlign='left'
-					 dataFormat={this._formatDescription}
-					 csvHeader='domain-description'
-					 csvFormat={this._formatDescription}
-					 filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
-					>Domain Description</TableHeaderColumn>
-				<TableHeaderColumn dataSort
-					 dataField='name'
-					 width='250px'
-					 dataAlign='left'
-					 dataFormat={this._formatName}
-					 formatExtraData={false}
-					 csvHeader='entity-name'
-					 filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
-					>Entity name</TableHeaderColumn>
-				<TableHeaderColumn tdStyle={{ fontSize: '.85em' }}
-					 dataField='description'
-					 width='300px'
-					 dataAlign='left'
-					 dataFormat={this._formatDescription}
-					 csvHeader='entity-description'
-					 csvFormat={this._formatDescription}
-					 filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
-					>Entity description</TableHeaderColumn>
-				<TableHeaderColumn dataSort
-					 dataField='landscapeAvailable'
-					 width='130px'
-					 dataAlign='left'
-					 dataFormat={this._formatEnum}
-					 formatExtraData={LANDSCAPE_OPTIONS}
-					 csvHeader='landscape-available'
-					 csvFormat={this._formatEnum}
-					 csvFormatExtraData={LANDSCAPE_OPTIONS}
-					 filter={{ type: 'SelectFilter', condition: 'eq', placeholder: 'Please choose', options: LANDSCAPE_OPTIONS }}
-					>Landscape Available?</TableHeaderColumn>
-				<TableHeaderColumn
-					 dataField='appMaps'
-					 width='250px'
-					 dataAlign='left'
-					 dataFormat={this._formatArray}
-					 csvHeader='appmap-names'
-					 csvFormat={this._csvFormatArray}
-					 filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
-					>Mappings to AppMap</TableHeaderColumn>
-			</BootstrapTable>
+			<Table data={this.state.data}
+				options={{
+					landscape: LANDSCAPE_OPTIONS
+				}}
+				setup={this.state.setup} />
 		);
 	}
 }

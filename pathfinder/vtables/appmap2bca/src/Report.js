@@ -46,7 +46,6 @@ class Report extends Component {
 		let appMapIDFilter = ''; // initial assume tagGroup.name changed or the id couldn't be determined otherwise
 		let tagNameDef = 'tags { name }'; // initial assume to get it
 		if (appMapID) {
-			// query filtering only bc with tag 'AppMap'
 			appMapIDFilter = `, {facetKey: "BC Type", keys: ["${appMapID}"]}`;
 			tagNameDef = '';
 		}
@@ -112,17 +111,18 @@ class Report extends Component {
 					bcaL4 = undefined;
 				}
 				tableData.push({
-					appMapL1ID: appMapL1 ? appMapL1.id : '',
-					appMapL1Name: appMapL1 ? appMapL1.name : '',
-					appMapL2ID: appMapL2 ? appMapL2.id : '',
+					id: e.id + '-' + e2.id,
+					appMapL1Id: appMapL1.id,
+					appMapL1Name: appMapL1.name,
+					appMapL2Id: appMapL2 ? appMapL2.id : '',
 					appMapL2Name: appMapL2 ? appMapL2.name : '',
-					bcaL1ID: bcaL1 ? bcaL1.id : '',
-					bcaL1Name: bcaL1 ? bcaL1.name : '',
-					bcaL2ID: bcaL2 ? bcaL2.id : '',
+					bcaL1Id: bcaL1.id,
+					bcaL1Name: bcaL1.name,
+					bcaL2Id: bcaL2 ? bcaL2.id : '',
 					bcaL2Name: bcaL2 ? bcaL2.name : '',
-					bcaL3ID: bcaL3 ? bcaL3.id : '',
+					bcaL3Id: bcaL3 ? bcaL3.id : '',
 					bcaL3Name: bcaL3 ? bcaL3.name : '',
-					bcaL4ID: bcaL4 ? bcaL4.id : '',
+					bcaL4Id: bcaL4 ? bcaL4.id : '',
 					bcaL4Name: bcaL4 ? bcaL4.name : ''
 				});
 			});

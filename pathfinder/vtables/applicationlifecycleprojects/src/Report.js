@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
-import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 import CommonQueries from './common/CommonGraphQLQueries';
 import DataIndex from './common/DataIndex';
-import Link from './common/Link';
 import Utilities from './common/Utilities';
 import Table from './Table';
 
@@ -38,9 +36,9 @@ class Report extends Component {
 		const factsheetModel = setup.settings.dataModel.factSheets.Application;
 		this.DEPLOYMENT_OPTIONS = Utilities.createOptionsObjFrom(
 			factsheetModel, 'fields.deployment.values');
-		const relationModel = setup.settings.dataModel.relations;
+		const relationModel = setup.settings.dataModel.relations.applicationProjectRelation;
 		this.PROJECT_IMPACT_OPTIONS = Utilities.createOptionsObjFrom(
-			relationModel, 'applicationProjectRelation.fields.projectImpact.values');
+			relationModel, 'fields.projectImpact.values');
 		// get all tags, then the data
 		lx.executeGraphQL(CommonQueries.tagGroups).then((tagGroups) => {
 			const index = new DataIndex();
@@ -73,8 +71,7 @@ class Report extends Component {
 					edges { node {
 						id name tags { name }
 						... on Application {
-							deployment
-							lifecycle { phases { phase startDate } }
+							deployment lifecycle { phases { phase startDate } }
 							relApplicationToProject { edges { node { projectImpact factSheet { id } } } }
 						}
 					}}
@@ -106,8 +103,10 @@ class Report extends Component {
 					copiedItem.itemId += '-' + idPrefix + '-' + projectId;
 					copiedItem.projectId = projectId;
 					copiedItem.projectName = projectName;
-					copiedItem.projectImpact = this._getOptionKeyFromValue(this.PROJECT_IMPACT_OPTIONS, projectImpact);
-					copiedItem.projectType = this._getOptionKeyFromValue(this.PROJECT_TYPE_OPTIONS, this._getTagFromGroup(index, project, 'Project Type'));
+					copiedItem.projectImpact = this._getOptionKeyFromValue(
+						this.PROJECT_IMPACT_OPTIONS, projectImpact);
+					copiedItem.projectType = this._getOptionKeyFromValue(
+						this.PROJECT_TYPE_OPTIONS, this._getTagFromGroup(index, project, 'Project Type'));
 					tableData.push(copiedItem);
 					nothingAdded = false;
 				}
@@ -120,18 +119,23 @@ class Report extends Component {
 			}
 			const lifecycles = Utilities.getLifecycles(e);
 			const subIndex = e.relApplicationToProject;
+			const costCentre = this._getOptionKeyFromValue(
+				this.COST_CENTRE_OPTIONS, this._getTagFromGroup(index, e, 'CostCentre'));
+			const deployment = this._getOptionKeyFromValue(
+				this.DEPLOYMENT_OPTIONS, e.deployment);
 			lifecycles.forEach((e2) => {
 				const outputItem = {
 					itemId: e.id,
 					name: e.name,
 					id: e.id,
-					costCentre: this._getOptionKeyFromValue(this.COST_CENTRE_OPTIONS, this._getTagFromGroup(index, e, 'CostCentre')),
-					deployment: this._getOptionKeyFromValue(this.DEPLOYMENT_OPTIONS, e.deployment),
+					costCentre: costCentre,
+					deployment: deployment,
 					projectId: '',
 					projectName: '',
 					projectImpact: undefined,
 					projectType: undefined,
-					lifecyclePhase: this._getOptionKeyFromValue(this.LIFECYCLE_PHASE_OPTIONS, e2.phase),
+					lifecyclePhase: this._getOptionKeyFromValue(
+						this.LIFECYCLE_PHASE_OPTIONS, e2.phase),
 					lifecycleStart: new Date(e2.startDate)
 				};
 				if (!subIndex) {

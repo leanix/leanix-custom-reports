@@ -145,10 +145,10 @@ Table.propTypes = {
 			percentage: PropTypes.number.isRequired
 		}).isRequired
 	).isRequired,
-	pageSize: PropTypes.number.isRequired,
 	options: PropTypes.shape({
 		market: TableUtilities.PropTypes.options
-	}).isRequired
+	}).isRequired,
+	setup: PropTypes.object
 };
 
 export default Table;

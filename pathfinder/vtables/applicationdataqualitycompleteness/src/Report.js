@@ -178,10 +178,10 @@ class Report extends Component {
 	render() {
 		return (
 			<Table data={this.state.data}
-				pageSize={RuleSet.length}
 				options={{
 					market: this.MARKET_OPTIONS
-				}} />
+				}}
+				setup={this.state.setup} />
 		);
 	}
 }

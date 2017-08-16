@@ -11,14 +11,15 @@ class Table extends Component {
 
 	render() {
 		return (
-			<BootstrapTable data={this.props.data} keyField='appMapL1ID'
-				striped hover search pagination ignoreSinglePage exportCSV
-				options={{ clearSearch: true }}>
+			<BootstrapTable data={this.props.data} keyField='id'
+				 striped hover search exportCSV
+				 pagination ignoreSinglePage
+				 options={{ clearSearch: true }}>
 				<TableHeaderColumn dataSort
 					 dataField='appMapL1Name'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatLinkFactsheet(this.props.setup)}
-					 formatExtraData={{ type: 'BusinessCapability', id: 'appMapL1ID' }}
+					 formatExtraData={{ type: 'BusinessCapability', id: 'appMapL1Id' }}
 					 csvHeader='appmap-domain'
 					 filter={TableUtilities.textFilter}
 					>AppMap Domain</TableHeaderColumn>
@@ -26,7 +27,7 @@ class Table extends Component {
 					 dataField='appMapL2Name'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatLinkFactsheet(this.props.setup)}
-					 formatExtraData={{ type: 'BusinessCapability', id: 'appMapL2ID' }}
+					 formatExtraData={{ type: 'BusinessCapability', id: 'appMapL2Id' }}
 					 csvHeader='appmap-solution-area'
 					 filter={TableUtilities.textFilter}
 					>AppMap Solution Area</TableHeaderColumn>
@@ -34,7 +35,7 @@ class Table extends Component {
 					 dataField='platformL2Name'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatLinkFactsheet(this.props.setup)}
-					 formatExtraData={{ type: 'BusinessCapability', id: 'platformL2ID' }}
+					 formatExtraData={{ type: 'BusinessCapability', id: 'platformL2Id' }}
 					 csvHeader='platform'
 					 filter={TableUtilities.textFilter}
 					>Platform</TableHeaderColumn>
@@ -42,7 +43,7 @@ class Table extends Component {
 					 dataField='platformL1Name'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatLinkFactsheet(this.props.setup)}
-					 formatExtraData={{ type: 'BusinessCapability', id: 'platformL1ID' }}
+					 formatExtraData={{ type: 'BusinessCapability', id: 'platformL1Id' }}
 					 csvHeader='platform-layer'
 					 filter={TableUtilities.textFilter}
 					>Platform Layer</TableHeaderColumn>
@@ -54,13 +55,14 @@ class Table extends Component {
 Table.propTypes = {
 	data: PropTypes.arrayOf(
 		PropTypes.shape({
-			appMapL1ID: PropTypes.string.isRequired,
+			id: PropTypes.string.isRequired,
+			appMapL1Id: PropTypes.string.isRequired,
 			appMapL1Name: PropTypes.string.isRequired,
-			appMapL2ID: PropTypes.string,
+			appMapL2Id: PropTypes.string,
 			appMapL2Name: PropTypes.string,
-			platformL1ID: PropTypes.string.isRequired,
+			platformL1Id: PropTypes.string.isRequired,
 			platformL1Name: PropTypes.string.isRequired,
-			platformL2ID: PropTypes.string,
+			platformL2Id: PropTypes.string,
 			platformL2Name: PropTypes.string
 		}).isRequired
 	).isRequired,

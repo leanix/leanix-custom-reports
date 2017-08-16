@@ -14,7 +14,7 @@ class Table extends Component {
 			<BootstrapTable data={this.props.data} keyField='itemId'
 				 striped hover search pagination ignoreSinglePage exportCSV
 				 options={{ clearSearch: true }}>
-				<TableHeaderColumn dataSort row='0' rowSpan='2'
+				<TableHeaderColumn dataSort
 					 dataField='name'
 					 width='300px'
 					 dataAlign='left'
@@ -23,7 +23,7 @@ class Table extends Component {
 					 csvHeader='application-name'
 					 filter={TableUtilities.textFilter}
 					>Application name</TableHeaderColumn>
-				<TableHeaderColumn dataSort row='0' rowSpan='2'
+				<TableHeaderColumn dataSort
 					 dataField='costCentre'
 					 width='150px'
 					 dataAlign='left'
@@ -34,9 +34,9 @@ class Table extends Component {
 					 csvFormatExtraData={this.props.options.costCentre}
 					 filter={TableUtilities.selectFilter(this.props.options.costCentre)}
 					>Cost Centre</TableHeaderColumn>
-				<TableHeaderColumn dataSort row='0' rowSpan='2'
+				<TableHeaderColumn dataSort
 					 dataField='deployment'
-					 width='320px' // before: 180px
+					 width='320px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatEnum}
 					 formatExtraData={this.props.options.deployment}
@@ -44,7 +44,7 @@ class Table extends Component {
 					 csvFormatExtraData={this.props.options.deployment}
 					 filter={TableUtilities.selectFilter(this.props.options.deployment)}
 					>Deployment</TableHeaderColumn>
-				<TableHeaderColumn dataSort row='0' rowSpan='2'
+				<TableHeaderColumn dataSort
 					 dataField='lifecyclePhase'
 					 width='120px'
 					 dataAlign='left'
@@ -55,7 +55,7 @@ class Table extends Component {
 					 csvFormatExtraData={this.props.options.lifecyclePhase}
 					 filter={TableUtilities.selectFilter(this.props.options.lifecyclePhase)}
 					>Phase</TableHeaderColumn>
-				<TableHeaderColumn dataSort row='0' rowSpan='2'
+				<TableHeaderColumn dataSort
 					 dataField='lifecycleStart'
 					 width='250px'
 					 headerAlign='left'
@@ -65,11 +65,7 @@ class Table extends Component {
 					 csvFormat={TableUtilities.csvFormatDate}
 					 filter={TableUtilities.dateFilter}
 					>Phase start</TableHeaderColumn>
-				<TableHeaderColumn row='0' colSpan='3'
-					 headerAlign='center'
-					 csvHeader='project'
-					>Project</TableHeaderColumn>
-				<TableHeaderColumn dataSort row='1'
+				<TableHeaderColumn dataSort
 					 dataField='projectName'
 					 width='300px'
 					 dataAlign='left'
@@ -77,8 +73,8 @@ class Table extends Component {
 					 formatExtraData={{ type: 'Project', id: 'projectId' }}
 					 csvHeader='project-name'
 					 filter={TableUtilities.textFilter}
-					>Name</TableHeaderColumn>
-				<TableHeaderColumn dataSort row='1'
+					>Project name</TableHeaderColumn>
+				<TableHeaderColumn dataSort
 					 dataField='projectImpact'
 					 width='150px'
 					 dataAlign='left'
@@ -88,8 +84,8 @@ class Table extends Component {
 					 csvFormat={TableUtilities.formatEnum}
 					 csvFormatExtraData={this.props.options.projectImpact}
 					 filter={TableUtilities.selectFilter(this.props.options.projectImpact)}
-					>Impact</TableHeaderColumn>
-				<TableHeaderColumn dataSort row='1'
+					>Project impact</TableHeaderColumn>
+				<TableHeaderColumn dataSort
 					 dataField='projectType'
 					 width='150px'
 					 dataAlign='left'
@@ -99,7 +95,7 @@ class Table extends Component {
 					 csvFormat={TableUtilities.formatEnum}
 					 csvFormatExtraData={this.props.options.projectType}
 					 filter={TableUtilities.selectFilter(this.props.options.projectType)}
-					>Type</TableHeaderColumn>
+					>Project type</TableHeaderColumn>
 			</BootstrapTable>
 		);
 	}
