@@ -28,10 +28,10 @@ class Report extends Component {
 		lx.executeGraphQL(CommonQueries.tagGroups).then((tagGroups) => {
 			const index = new DataIndex();
 			index.put(tagGroups);
-			const appMapID = index.getFirstTagID('BC Type', 'AppMap');
-			lx.executeGraphQL(this._createQuery(appMapID)).then((data) => {
+			const appMapId = index.getFirstTagID('BC Type', 'AppMap');
+			lx.executeGraphQL(this._createQuery(appMapId)).then((data) => {
 				index.put(data);
-				this._handleData(index, appMapID);
+				this._handleData(index, appMapId);
 			});
 		});
 	}
@@ -42,18 +42,18 @@ class Report extends Component {
 		};
 	}
 
-	_createQuery(appMapID) {
-		let appMapIDFilter = ''; // initial assume tagGroup.name changed or the id couldn't be determined otherwise
+	_createQuery(appMapId) {
+		let appMapIdFilter = ''; // initial assume tagGroup.name changed or the id couldn't be determined otherwise
 		let tagNameDef = 'tags { name }'; // initial assume to get it
-		if (appMapID) {
-			appMapIDFilter = `, {facetKey: "BC Type", keys: ["${appMapID}"]}`;
+		if (appMapId) {
+			appMapIdFilter = `, {facetKey: "BC Type", keys: ["${appMapId}"]}`;
 			tagNameDef = '';
 		}
 		return `{businessCapabilities: allFactSheets(
 					sort: {mode: BY_FIELD, key: "displayName", order: asc},
 					filter: {facetFilters: [
 						{facetKey: "FactSheetTypes", keys: ["BusinessCapability"]}
-						${appMapIDFilter}
+						${appMapIdFilter}
 					]}
 				) {
 					edges { node {
@@ -83,11 +83,11 @@ class Report extends Component {
 				}}`;
 	}
 
-	_handleData(index, appMapID) {
+	_handleData(index, appMapId) {
 		const tableData = [];
 		index.businessCapabilities.nodes.forEach((e) => {
 			let appMapL2 = e;
-			if (!appMapID && !index.includesTag(appMapL2, 'AppMap')) {
+			if (!appMapId && !index.includesTag(appMapL2, 'AppMap')) {
 				return;
 			}
 			const subIndex = appMapL2.relBusinessCapabilityToBCA;

@@ -64,7 +64,7 @@ export default [{
 				const compliantBCs = subIndex.nodes.filter((e2) => {
 					// access businessCapabilities
 					const bc = index.byID[e2.id];
-					return bc && (!config.appMapID ? index.includesTag(bc, 'AppMap') : true);
+					return bc && (!config.appMapId ? index.includesTag(bc, 'AppMap') : true);
 				});
 				if (compliantBCs.length === 1) {
 					result.compliant.push(e);

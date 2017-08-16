@@ -31,12 +31,12 @@ class Report extends Component {
 		lx.executeGraphQL(CommonQueries.tagGroups).then((tagGroups) => {
 			const index = new DataIndex();
 			index.put(tagGroups);
-			const applicationTagID = index.getFirstTagID('Application Type', 'Application');
-			const itTagID = index.getFirstTagID('CostCentre', 'IT');
-			const appMapID = index.getFirstTagID('BC Type', 'AppMap');
-			lx.executeGraphQL(this._createQuery(applicationTagID, itTagID, appMapID)).then((data) => {
+			const applicationTagId = index.getFirstTagID('Application Type', 'Application');
+			const itTagId = index.getFirstTagID('CostCentre', 'IT');
+			const appMapId = index.getFirstTagID('BC Type', 'AppMap');
+			lx.executeGraphQL(this._createQuery(applicationTagId, itTagId, appMapId)).then((data) => {
 				index.put(data);
-				this._handleData(index);
+				this._handleData(index, applicationTagId, itTagId, appMapId);
 			});
 		});
 	}
@@ -47,21 +47,21 @@ class Report extends Component {
 		};
 	}
 
-	_createQuery(applicationTagID, itTagID, appMapID) {
-		const applicationTagIDFilter = applicationTagID ? `, {facetKey: "Application Type", keys: ["${applicationTagID}"]}` : '';
-		const itTagIDFilter = itTagID ? `, {facetKey: "CostCentre", keys: ["${itTagID}"]}` : '';
-		let appMapIDFilter = ''; // initial assume tagGroup.name changed or the id couldn't be determined otherwise
+	_createQuery(applicationTagId, itTagId, appMapId) {
+		const applicationTagIdFilter = applicationTagId ? `, {facetKey: "Application Type", keys: ["${applicationTagId}"]}` : '';
+		const itTagIdFilter = itTagId ? `, {facetKey: "CostCentre", keys: ["${itTagId}"]}` : '';
+		let appMapIdFilter = ''; // initial assume tagGroup.name changed or the id couldn't be determined otherwise
 		let tagNameDef = 'tags { name }'; // initial assume to get it
-		if (appMapID) {
-			appMapIDFilter = `, {facetKey: "BC Type", keys: ["${appMapID}"]}`;
+		if (appMapId) {
+			appMapIdFilter = `, {facetKey: "BC Type", keys: ["${appMapId}"]}`;
 			tagNameDef = '';
 		}
 		return `{applications: allFactSheets(
 					sort: {mode: BY_FIELD, key: "displayName", order: asc},
 					filter: {facetFilters: [
 						{facetKey: "FactSheetTypes", keys: ["Application"]}
-						${applicationTagIDFilter}
-						${itTagIDFilter}
+						${applicationTagIdFilter}
+						${itTagIdFilter}
 					]}
 				) {
 					edges { node {
@@ -79,7 +79,7 @@ class Report extends Component {
 				businessCapabilities: allFactSheets(
 					filter: {facetFilters: [
 						{facetKey: "FactSheetTypes", keys: ["BusinessCapability"]}
-						${appMapIDFilter}
+						${appMapIdFilter}
 					]}
 				) {
 					edges { node { id ${tagNameDef} } }
@@ -94,16 +94,16 @@ class Report extends Component {
 				}}`;
 	}
 
-	_handleData(index, applicationTagID, itTagID, appMapID) {
+	_handleData(index, applicationTagId, itTagId, appMapId) {
 		const tableData = [];
 		let marketCount = 0;
 		// group applications by market
 		const groupedByMarket = {};
 		index.applications.nodes.forEach((e) => {
-			if (!applicationTagID && !index.includesTag(e, 'Application')) {
+			if (!applicationTagId && !index.includesTag(e, 'Application')) {
 				return;
 			}
-			if (!itTagID && !index.includesTag(e, 'IT')) {
+			if (!itTagId && !index.includesTag(e, 'IT')) {
 				return;
 			}
 			const market = Utilities.getMarket(e);
@@ -117,7 +117,7 @@ class Report extends Component {
 			groupedByMarket[market].push(e);
 		});
 		const ruleConfig = {
-			appMapID: appMapID
+			appMapId: appMapId
 		};
 		for (let market in groupedByMarket) {
 			const allApplications = groupedByMarket[market];

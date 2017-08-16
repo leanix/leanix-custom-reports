@@ -43,12 +43,12 @@ class Report extends Component {
 		lx.executeGraphQL(CommonQueries.tagGroups).then((tagGroups) => {
 			const index = new DataIndex();
 			index.put(tagGroups);
-			const applicationTagID = index.getFirstTagID('Application Type', 'Application');
+			const applicationTagId = index.getFirstTagID('Application Type', 'Application');
 			this.COST_CENTRE_OPTIONS = Utilities.createOptionsObj(index.getTags('CostCentre'));
 			this.PROJECT_TYPE_OPTIONS = Utilities.createOptionsObj(index.getTags('Project Type'));
-			lx.executeGraphQL(this._createQuery(applicationTagID)).then((data) => {
+			lx.executeGraphQL(this._createQuery(applicationTagId)).then((data) => {
 				index.put(data);
-				this._handleData(index, applicationTagID);
+				this._handleData(index, applicationTagId);
 			});
 		});
 	}
@@ -59,13 +59,13 @@ class Report extends Component {
 		};
 	}
 
-	_createQuery(applicationTagID) {
-		const applicationTagIDFilter = applicationTagID ? `, {facetKey: "Application Type", keys: ["${applicationTagID}"]}` : '';
+	_createQuery(applicationTagId) {
+		const applicationTagIdFilter = applicationTagId ? `, {facetKey: "Application Type", keys: ["${applicationTagId}"]}` : '';
 		return `{applications: allFactSheets(
 					sort: {mode: BY_FIELD, key: "displayName", order: asc},
 					filter: {facetFilters: [
 						{facetKey: "FactSheetTypes", keys: ["Application"]}
-						${applicationTagIDFilter}
+						${applicationTagIdFilter}
 					]}
 				) {
 					edges { node {
@@ -85,7 +85,7 @@ class Report extends Component {
 				}}`;
 	}
 
-	_handleData(index, applicationTagID) {
+	_handleData(index, applicationTagId) {
 		const tableData = [];
 		const decommissioningRE = /decommissioning/i;
 		const addSubNodes = (subIndex, outputItem, idPrefix, check) => {
@@ -114,7 +114,7 @@ class Report extends Component {
 			return nothingAdded;
 		};
 		index.applications.nodes.forEach((e) => {
-			if (!applicationTagID && !index.includesTag(e, 'Application')) {
+			if (!applicationTagId && !index.includesTag(e, 'Application')) {
 				return;
 			}
 			const lifecycles = Utilities.getLifecycles(e);

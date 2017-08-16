@@ -40,10 +40,10 @@ class Report extends Component {
 		lx.executeGraphQL(CommonQueries.tagGroups).then((tagGroups) => {
 			const index = new DataIndex();
 			index.put(tagGroups);
-			const csmID = index.getFirstTagID('CSM Type', 'CSM');
-			lx.executeGraphQL(this._createQuery(csmID)).then((data) => {
+			const csmId = index.getFirstTagID('CSM Type', 'CSM');
+			lx.executeGraphQL(this._createQuery(csmId)).then((data) => {
 				index.put(data);
-				this._handleData(index, csmID);
+				this._handleData(index, csmId);
 			});
 		});
 	}
@@ -54,11 +54,11 @@ class Report extends Component {
 		};
 	}
 
-	_createQuery(csmID) {
-		let csmIDFilter = ''; // initial assume tagGroup.name changed or the id couldn't be determined otherwise
+	_createQuery(csmId) {
+		let csmIdFilter = ''; // initial assume tagGroup.name changed or the id couldn't be determined otherwise
 		let tagNameDef = 'tags { name }'; // initial assume to get it
-		if (csmID) {
-			csmIDFilter = `, {facetKey: "CSM Type", keys: ["${csmID}"]}`;
+		if (csmId) {
+			csmIdFilter = `, {facetKey: "CSM Type", keys: ["${csmId}"]}`;
 			tagNameDef = '';
 		}
 		return `{csm: allFactSheets(
@@ -66,7 +66,7 @@ class Report extends Component {
 					filter: {facetFilters: [
 						{facetKey: "FactSheetTypes", keys: ["CSM"]},
 						{facetKey: "hierarchyLevel", keys: ["2"]}
-						${csmIDFilter}
+						${csmIdFilter}
 					]}
 				) {
 					edges { node {
@@ -83,10 +83,10 @@ class Report extends Component {
 				}}`;
 	}
 
-	_handleData(index, csmID) {
+	_handleData(index, csmId) {
 		const tableData = [];
 		index.csm.nodes.forEach((csmL2) => {
-			if (!csmID && !index.includesTag(csmL2, 'CSM')) {
+			if (!csmId && !index.includesTag(csmL2, 'CSM')) {
 				return;
 			}
 			const csmL1 = csmL2.relToParent ? csmL2.relToParent.nodes[0] : undefined;

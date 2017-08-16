@@ -23,14 +23,14 @@ class Table extends Component {
 
 	render() {
 		return (
-			<BootstrapTable data={this.props.data} keyField='appID'
+			<BootstrapTable data={this.props.data} keyField='appId'
 				 striped hover search exportCSV pagination ignoreSinglePage
 				 options={{ clearSearch: true }}>
 				<TableHeaderColumn dataSort
 					 dataField='appName'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatLinkFactsheet(this.props.setup)}
-					 formatExtraData={{ type: 'Application', id: 'appID' }}
+					 formatExtraData={{ type: 'Application', id: 'appId' }}
 					 csvHeader='application-name'
 					 filter={TableUtilities.textFilter}
 				>Application name</TableHeaderColumn>
@@ -38,7 +38,7 @@ class Table extends Component {
 					 dataField='itcmpName'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatLinkFactsheet(this.props.setup)}
-					 formatExtraData={{ type: 'ITComponent', id: 'itcmpID' }}
+					 formatExtraData={{ type: 'ITComponent', id: 'itcmpId' }}
 					 csvHeader='it-component-name'
 					 filter={TableUtilities.textFilter}
 				>IT Component name</TableHeaderColumn>
@@ -80,9 +80,9 @@ Table.propTypes = {
 	data: PropTypes.arrayOf(
 		PropTypes.shape({
 			appName: PropTypes.string.isRequired,
-			appID: PropTypes.string.isRequired,
+			appId: PropTypes.string.isRequired,
 			itcmpName: PropTypes.string.isRequired,
-			itcmpID: PropTypes.string.isRequired,
+			itcmpId: PropTypes.string.isRequired,
 			itcmpCategory: PropTypes.number,
 			state: PropTypes.number,
 			stateRef: PropTypes.string,

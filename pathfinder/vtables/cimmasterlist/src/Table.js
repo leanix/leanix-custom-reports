@@ -19,7 +19,7 @@ class Table extends Component {
 					 width='200px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatLinkFactsheet(this.props.setup)}
-					 formatExtraData={{ type: 'DataObject', id: 'domainID' }}
+					 formatExtraData={{ type: 'DataObject', id: 'domainId' }}
 					 csvHeader='domain-name'
 					 filter={TableUtilities.textFilter}
 					>Domain</TableHeaderColumn>
@@ -68,7 +68,7 @@ class Table extends Component {
 					 width='250px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatLinkArrayFactsheets(this.props.setup)}
-					 formatExtraData={{ type: 'BusinessCapability', id: 'appMapIDs' }}
+					 formatExtraData={{ type: 'BusinessCapability', id: 'appMapIds' }}
 					 csvHeader='appmap-names'
 					 csvFormat={TableUtilities.formatArray}
 					 csvFormatExtraData=';'
@@ -82,14 +82,14 @@ class Table extends Component {
 Table.propTypes = {
 	data: PropTypes.arrayOf(
 		PropTypes.shape({
-			domainID: PropTypes.string,
+			domainId: PropTypes.string,
 			domainName: PropTypes.string,
 			domainDescription: PropTypes.string,
 			id: PropTypes.string.isRequired,
 			name: PropTypes.string.isRequired,
 			description: PropTypes.string,
 			landscapeAvailable: PropTypes.number,
-			appMapIDs: TableUtilities.PropTypes.idArray('appMaps'),
+			appMapIds: TableUtilities.PropTypes.idArray('appMaps'),
 			appMaps: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired
 		}).isRequired
 	).isRequired,

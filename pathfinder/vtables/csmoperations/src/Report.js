@@ -36,11 +36,11 @@ class Report extends Component {
 		lx.executeGraphQL(CommonQueries.tagGroups).then((tagGroups) => {
 			const index = new DataIndex();
 			index.put(tagGroups);
-			const csmID = index.getFirstTagID('CSM Type', 'CSM');
-			const platformID = index.getFirstTagID('BC Type', 'Platform');
-			lx.executeGraphQL(this._createQuery(csmID, platformID)).then((data) => {
+			const csmId = index.getFirstTagID('CSM Type', 'CSM');
+			const platformId = index.getFirstTagID('BC Type', 'Platform');
+			lx.executeGraphQL(this._createQuery(csmId, platformId)).then((data) => {
 				index.put(data);
-				this._handleData(index, csmID, platformID);
+				this._handleData(index, csmId, platformId);
 			});
 		});
 	}
@@ -51,17 +51,17 @@ class Report extends Component {
 		};
 	}
 
-	_createQuery(csmID, platformID) {
-		let csmIDFilter = ''; // initial assume tagGroup.name changed or the id couldn't be determined otherwise
+	_createQuery(csmId, platformId) {
+		let csmIdFilter = ''; // initial assume tagGroup.name changed or the id couldn't be determined otherwise
 		let csmTagNameDef = 'tags { name }'; // initial assume to get it
-		if (csmID) {
-			csmIDFilter = `, {facetKey: "CSM Type", keys: ["${csmID}"]}`;
+		if (csmId) {
+			csmIdFilter = `, {facetKey: "CSM Type", keys: ["${csmId}"]}`;
 			csmTagNameDef = '';
 		}
-		let platformIDFilter = ''; // initial assume tagGroup.name changed or the id couldn't be determined otherwise
+		let platformIdFilter = ''; // initial assume tagGroup.name changed or the id couldn't be determined otherwise
 		let platfTagNameDef = 'tags { name }'; // initial assume to get it
-		if (platformID) {
-			platformIDFilter = `, {facetKey: "BC Type", keys: ["${platformID}"]}`;
+		if (platformId) {
+			platformIdFilter = `, {facetKey: "BC Type", keys: ["${platformId}"]}`;
 			platfTagNameDef = '';
 		}
 		// TODO: add 'relation CSM to Platform' to the query
@@ -70,7 +70,7 @@ class Report extends Component {
 					filter: {facetFilters: [
 						{facetKey: "FactSheetTypes", keys: ["CSM"]},
 						{facetKey: "hierarchyLevel", operator: OR, keys: ["1", "2", "3"]}
-						${csmIDFilter}
+						${csmIdFilter}
 					]}
 				) {
 					edges { node {
@@ -84,17 +84,17 @@ class Report extends Component {
 				businessCapabilities: allFactSheets(
 					filter: {facetFilters: [
 						{facetKey: "FactSheetTypes", keys: ["BusinessCapability"]}
-						${platformIDFilter}
+						${platformIdFilter}
 					]}
 				) {
 					edges { node { id name ${platfTagNameDef} } }
 				}}`;
 	}
 
-	_handleData(index, csmID, platformID) {
+	_handleData(index, csmId, platformId) {
 		const tableData = [];
 		index.csm.nodes.forEach((e) => {
-			if (!csmID && !index.includesTag(e, 'CSM')) {
+			if (!csmId && !index.includesTag(e, 'CSM')) {
 				return;
 			}
 			const hierarchy = {};
@@ -110,7 +110,7 @@ class Report extends Component {
 				subIndex.nodes.forEach((e2) => {
 					// access businessCapabilities
 					const bc = index.byID[e2.id];
-					if (!bc || (!platformID && !index.includesTag(e2, 'Platform'))) {
+					if (!bc || (!platformId && !index.includesTag(e2, 'Platform'))) {
 						return;
 					}
 					platformBCs.push(bc);

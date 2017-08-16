@@ -75,8 +75,8 @@ class Report extends Component {
 		lx.executeGraphQL(CommonQueries.tagGroups).then((tagGroups) => {
 			const index = new DataIndex();
 			index.put(tagGroups);
-			const applicationTagID = index.getFirstTagID('Application Type', 'Application');
-			const appMapID = index.getFirstTagID('BC Type', 'AppMap');
+			const applicationTagId = index.getFirstTagID('Application Type', 'Application');
+			const appMapId = index.getFirstTagID('BC Type', 'AppMap');
 			this.RECOMMENDATION_OPTIONS = Utilities.createOptionsObj(index.getTags('Recommendation'));
 			this.COST_CENTRE_OPTIONS = Utilities.createOptionsObj(index.getTags('CostCentre'));
 			this.COTS_PACKAGE_OPTIONS = Utilities.createOptionsObj(index.getTags('COTS Package'));
@@ -88,9 +88,9 @@ class Report extends Component {
 			// TODO replace w/ data field once data model is final (note: multi select value)
 			//this.NETWORK_TECHNICAL_PRODUCT_FAMILY_OPTIONS = Utilities.createOptionsObjFrom(
 			//	index.getTags('Network Technical Product Family'));
-			lx.executeGraphQL(this._createQuery(applicationTagID, appMapID)).then((data) => {
+			lx.executeGraphQL(this._createQuery(applicationTagId, appMapId)).then((data) => {
 				index.put(data);
-				this._handleData(index, applicationTagID, appMapID);
+				this._handleData(index, applicationTagId, appMapId);
 			});
 		});
 	}
@@ -101,12 +101,12 @@ class Report extends Component {
 		};
 	}
 
-	_createQuery(applicationTagID, appMapID) {
-		const applicationTagIDFilter = applicationTagID ? `, {facetKey: "Application Type", keys: ["${applicationTagID}"]}` : '';
-		let appMapIDFilter = ''; // initial assume tagGroup.name changed or the id couldn't be determined otherwise
+	_createQuery(applicationTagId, appMapId) {
+		const applicationTagIdFilter = applicationTagId ? `, {facetKey: "Application Type", keys: ["${applicationTagId}"]}` : '';
+		let appMapIdFilter = ''; // initial assume tagGroup.name changed or the id couldn't be determined otherwise
 		let tagNameDef = 'tags { name }'; // initial assume to get it
-		if (appMapID) {
-			appMapIDFilter = `, {facetKey: "BC Type", keys: ["${appMapID}"]}`;
+		if (appMapId) {
+			appMapIdFilter = `, {facetKey: "BC Type", keys: ["${appMapId}"]}`;
 			tagNameDef = '';
 		}
 		// TODO primaryTypeID fehlt an relApplicationToITComponent
@@ -114,7 +114,7 @@ class Report extends Component {
 					sort: {mode: BY_FIELD, key: "displayName", order: asc},
 					filter: {facetFilters: [
 						{facetKey: "FactSheetTypes", keys: ["Application"]}
-						${applicationTagIDFilter}
+						${applicationTagIdFilter}
 					]}
 				) {
 					edges { node {
@@ -155,7 +155,7 @@ class Report extends Component {
 				businessCapabilities: allFactSheets(
 					filter: {facetFilters: [
 						{facetKey: "FactSheetTypes", keys: ["BusinessCapability"]}
-						${appMapIDFilter}
+						${appMapIdFilter}
 					]}
 				) {
 					edges { node { id name ${tagNameDef} } }
@@ -169,11 +169,11 @@ class Report extends Component {
 				}}`;
 	}
 
-	_handleData(index, applicationTagID, appMapID) {
+	_handleData(index, applicationTagId, appMapId) {
 		const tableData = [];
 		const markets = [];
 		index.applications.nodes.forEach((e) => {
-			if (!applicationTagID && !index.includesTag(e, 'Application')) {
+			if (!applicationTagId && !index.includesTag(e, 'Application')) {
 				return;
 			}
 			const currentLifecycle = Utilities.getCurrentLifecycle(e);
@@ -191,7 +191,7 @@ class Report extends Component {
 				subIndexBCs.nodes.forEach((e2) => {
 					// access businessCapabilities
 					const bc = index.byID[e2.id];
-					if (!bc || (!appMapID && !index.includesTag(bc, 'AppMap'))) {
+					if (!bc || (!appMapId && !index.includesTag(bc, 'AppMap'))) {
 						return;
 					}
 					cobras.push(bc);

@@ -47,10 +47,10 @@ class Report extends Component {
 		lx.executeGraphQL(CommonQueries.tagGroups).then((tagGroups) => {
 			const index = new DataIndex();
 			index.put(tagGroups);
-			const appTagID = index.getFirstTagID('Application Type', 'Application');
-			lx.executeGraphQL(this._createQuery(appTagID)).then((data) => {
+			const appTagId = index.getFirstTagID('Application Type', 'Application');
+			lx.executeGraphQL(this._createQuery(appTagId)).then((data) => {
 				index.put(data);
-				this._handleData(index, appTagID);
+				this._handleData(index, appTagId);
 			});
 		});
 	}
@@ -74,19 +74,19 @@ class Report extends Component {
 		};
 	}
 
-	_createQuery(appTagID) {
-		let appTagIDFilter = ''; // initial assume tagGroup.name changed or the id couldn't be determined otherwise
+	_createQuery(appTagId) {
+		let appTagIdFilter = ''; // initial assume tagGroup.name changed or the id couldn't be determined otherwise
 		let tagNameDef = 'tags { name }'; // initial assume to get it
-		if (appTagID) {
+		if (appTagId) {
 			// query filtering only bc with tag 'Application'
-			appTagIDFilter = `, {facetKey: "BC Type", keys: ["${appTagID}"]}`;
+			appTagIdFilter = `, {facetKey: "BC Type", keys: ["${appTagId}"]}`;
 			tagNameDef = '';
 		}
 		return `{applications: allFactSheets(
 					sort: {mode: BY_FIELD, key: "displayName", order: asc},
 					filter: { facetFilters: [
 						{facetKey: "FactSheetTypes", keys: ["Application"]}
-						${appTagIDFilter}
+						${appTagIdFilter}
 					]}
 				) {
 					edges { node {
@@ -170,11 +170,11 @@ class Report extends Component {
 		return nodes;
 	}
 
-	_handleData(index, appTagID) {
+	_handleData(index, appTagId) {
 		const tableData = [];
 		let tmpDocChoice = 0; // for doc test only
 		index.applications.nodes.forEach((app) => {
-			if (!appTagID && !index.includesTag(app, 'Application')) {
+			if (!appTagId && !index.includesTag(app, 'Application')) {
 				return;
 			}
 			const subIndex = app.relApplicationToITComponent;
@@ -210,9 +210,9 @@ class Report extends Component {
 				});
 				tableData.push({
 					appName: app.name,
-					appID: app.id,
+					appId: app.id,
 					itcmpName: itcmp.name,
-					itcmpID: itcmp.id,
+					itcmpId: itcmp.id,
 					itcmpCategory: this._getOptionKeyFromValue(this.ITCMP_CATEGORY, itcmp.category),
 					state: doc.state,
 					stateRef: doc.ref,
