@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
-import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
-import CommonQueries from './CommonGraphQLQueries';
-import DataIndex from './DataIndex';
-import Link from './Link';
+import CommonQueries from './common/CommonGraphQLQueries';
+import DataIndex from './common/DataIndex';
+import Table from './Table';
 
 class Report extends Component {
 
@@ -10,7 +9,6 @@ class Report extends Component {
 		super(props);
 		this._initReport = this._initReport.bind(this);
 		this._handleData = this._handleData.bind(this);
-		this._formatLink = this._formatLink.bind(this);
 		this.state = {
 			setup: null,
 			data: []
@@ -137,69 +135,10 @@ class Report extends Component {
 		});
 	}
 
-	/* formatting functions for the table */
-
-	_formatLink(cell, row, extraData) {
-		if (!cell) {
-			return '';
-		}
-		return (<Link link={this.state.setup.settings.baseUrl + '/factsheet/' + extraData.type + '/' + row[extraData.id]} target='_blank' text={cell} />);
-	}
-
 	render() {
 		return (
-			<BootstrapTable data={this.state.data} keyField='appMapL2ID'
-				striped hover search pagination ignoreSinglePage exportCSV
-				options={{ clearSearch: true }}>
-				<TableHeaderColumn dataSort
-					dataField='appMapL1Name'
-					dataAlign='left'
-					dataFormat={this._formatLink}
-					formatExtraData={{ type: 'BusinessCapability', id: 'appMapL1ID' }}
-					csvHeader='appmap-L1'
-					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
-				>App Map L1</TableHeaderColumn>
-				<TableHeaderColumn dataSort
-					dataField='appMapL2Name'
-					dataAlign='left'
-					dataFormat={this._formatLink}
-					formatExtraData={{ type: 'BusinessCapability', id: 'appMapL2ID' }}
-					csvHeader='appmap-L2'
-					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
-				>App Map L2</TableHeaderColumn>
-				<TableHeaderColumn dataSort
-					dataField='etomL1Name'
-					dataAlign='left'
-					dataFormat={this._formatLink}
-					formatExtraData={{ type: 'Process', id: 'etomL1ID' }}
-					csvHeader='etom-L1'
-					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
-				>eTOM L1</TableHeaderColumn>
-				<TableHeaderColumn dataSort
-					dataField='etomL2Name'
-					dataAlign='left'
-					dataFormat={this._formatLink}
-					formatExtraData={{ type: 'Process', id: 'etomL2ID' }}
-					csvHeader='etom-L2'
-					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
-				>eTOM L2</TableHeaderColumn>
-				<TableHeaderColumn dataSort
-					dataField='etomL3Name'
-					dataAlign='left'
-					dataFormat={this._formatLink}
-					formatExtraData={{ type: 'Process', id: 'etomL3ID' }}
-					csvHeader='etom-L3'
-					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
-				>eTOM L3</TableHeaderColumn>
-				<TableHeaderColumn dataSort
-					dataField='etomL4Name'
-					dataAlign='left'
-					dataFormat={this._formatLink}
-					formatExtraData={{ type: 'Process', id: 'etomL4ID' }}
-					csvHeader='etom-L4'
-					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
-				>eTOM L4</TableHeaderColumn>
-			</BootstrapTable>
+			<Table data={this.state.data}
+				setup={this.state.setup} />
 		);
 	}
 }

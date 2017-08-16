@@ -16,9 +16,22 @@ class LinkList extends Component {
 			<span>
 				{this.props.links.map((e, i) => {
 					if (i === 0) {
-						return (<span key={i}><Link link={e.link} target={e.target} text={e.text} /></span>);
+						return (
+							<span key={i}>
+								<Link link={e.link}
+									target={e.target}
+									text={e.text} />
+							</span>
+						);
 					}
-					return (<span key={i}><br/><Link link={e.link} target={e.target} text={e.text} /></span>);
+					return (
+						<span key={i}>
+							<br/>
+							<Link link={e.link}
+								target={e.target}
+								text={e.text} />
+						</span>
+					);
 				})}
 			</span>
 		);
@@ -26,7 +39,8 @@ class LinkList extends Component {
 }
 
 LinkList.propTypes = {
-	links: PropTypes.arrayOf(PropTypes.shape({
+	links: PropTypes.arrayOf(
+		PropTypes.shape({
 			link: PropTypes.string.isRequired,
 			target: PropTypes.string.isRequired,
 			text: PropTypes.string.isRequired

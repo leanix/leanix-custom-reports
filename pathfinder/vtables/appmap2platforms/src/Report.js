@@ -1,8 +1,7 @@
 import React, {	Component } from 'react';
-import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
-import CommonQueries from './CommonGraphQLQueries';
-import DataIndex from './DataIndex';
-import Link from './Link';
+import CommonQueries from './common/CommonGraphQLQueries';
+import DataIndex from './common/DataIndex';
+import Table from './Table';
 
 class Report extends Component {
 
@@ -10,7 +9,6 @@ class Report extends Component {
 		super(props);
 		this._initReport = this._initReport.bind(this);
 		this._handleData = this._handleData.bind(this);
-		this._formatLink = this._formatLink.bind(this);
 		this.state = {
 			setup: null,
 			data: []
@@ -78,7 +76,8 @@ class Report extends Component {
 
 	_handleData(index, appMapID) {
 		const tableData = [];
-		index.businessCapabilities.nodes.forEach((appMapL2) => {
+		index.businessCapabilities.nodes.forEach((e) => {
+			let appMapL2 = e;
 			if (!appMapID && !index.includesTag(appMapL2, 'AppMap')) {
 				return;
 			}
@@ -86,18 +85,27 @@ class Report extends Component {
 			if (!subIndex) {
 				return;
 			}
-			const appMapL1 = appMapL2.relToParent ? appMapL2.relToParent.nodes[0] : undefined;
-			subIndex.nodes.forEach((platformL2) => {
-				const platformL1 = platformL2.relToParent ? platformL2.relToParent.nodes[0] : undefined;
+			let appMapL1 = appMapL2.relToParent ? appMapL2.relToParent.nodes[0] : undefined;
+			if (!appMapL1) {
+				appMapL1 = appMapL2;
+				appMapL2 = undefined;
+			}
+			subIndex.nodes.forEach((e2) => {
+				let platformL2 = e2;
+				let platformL1 = platformL2.relToParent ? platformL2.relToParent.nodes[0] : undefined;
+				if (!platformL1) {
+					platformL1 = platformL2;
+					platformL2 = undefined;
+				}
 				tableData.push({
 					appMapL1ID: appMapL1 ? appMapL1.id : '',
 					appMapL1Name: appMapL1 ? appMapL1.name : '',
-					appMapL2ID: appMapL2.id,
-					appMapL2Name: appMapL2.name,
+					appMapL2ID: appMapL2 ? appMapL2.id : '',
+					appMapL2Name: appMapL2 ? appMapL2.name : '',
 					platformL1ID: platformL1 ? platformL1.id : '',
 					platformL1Name: platformL1 ? platformL1.name : '',
-					platformL2ID: platformL2.id,
-					platformL2Name: platformL2.name
+					platformL2ID: platformL2 ? platformL2.id : '',
+					platformL2Name: platformL2 ? platformL2.name : ''
 				});
 			});
 		});
@@ -106,53 +114,10 @@ class Report extends Component {
 		});
 	}
 
-	/* formatting functions for the table */
-
-	_formatLink(cell, row, idName) {
-		if (!cell) {
-			return '';
-		}
-		return (<Link link={this.state.setup.settings.baseUrl + '/factsheet/BusinessCapability/' + row[idName]} target='_blank' text={cell} />);
-	}
-
 	render() {
 		return (
-			<BootstrapTable data={this.state.data} keyField='appMapL2ID'
-				striped hover search pagination ignoreSinglePage exportCSV
-				options={{ clearSearch: true }}>
-				<TableHeaderColumn dataSort
-					dataField='appMapL1Name'
-					dataAlign='left'
-					dataFormat={this._formatLink}
-					formatExtraData={'appMapL1ID'}
-					csvHeader='appmap-domain'
-					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
-				>AppMap Domain</TableHeaderColumn>
-				<TableHeaderColumn dataSort
-					dataField='appMapL2Name'
-					dataAlign='left'
-					dataFormat={this._formatLink}
-					formatExtraData={'appMapL2ID'}
-					csvHeader='appmap-solution-area'
-					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
-				>AppMap Solution Area</TableHeaderColumn>
-				<TableHeaderColumn dataSort
-					dataField='platformL2Name'
-					dataAlign='left'
-					dataFormat={this._formatLink}
-					formatExtraData={'platformL2ID'}
-					csvHeader='platform'
-					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
-				>Platform</TableHeaderColumn>
-				<TableHeaderColumn dataSort
-					dataField='platformL1Name'
-					dataAlign='left'
-					dataFormat={this._formatLink}
-					formatExtraData={'platformL1ID'}
-					csvHeader='platform-layer'
-					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
-				>Platform Layer</TableHeaderColumn>
-			</BootstrapTable>
+			<Table data={this.state.data}
+				setup={this.state.setup} />
 		);
 	}
 }

@@ -1,8 +1,7 @@
 import React, {	Component } from 'react';
-import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
-import CommonQueries from './CommonGraphQLQueries';
-import DataIndex from './DataIndex';
-import Link from './Link';
+import CommonQueries from './common/CommonGraphQLQueries';
+import DataIndex from './common/DataIndex';
+import Table from './Table';
 
 class Report extends Component {
 
@@ -10,7 +9,6 @@ class Report extends Component {
 		super(props);
 		this._initReport = this._initReport.bind(this);
 		this._handleData = this._handleData.bind(this);
-		this._formatLink = this._formatLink.bind(this);
 		this.state = {
 			setup: null,
 			data: []
@@ -119,53 +117,10 @@ class Report extends Component {
 		});
 	}
 
-	/* formatting functions for the table */
-
-	_formatLink(cell, row, extraData) {
-		if (!cell) {
-			return '';
-		}
-		return (<Link link={this.state.setup.settings.baseUrl + '/factsheet/' + extraData.type + '/' + row[extraData.id]} target='_blank' text={cell} />);
-	}
-
 	render() {
 		return (
-			<BootstrapTable data={this.state.data} keyField='appMapL2ID'
-				striped hover search pagination ignoreSinglePage exportCSV
-				options={{ clearSearch: true }}>
-				<TableHeaderColumn dataSort
-					dataField='appMapL1Name'
-					dataAlign='left'
-					dataFormat={this._formatLink}
-					formatExtraData={{ type: 'BusinessCapability', id: 'appMapL1ID' }}
-					csvHeader='appmap-domain'
-					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
-				>AppMap Domain</TableHeaderColumn>
-				<TableHeaderColumn dataSort
-					dataField='appMapL2Name'
-					dataAlign='left'
-					dataFormat={this._formatLink}
-					formatExtraData={{ type: 'BusinessCapability', id: 'appMapL2ID' }}
-					csvHeader='appmap-solution-area'
-					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
-				>AppMap Solution Area</TableHeaderColumn>
-				<TableHeaderColumn dataSort
-					dataField='cimL1Name'
-					dataAlign='left'
-					dataFormat={this._formatLink}
-					formatExtraData={{ type: 'DataObject', id: 'cimL1ID' }}
-					csvHeader='cim-domain'
-					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
-				>CIM Domain</TableHeaderColumn>
-				<TableHeaderColumn dataSort
-					dataField='cimL2Name'
-					dataAlign='left'
-					dataFormat={this._formatLink}
-					formatExtraData={{ type: 'DataObject', id: 'cimL2ID' }}
-					csvHeader='cim-entity'
-					filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
-				>CIM Entity</TableHeaderColumn>
-			</BootstrapTable>
+			<Table data={this.state.data}
+				setup={this.state.setup} />
 		);
 	}
 }
