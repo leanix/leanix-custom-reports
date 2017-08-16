@@ -89,7 +89,7 @@ class Report extends Component {
 					]}
 				) {
 					edges { node {
-						id name documents { edges { node { name url } } }
+						id name displayName documents { edges { node { name url } } }
 						... on ITComponent {
 							category
 							relITComponentToApplication {
@@ -144,7 +144,7 @@ class Report extends Component {
 					id: app.id + '-' + itcmp.id,
 					appName: app.name,
 					appId: app.id,
-					itcmpName: itcmp.name,
+					itcmpName: itcmp.displayName,
 					itcmpId: itcmp.id,
 					itcmpCategory: this._getOptionKeyFromValue(this.CATEGORY_OPTIONS, itcmp.category),
 					state: doc.state,

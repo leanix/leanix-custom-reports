@@ -138,7 +138,7 @@ class Report extends Component {
 					]}
 				) {
 					edges { node {
-						id name tags { name }
+						id name displayName tags { name }
 						... on ITComponent {
 							category
 							relITComponentToProvider { edges { node { factSheet { id } } } }
@@ -230,7 +230,7 @@ class Report extends Component {
 							}
 							cotsSoftware.push({
 								id: itc.id,
-								name: itc.name,
+								name: itc.displayName,
 								providerId: providerId,
 								provider: providerName
 							});
@@ -252,17 +252,7 @@ class Report extends Component {
 					}
 				});
 			}
-			const cotsVendors = cotsSoftware.filter((e2) => {
-				return e2.providerId !== undefined && e2.providerId !== null;
-			}).reduce((r, e2, i) => {
-				if (!r.includes(e2.providerId)) {
-					r.push({
-						id: e2.providerId,
-						name: e2.provider
-					});
-				}
-				return r;
-			}, []);
+			const cotsVendors = this._getCotsVendors(cotsSoftware);
 			const itOwners = [];
 			const businessOwners = [];
 			const spocs = [];
@@ -395,6 +385,24 @@ class Report extends Component {
 		this.setState({
 			data: tableData
 		});
+	}
+
+	_getCotsVendors(cotsSoftware) {
+		const set = {};
+		cotsSoftware.forEach((e) => {
+			if (!e.providerId) {
+				return;
+			}
+			set[e.providerId] = {
+				id: e.providerId,
+				name: e.provider
+			};
+		});
+		const result = [];
+		for (let key in set) {
+			result.push(set[key]);
+		}
+		return result;
 	}
 
 	_getOptionKeyFromValue(options, value) {
