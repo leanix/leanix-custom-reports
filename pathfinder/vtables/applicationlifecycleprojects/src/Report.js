@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
-import CommonQueries from './CommonGraphQLQueries';
-import DataIndex from './DataIndex';
-import Link from './Link';
-import Utilities from './Utilities';
+import CommonQueries from './common/CommonGraphQLQueries';
+import DataIndex from './common/DataIndex';
+import Link from './common/Link';
+import Utilities from './common/Utilities';
+import Table from './Table';
 
 class Report extends Component {
 
@@ -11,7 +12,6 @@ class Report extends Component {
 		super(props);
 		this._initReport = this._initReport.bind(this);
 		this._handleData = this._handleData.bind(this);
-		this._formatName = this._formatName.bind(this);
 		this.COST_CENTRE_OPTIONS = {};
 		this.DEPLOYMENT_OPTIONS = {};
 		this.LIFECYCLE_PHASE_OPTIONS = {};
@@ -32,51 +32,27 @@ class Report extends Component {
 		this.setState({
 			setup: setup
 		});
-		// get lifecycle from data model
-		const lifecycles = Utilities.getLifecycleModel(setup, 'Application');
-		this.LIFECYCLE_PHASE_OPTIONS = lifecycles.reduce((r, e, i) => {
-			r[i] = e;
-			return r;
-		}, {});
-		// get project impacts from data model
-		this.PROJECT_IMPACT_OPTIONS = this._getProjectImpacts(setup).reduce((r, e, i) => {
-			r[i] = e;
-			return r;
-		}, {});
+		// get options from data model
+		this.LIFECYCLE_PHASE_OPTIONS = Utilities.createOptionsObj(
+			Utilities.getLifecycleModel(setup, 'Application'));
+		const factsheetModel = setup.settings.dataModel.factSheets.Application;
+		this.DEPLOYMENT_OPTIONS = Utilities.createOptionsObjFrom(
+			factsheetModel, 'fields.deployment.values');
+		const relationModel = setup.settings.dataModel.relations;
+		this.PROJECT_IMPACT_OPTIONS = Utilities.createOptionsObjFrom(
+			relationModel, 'applicationProjectRelation.fields.projectImpact.values');
 		// get all tags, then the data
 		lx.executeGraphQL(CommonQueries.tagGroups).then((tagGroups) => {
 			const index = new DataIndex();
 			index.put(tagGroups);
 			const applicationTagID = index.getFirstTagID('Application Type', 'Application');
-			this.COST_CENTRE_OPTIONS = index.getTags('CostCentre').reduce((r, e, i) => {
-				r[i] = e.name;
-				return r;
-			}, {});
-			this.DEPLOYMENT_OPTIONS = index.getTags('Deployment').reduce((r, e, i) => {
-				r[i] = e.name;
-				return r;
-			}, {});
-			this.PROJECT_TYPE_OPTIONS = index.getTags('Project Type').reduce((r, e, i) => {
-				r[i] = e.name;
-				return r;
-			}, {});
+			this.COST_CENTRE_OPTIONS = Utilities.createOptionsObj(index.getTags('CostCentre'));
+			this.PROJECT_TYPE_OPTIONS = Utilities.createOptionsObj(index.getTags('Project Type'));
 			lx.executeGraphQL(this._createQuery(applicationTagID)).then((data) => {
 				index.put(data);
 				this._handleData(index, applicationTagID);
 			});
 		});
-	}
-
-	_getProjectImpacts(setup) {
-		const relationModel = setup.settings.dataModel.relations.applicationProjectRelation;
-		if (!relationModel ||
-			!relationModel.fields ||
-			!relationModel.fields.projectImpact ||
-			!Array.isArray(relationModel.fields.projectImpact.values)
-		) {
-			return [];
-		}
-		return relationModel.fields.projectImpact.values;
 	}
 
 	_createConfig() {
@@ -97,6 +73,7 @@ class Report extends Component {
 					edges { node {
 						id name tags { name }
 						... on Application {
+							deployment
 							lifecycle { phases { phase startDate } }
 							relApplicationToProject { edges { node { projectImpact factSheet { id } } } }
 						}
@@ -124,44 +101,37 @@ class Report extends Component {
 				const projectId = project.id;
 				const projectName = project.name;
 				const projectImpact = e.relationAttr.projectImpact;
-				const projectType = this._getOptionKeyFromValue(
-					this.PROJECT_TYPE_OPTIONS, this._getTagFromGroup(index, project, 'Project Type'));
 				if (check(projectName, projectImpact)) {
 					const copiedItem = Utilities.copyObject(outputItem);
 					copiedItem.itemId += '-' + idPrefix + '-' + projectId;
 					copiedItem.projectId = projectId;
 					copiedItem.projectName = projectName;
 					copiedItem.projectImpact = this._getOptionKeyFromValue(this.PROJECT_IMPACT_OPTIONS, projectImpact);
-					copiedItem.projectType = projectType;
+					copiedItem.projectType = this._getOptionKeyFromValue(this.PROJECT_TYPE_OPTIONS, this._getTagFromGroup(index, project, 'Project Type'));
 					tableData.push(copiedItem);
 					nothingAdded = false;
 				}
 			});
 			return nothingAdded;
-		}.bind(this);
+		};
 		index.applications.nodes.forEach((e) => {
 			if (!applicationTagID && !index.includesTag(e, 'Application')) {
 				return;
 			}
 			const lifecycles = Utilities.getLifecycles(e);
-			const costCentre = this._getOptionKeyFromValue(
-				this.COST_CENTRE_OPTIONS, this._getTagFromGroup(index, e, 'CostCentre'));
-			const deployment = this._getOptionKeyFromValue(
-				this.DEPLOYMENT_OPTIONS, this._getTagFromGroup(index, e, 'Deployment'));
 			const subIndex = e.relApplicationToProject;
 			lifecycles.forEach((e2) => {
 				const outputItem = {
 					itemId: e.id,
 					name: e.name,
 					id: e.id,
-					costCentre: costCentre,
-					deployment: deployment,
+					costCentre: this._getOptionKeyFromValue(this.COST_CENTRE_OPTIONS, this._getTagFromGroup(index, e, 'CostCentre')),
+					deployment: this._getOptionKeyFromValue(this.DEPLOYMENT_OPTIONS, e.deployment),
 					projectId: '',
 					projectName: '',
 					projectImpact: undefined,
 					projectType: undefined,
-					lifecyclePhase: this._getOptionKeyFromValue(
-						this.LIFECYCLE_PHASE_OPTIONS, e2.phase),
+					lifecyclePhase: this._getOptionKeyFromValue(this.LIFECYCLE_PHASE_OPTIONS, e2.phase),
 					lifecycleStart: new Date(e2.startDate)
 				};
 				if (!subIndex) {
@@ -220,141 +190,17 @@ class Report extends Component {
 		return tag ? tag.name : '';
 	}
 
-	/* formatting functions for the table */
-
-	_formatName(cell, row, idProperty) {
-		if (!cell) {
-			return '';
-		}
-		switch (idProperty) {
-			case 'id':
-				return (<Link link={this.state.setup.settings.baseUrl + '/factsheet/Application/' + row[idProperty]} target='_blank' text={cell} />);
-			case 'projectId':
-				return (<Link link={this.state.setup.settings.baseUrl + '/factsheet/Project/' + row[idProperty]} target='_blank' text={cell} />);
-			default:
-				return '';
-		}
-	}
-
-	_formatEnum(cell, row, enums) {
-		if (!cell && cell !== 0) {
-			return '';
-		}
-		return enums[cell] ? enums[cell] : '';
-	}
-
-	_formatDate(cell, row) {
-		if (!cell) {
-			return '';
-		}
-		return (
-			<span style={{ paddingRight: '10%' }}>
-				{cell.toLocaleDateString()}
-			</span>
-		);
-	}
-
-	/* formatting functions for the csv export */
-
-	_csvFormatDate(cell, row) {
-		if (!cell) {
-			return '';
-		}
-		return cell.toLocaleDateString();
-	}
-
 	render() {
 		return (
-			<BootstrapTable data={this.state.data} keyField='itemId'
-				 striped hover search pagination ignoreSinglePage exportCSV
-				 options={{ clearSearch: true }}>
-				<TableHeaderColumn dataSort row='0' rowSpan='2'
-					 dataField='name'
-					 width='300px'
-					 dataAlign='left'
-					 dataFormat={this._formatName}
-					 formatExtraData='id'
-					 csvHeader='application-name'
-					 filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
-					>Application name</TableHeaderColumn>
-				<TableHeaderColumn dataSort row='0' rowSpan='2'
-					 dataField='costCentre'
-					 width='150px'
-					 dataAlign='left'
-					 dataFormat={this._formatEnum}
-					 formatExtraData={this.COST_CENTRE_OPTIONS}
-					 csvHeader='cost-centre'
-					 csvFormat={this._formatEnum}
-					 csvFormatExtraData={this.COST_CENTRE_OPTIONS}
-					 filter={{ type: 'SelectFilter', condition: 'eq', placeholder: 'Please choose', options: this.COST_CENTRE_OPTIONS }}
-					>Cost Centre</TableHeaderColumn>
-				<TableHeaderColumn dataSort row='0' rowSpan='2'
-					 dataField='deployment'
-					 width='180px'
-					 dataAlign='left'
-					 dataFormat={this._formatEnum}
-					 formatExtraData={this.DEPLOYMENT_OPTIONS}
-					 csvFormat={this._formatEnum}
-					 csvFormatExtraData={this.DEPLOYMENT_OPTIONS}
-					 filter={{ type: 'SelectFilter', condition: 'eq', placeholder: 'Please choose', options: this.DEPLOYMENT_OPTIONS }}
-					>Deployment</TableHeaderColumn>
-				<TableHeaderColumn dataSort row='0' rowSpan='2'
-					 dataField='lifecyclePhase'
-					 width='120px'
-					 dataAlign='left'
-					 dataFormat={this._formatEnum}
-					 formatExtraData={this.LIFECYCLE_PHASE_OPTIONS}
-					 csvHeader='lifecycle-phase'
-					 csvFormat={this._formatEnum}
-					 csvFormatExtraData={this.LIFECYCLE_PHASE_OPTIONS}
-					 filter={{ type: 'SelectFilter', condition: 'eq', placeholder: 'Please choose', options: this.LIFECYCLE_PHASE_OPTIONS }}
-					>Phase</TableHeaderColumn>
-				<TableHeaderColumn dataSort row='0' rowSpan='2'
-					 dataField='lifecycleStart'
-					 width='250px'
-					 headerAlign='left'
-					 dataAlign='right'
-					 dataFormat={this._formatDate}
-					 csvHeader='lifecycle-phase-start'
-					 csvFormat={this._csvFormatDate}
-					 filter={{ type: 'DateFilter' }}
-					>Phase start</TableHeaderColumn>
-				<TableHeaderColumn row='0' colSpan='3'
-					 headerAlign='center'
-					 csvHeader='project'
-					>Project</TableHeaderColumn>
-				<TableHeaderColumn dataSort row='1'
-					 dataField='projectName'
-					 width='300px'
-					 dataAlign='left'
-					 dataFormat={this._formatName}
-					 formatExtraData='projectId'
-					 csvHeader='project-name'
-					 filter={{ type: 'TextFilter', placeholder: 'Please enter a value' }}
-					>Name</TableHeaderColumn>
-				<TableHeaderColumn dataSort row='1'
-					 dataField='projectImpact'
-					 width='150px'
-					 dataAlign='left'
-					 dataFormat={this._formatEnum}
-					 formatExtraData={this.PROJECT_IMPACT_OPTIONS}
-					 csvHeader='project-impact'
-					 csvFormat={this._formatEnum}
-					 csvFormatExtraData={this.PROJECT_IMPACT_OPTIONS}
-					 filter={{ type: 'SelectFilter', condition: 'eq', placeholder: 'Please choose', options: this.PROJECT_IMPACT_OPTIONS }}
-					>Impact</TableHeaderColumn>
-				<TableHeaderColumn dataSort row='1'
-					 dataField='projectType'
-					 width='150px'
-					 dataAlign='left'
-					 dataFormat={this._formatEnum}
-					 formatExtraData={this.PROJECT_TYPE_OPTIONS}
-					 csvHeader='project-type'
-					 csvFormat={this._formatEnum}
-					 csvFormatExtraData={this.PROJECT_TYPE_OPTIONS}
-					 filter={{ type: 'SelectFilter', condition: 'eq', placeholder: 'Please choose', options: this.PROJECT_TYPE_OPTIONS }}
-					>Type</TableHeaderColumn>
-			</BootstrapTable>
+			<Table data={this.state.data}
+				options={{
+					costCentre: this.COST_CENTRE_OPTIONS,
+					deployment: this.DEPLOYMENT_OPTIONS,
+					lifecyclePhase: this.LIFECYCLE_PHASE_OPTIONS,
+					projectImpact: this.PROJECT_IMPACT_OPTIONS,
+					projectType: this.PROJECT_TYPE_OPTIONS
+				}}
+				setup={this.state.setup} />
 		);
 	}
 }
