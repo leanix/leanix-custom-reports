@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 import TableUtilities from './common/TableUtilities';
+import Link from './common/Link';
 
 class Table extends Component {
 
@@ -11,20 +12,21 @@ class Table extends Component {
 
 	/* formatting functions for the table */
 
-	_formatState(cell, row, status) {
-		if (!cell) {
+	_formatState(cell, row, enums) {
+		if ((!cell && cell !== 0) || cell === 3) {
 			return '';
 		}
-		if (cell === 1) {
-			return (<Link link={row.stateRef} target='_blank' text={status[cell]} />);
+		if (cell === 0) {
+			return (<Link link={row.stateRef} target='_blank' text={enums[cell]} />);
 		}
-		return status[cell] ? status[cell] : '';
+		return enums[cell] ? enums[cell] : '';
 	}
 
 	render() {
 		return (
-			<BootstrapTable data={this.props.data} keyField='appId'
-				 striped hover search exportCSV pagination ignoreSinglePage
+			<BootstrapTable data={this.props.data} keyField='id'
+				 striped hover search exportCSV
+				 pagination ignoreSinglePage
 				 options={{ clearSearch: true }}>
 				<TableHeaderColumn dataSort
 					 dataField='appName'
@@ -33,7 +35,7 @@ class Table extends Component {
 					 formatExtraData={{ type: 'Application', id: 'appId' }}
 					 csvHeader='application-name'
 					 filter={TableUtilities.textFilter}
-				>Application name</TableHeaderColumn>
+					>Application name</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='itcmpName'
 					 dataAlign='left'
@@ -41,18 +43,18 @@ class Table extends Component {
 					 formatExtraData={{ type: 'ITComponent', id: 'itcmpId' }}
 					 csvHeader='it-component-name'
 					 filter={TableUtilities.textFilter}
-				>IT Component name</TableHeaderColumn>
+					>IT Component name</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='itcmpCategory'
 					 width='180px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatEnum}
-					 formatExtraData={this.props.options.itcmpCategory}
+					 formatExtraData={this.props.options.category}
 					 csvHeader='it-component-type'
 					 csvFormat={TableUtilities.formatEnum}
-					 csvFormatExtraData={this.props.options.itcmpCategory}
-					 filter={TableUtilities.selectFilter(this.props.options.itcmpCategory)}
-				>IT Component type</TableHeaderColumn>
+					 csvFormatExtraData={this.props.options.category}
+					 filter={TableUtilities.selectFilter(this.props.options.category)}
+					>IT Component type</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='state'
 					 width='180px'
@@ -63,14 +65,14 @@ class Table extends Component {
 					 csvFormat={TableUtilities.formatEnum}
 					 csvFormatExtraData={this.props.options.technopState}
 					 filter={TableUtilities.selectFilter(this.props.options.technopState)}
-				>Technopedia status</TableHeaderColumn>
+					>Technopedia status</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='count'
 					 width='200'
 					 dataAlign='right'
 					 csvHeader='count-in-other-markets'
 					 filter={TableUtilities.numberFilter}
-				>Count in other markets</TableHeaderColumn>
+					>Count in other markets</TableHeaderColumn>
 			</BootstrapTable>
 		);
 	}
@@ -79,6 +81,7 @@ class Table extends Component {
 Table.propTypes = {
 	data: PropTypes.arrayOf(
 		PropTypes.shape({
+			id: PropTypes.string.isRequired,
 			appName: PropTypes.string.isRequired,
 			appId: PropTypes.string.isRequired,
 			itcmpName: PropTypes.string.isRequired,
@@ -86,11 +89,11 @@ Table.propTypes = {
 			itcmpCategory: PropTypes.number,
 			state: PropTypes.number,
 			stateRef: PropTypes.string,
-			count: PropTypes.number
+			count: PropTypes.number.isRequired
 		}).isRequired
 	).isRequired,
 	options: PropTypes.shape({
-		itcmpCategory: TableUtilities.PropTypes.options,
+		category: TableUtilities.PropTypes.options,
 		technopState: TableUtilities.PropTypes.options
 	}).isRequired,
 	setup: PropTypes.object
