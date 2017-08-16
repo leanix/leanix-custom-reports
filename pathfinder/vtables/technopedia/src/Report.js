@@ -39,7 +39,8 @@ class Report extends Component {
 		const factsheetModel = setup.settings.dataModel.factSheets.ITComponent;
 		this.CATEGORY_OPTIONS = Utilities.createOptionsObjFrom(
 			factsheetModel, 'fields.category.values');
-		delete this.CATEGORY_OPTIONS[2]; // delete 'service'
+		// delete 'service'
+		delete this.CATEGORY_OPTIONS[Utilities.getKeyToValue(this.CATEGORY_OPTIONS, CATEGORY_EXCLUDE)];
 		// get all tags, then the data
 		lx.executeGraphQL(CommonQueries.tagGroups).then((tagGroups) => {
 			const index = new DataIndex();
