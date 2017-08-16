@@ -37,10 +37,10 @@
 	},
 	"dependencies": {
 		"@leanix/reporting": "0.1.3",
-		"bootstrap": "^3.3.7",
-		"prop-types": "^15.5.10",
-		"react": "^15.6.1",
-		"react-bootstrap-table": "^3.4.6",
-		"react-dom": "^15.6.1"
+		"bootstrap": "3.3.7",
+		"prop-types": "15.5.10",
+		"react": "15.6.1",
+		"react-bootstrap-table": "4.0.1",
+		"react-dom": "15.6.1"
 	}
 }

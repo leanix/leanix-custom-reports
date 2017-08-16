@@ -1,6 +1,6 @@
 # Global application portfolio
 
-TODO app_description
+A table-based report that shows information about all applications.
 
 ## Table of Contents
 
