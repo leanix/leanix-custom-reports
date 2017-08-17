@@ -354,7 +354,7 @@ class Table extends Component {
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatEnum}
 					 formatExtraData={this.props.options.accessType}
-					 csvHeader='sox-pci'
+					 csvHeader='access-type'
 					 csvFormat={TableUtilities.formatEnum}
 					 csvFormatExtraData={this.props.options.accessType}
 					 filter={TableUtilities.selectFilter(this.props.options.accessType)}
