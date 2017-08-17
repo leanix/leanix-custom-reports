@@ -4,7 +4,8 @@ import DataIndex from './common/DataIndex';
 import Utilities from './common/Utilities';
 import Table from './Table';
 
-const CATEGORY_EXCLUDE = 'service';
+const CATEGORY_EXCLUDE_SERVICE = 'service';
+const CATEGORY_EXCLUDE_DEVELOPMENT_TECHNOLOGY = 'developmentTechnology';
 
 class Report extends Component {
 
@@ -39,8 +40,9 @@ class Report extends Component {
 		const factsheetModel = setup.settings.dataModel.factSheets.ITComponent;
 		this.CATEGORY_OPTIONS = Utilities.createOptionsObjFrom(
 			factsheetModel, 'fields.category.values');
-		// delete 'service'
-		delete this.CATEGORY_OPTIONS[Utilities.getKeyToValue(this.CATEGORY_OPTIONS, CATEGORY_EXCLUDE)];
+		// TODO exclusion in common unterbringen
+		delete this.CATEGORY_OPTIONS[Utilities.getKeyToValue(this.CATEGORY_OPTIONS, CATEGORY_EXCLUDE_SERVICE)];
+		delete this.CATEGORY_OPTIONS[Utilities.getKeyToValue(this.CATEGORY_OPTIONS, CATEGORY_EXCLUDE_DEVELOPMENT_TECHNOLOGY)];
 		// get all tags, then the data
 		lx.executeGraphQL(CommonQueries.tagGroups).then((tagGroups) => {
 			const index = new DataIndex();
