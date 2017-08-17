@@ -9,10 +9,11 @@ class Table extends Component {
 	constructor(props) {
 		super(props);
 		this._formatPercentage = this._formatPercentage.bind(this);
+		this._sortPercentage = this._sortPercentage.bind(this);
 	}
 
 	_formatPercentage(cell, row) {
-		if (cell === undefined || cell === null || cell < 0) {
+		if (cell === undefined || cell === null || Number.isNaN(cell)) {
 			return '';
 		}
 		return (
@@ -62,6 +63,20 @@ class Table extends Component {
 		);
 	}
 
+	_sortPercentage(a, b, order) {
+		if (order) {
+			return order === 'desc' ? this._sortPercentage(b, a) : this._sortPercentage(a, b);
+		}
+		if (Number.isNaN(a.percentage)) {
+			return Number.isNaN(b.percentage) ? 0 : 1;
+		}
+
+		if (Number.isNaN(b.percentage)) {
+			return -1;
+		}
+		return a.percentage < b.percentage ? -1 : (a.percentage === b.percentage ? 0 : 1);
+	}
+
 	render() {
 		// TODO root csv export must have the ids aswell?
 		// expandableRow={this._isExpandableRow}
@@ -109,7 +124,7 @@ class Table extends Component {
 					 csvHeader='non-compliant'
 					 filter={TableUtilities.numberFilter}
 					>Non-Compliant</TableHeaderColumn>
-				<TableHeaderColumn dataSort
+				<TableHeaderColumn dataSort sortFunc={this._sortPercentage}
 					 dataField='percentage'
 					 width='260px'
 					 dataAlign='left'
@@ -126,8 +141,8 @@ Table.propTypes = {
 	data: PropTypes.arrayOf(
 		PropTypes.shape({
 			id: PropTypes.string.isRequired,
-			market: PropTypes.string.isRequired,
-			rule: PropTypes.string.isRequired,
+			market: PropTypes.number.isRequired,
+			rule: PropTypes.number.isRequired,
 			overallRule: PropTypes.bool.isRequired,
 			compliant: PropTypes.number.isRequired,
 			compliantApps: PropTypes.arrayOf(

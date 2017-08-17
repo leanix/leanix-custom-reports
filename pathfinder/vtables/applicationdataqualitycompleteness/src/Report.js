@@ -152,19 +152,19 @@ class Report extends Component {
 				const sum = compliant + nonCompliant;
 				let percentage = undefined;
 				if (sum === 0) {
-					percentage = -1;
+					percentage = Number.NaN;
 				} else if (compliant > 0 && nonCompliant === 0) {
 					percentage = 100;
 				} else if (compliant === 0 && nonCompliant > 0) {
 					percentage = 0;
 				} else {
-					percentage = compliant * 100 / sum;
-					percentage = Math.floor(percentage);
+					// note: floor cuts the post comma digits (rounding down)
+					percentage = Math.floor(compliant * 100 / sum);
 				}
 				tableData.push({
 					id: market + '-' + e.name,
-					market: Utilities.getKeyToValue(this.MARKET_OPTIONS, market),
-					rule: Utilities.getKeyToValue(RULE_OPTIONS, e.name),
+					market: this._getOptionKeyFromValue(this.MARKET_OPTIONS, market),
+					rule: this._getOptionKeyFromValue(RULE_OPTIONS, e.name),
 					overallRule: e.overall === true,
 					compliant: compliant,
 					compliantApps: e.overall ? [] : ruleResult.compliant,
@@ -177,6 +177,14 @@ class Report extends Component {
 		this.setState({
 			data: tableData
 		});
+	}
+
+	_getOptionKeyFromValue(options, value) {
+		if (!value) {
+			return undefined;
+		}
+		const key = Utilities.getKeyToValue(options, value);
+		return key !== undefined && key !== null ? parseInt(key, 10) : undefined;
 	}
 
 	render() {
