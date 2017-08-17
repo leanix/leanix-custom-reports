@@ -64,6 +64,7 @@ export default [{
 				const compliantBCs = subIndex.nodes.filter((e2) => {
 					// access businessCapabilities
 					const bc = index.byID[e2.id];
+					// TODO ueberarbeiten
 					return bc && (!config.appMapId ? index.includesTag(bc, 'AppMap') : true);
 				});
 				if (compliantBCs.length === 1) {
@@ -75,7 +76,7 @@ export default [{
 			return result;
 		}
 	}, {
-		name: 'has COTS Package (only active)',
+		name: 'has COTS Package TagGroup assigned (only active)',
 		compute: (index, applications, config) => {
 			const result = {
 				compliant: [],
@@ -91,7 +92,7 @@ export default [{
 			return result;
 		}
 	}, {
-		name: 'has Software Product (only active, w/ COTS Package)',
+		name: 'has Software Product (only active, w/ Tag "COTS Package")',
 		compute: (index, applications, config) => {
 			const result = {
 				compliant: [],
@@ -116,7 +117,7 @@ export default [{
 			return result;
 		}
 	}, {
-		name: 'has Software Product, but no Placeholder (only active, w/ COTS Package)',
+		name: 'has Software Product, but no Placeholder (only active, w/ Tag "COTS Package")',
 		compute: (index, applications, config) => {
 			const result = {
 				compliant: [],
