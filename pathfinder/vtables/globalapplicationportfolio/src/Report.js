@@ -132,13 +132,28 @@ class Report extends Component {
 						}
 					}}
 				}
-				itComponents: allFactSheets(
+				itComponentsSoftware: allFactSheets(
 					filter: {facetFilters: [
-						{facetKey: "FactSheetTypes", keys: ["ITComponent"]}
+						{facetKey: "FactSheetTypes", keys: ["ITComponent"]},
+						{facetKey: "category", keys: ["software"]}
 					]}
 				) {
 					edges { node {
 						id name displayName tags { name }
+						... on ITComponent {
+							category
+							relITComponentToProvider { edges { node { factSheet { id } } } }
+						}
+					}}
+				}
+				itComponentsHardwareAndService: allFactSheets(
+					filter: {facetFilters: [
+						{facetKey: "FactSheetTypes", keys: ["ITComponent"]},
+						{facetKey: "category", operator: OR, keys: ["hardware", "service"]}
+					]}
+				) {
+					edges { node {
+						id name tags { name }
 						... on ITComponent {
 							category
 							relITComponentToProvider { edges { node { factSheet { id } } } }
@@ -205,7 +220,7 @@ class Report extends Component {
 			const subIndexITCs = e.relApplicationToITComponent;
 			if (subIndexITCs) {
 				subIndexITCs.nodes.forEach((e2) => {
-					// access itComponents
+					// access itComponentsSoftware & itComponentsHardwareAndService
 					const itc = index.byID[e2.id];
 					if (!itc) {
 						return;

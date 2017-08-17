@@ -82,14 +82,30 @@ class Report extends Component {
 						}
 					}}
 				}
-				itComponents: allFactSheets(
+				itComponentsSoftware: allFactSheets(
 					filter: {facetFilters: [
-						{facetKey: "FactSheetTypes", keys: ["ITComponent"]}
-						{facetKey: "category", operator: OR, keys: ["software", "hardware"]}
+						{facetKey: "FactSheetTypes", keys: ["ITComponent"]},
+						{facetKey: "category", keys: ["software"]}
 					]}
 				) {
 					edges { node {
 						id name displayName documents { edges { node { name url } } }
+						... on ITComponent {
+							category
+							relITComponentToApplication {
+								edges { node { factSheet { id } } }
+							}
+						}
+					}}
+				}
+				itComponentsHardware: allFactSheets(
+					filter: {facetFilters: [
+						{facetKey: "FactSheetTypes", keys: ["ITComponent"]},
+						{facetKey: "category", keys: ["hardware"]}
+					]}
+				) {
+					edges { node {
+						id name documents { edges { node { name url } } }
 						... on ITComponent {
 							category
 							relITComponentToApplication {
@@ -112,7 +128,7 @@ class Report extends Component {
 				return;
 			}
 			subIndex.nodes.forEach((e2) => {
-				// access itComponents
+				// access itComponentsSoftware & itComponentsHardware
 				const itcmp = index.byID[e2.id];
 				if (!itcmp) {
 					return;
@@ -144,7 +160,7 @@ class Report extends Component {
 					id: app.id + '-' + itcmp.id,
 					appName: app.name,
 					appId: app.id,
-					itcmpName: itcmp.displayName,
+					itcmpName: itcmp.category === 'hardware' ? itcmp.name : itcmp.displayName,
 					itcmpId: itcmp.id,
 					itcmpCategory: this._getOptionKeyFromValue(this.CATEGORY_OPTIONS, itcmp.category),
 					state: doc.state,
