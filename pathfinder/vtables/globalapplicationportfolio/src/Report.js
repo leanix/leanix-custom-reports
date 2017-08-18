@@ -42,6 +42,7 @@ class Report extends Component {
 
 	_initReport(setup) {
 		lx.ready(this._createConfig());
+		lx.showSpinner('Loading data ...');
 		this.setState({
 			setup: setup
 		});
@@ -397,6 +398,7 @@ class Report extends Component {
 			});
 		});
 		this.MARKET_OPTIONS = Utilities.createOptionsObj(markets);
+		lx.hideSpinner();
 		this.setState({
 			data: tableData
 		});
@@ -434,6 +436,9 @@ class Report extends Component {
 	}
 
 	render() {
+		if (this.state.data.length === 0) {
+			return null;
+		}
 		return (
 			<Table data={this.state.data}
 				options={{

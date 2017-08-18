@@ -21,6 +21,7 @@ class Report extends Component {
 
 	_initReport(setup) {
 		lx.ready(this._createConfig());
+		lx.showSpinner('Loading data ...');
 		this.setState({
 			setup: setup
 		});
@@ -127,12 +128,16 @@ class Report extends Component {
 				});
 			});
 		});
+		lx.hideSpinner();
 		this.setState({
 			data: tableData
 		});
 	}
 
 	render() {
+		if (this.state.data.length === 0) {
+			return null;
+		}
 		return (
 			<Table data={this.state.data}
 				setup={this.state.setup} />
