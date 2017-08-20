@@ -4,11 +4,11 @@
 
 body {
 	margin: 0px;
-	padding: 10px;
+	padding: 0px 5px;
+	overflow-x: hidden;
 }
 
 #report {
-	width: 98%;
 	margin: 0 auto;
 	padding: 0px;
 }

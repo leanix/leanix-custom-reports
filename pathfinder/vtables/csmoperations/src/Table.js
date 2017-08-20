@@ -56,7 +56,7 @@ class Table extends Component {
 					 csvHeader='service-operation'
 					 filter={TableUtilities.textFilter}
 					>Service Operation</TableHeaderColumn>
-				<TableHeaderColumn tdStyle={{ fontSize: '.85em' }}
+				<TableHeaderColumn columnClassName='small'
 					 dataField='description'
 					 width='300px'
 					 dataAlign='left'

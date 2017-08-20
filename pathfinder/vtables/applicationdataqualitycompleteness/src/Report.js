@@ -168,9 +168,19 @@ class Report extends Component {
 					rule: this._getOptionKeyFromValue(RULE_OPTIONS, e.name),
 					overallRule: e.overall === true,
 					compliant: compliant,
-					compliantApps: e.overall ? [] : ruleResult.compliant,
+					compliantApps: e.overall ? [] : ruleResult.compliant.map((e2) => {
+						return e2.name;
+					}),
+					compliantAppIds: e.overall ? [] : ruleResult.compliant.map((e2) => {
+						return e2.id;
+					}),
 					nonCompliant: nonCompliant,
-					nonCompliantApps: e.overall ? [] : ruleResult.nonCompliant,
+					nonCompliantApps: e.overall ? [] : ruleResult.nonCompliant.map((e2) => {
+						return e2.name;
+					}),
+					nonCompliantAppIds: e.overall ? [] : ruleResult.nonCompliant.map((e2) => {
+						return e2.id;
+					}),
 					percentage: percentage
 				});
 			});
@@ -191,7 +201,7 @@ class Report extends Component {
 
 	render() {
 		if (this.state.data.length === 0) {
-			return null;
+			return (<h4 className='text-center'>Loading data ...</h4>);
 		}
 		return (
 			<Table data={this.state.data}
@@ -199,6 +209,7 @@ class Report extends Component {
 					market: this.MARKET_OPTIONS,
 					rule: RULE_OPTIONS
 				}}
+				pageSize={RuleSet.length}
 				setup={this.state.setup} />
 		);
 	}

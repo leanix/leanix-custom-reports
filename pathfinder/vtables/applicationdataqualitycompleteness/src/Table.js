@@ -85,7 +85,12 @@ class Table extends Component {
 		return (
 			<BootstrapTable data={this.props.data} keyField='id'
 				 striped hover search exportCSV
-				 options={{ clearSearch: true }}
+				 pagination ignoreSinglePage
+				 options={{
+					clearSearch: true,
+					sizePerPage: this.props.pageSize,
+					hideSizePerPage: true
+				 }}
 				 trClassName={this._trClassname}>
 				<TableHeaderColumn dataSort
 					 dataField='market'
@@ -117,6 +122,12 @@ class Table extends Component {
 					 dataAlign='left'
 					 filter={TableUtilities.numberFilter}
 					>Compliant</TableHeaderColumn>
+				<TableHeaderColumn hidden export
+					 dataField='compliantApps'
+					 csvHeader='compliant-applications'
+					 csvFormat={TableUtilities.formatArray}
+					 csvFormatExtraData=';'
+					>Compliant Applications</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='nonCompliant'
 					 width='260px'
@@ -124,6 +135,17 @@ class Table extends Component {
 					 csvHeader='non-compliant'
 					 filter={TableUtilities.numberFilter}
 					>Non-Compliant</TableHeaderColumn>
+				<TableHeaderColumn columnClassName='small'
+					 dataField='nonCompliantApps'
+					 width='300px'
+					 dataAlign='left'
+					 dataFormat={TableUtilities.formatLinkArrayFactsheets(this.props.setup)}
+					 formatExtraData={{ type: 'Application', id: 'nonCompliantAppIds' }}
+					 csvHeader='non-compliant-applications'
+					 csvFormat={TableUtilities.formatArray}
+					 csvFormatExtraData=';'
+					 filter={TableUtilities.textFilter}
+					>Non-Compliant Applications</TableHeaderColumn>
 				<TableHeaderColumn dataSort sortFunc={this._sortPercentage}
 					 dataField='percentage'
 					 width='260px'
@@ -145,19 +167,11 @@ Table.propTypes = {
 			rule: PropTypes.number.isRequired,
 			overallRule: PropTypes.bool.isRequired,
 			compliant: PropTypes.number.isRequired,
-			compliantApps: PropTypes.arrayOf(
-				PropTypes.shape({
-					id: PropTypes.string.isRequired,
-					name: PropTypes.string.isRequired
-				}).isRequired
-			).isRequired,
+			compliantAppIds: TableUtilities.PropTypes.idArray('compliantApps'),
+			compliantApps: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
 			nonCompliant: PropTypes.number.isRequired,
-			nonCompliantApps: PropTypes.arrayOf(
-				PropTypes.shape({
-					id: PropTypes.string.isRequired,
-					name: PropTypes.string.isRequired
-				}).isRequired
-			).isRequired,
+			nonCompliantAppIds: TableUtilities.PropTypes.idArray('nonCompliantApps'),
+			nonCompliantApps: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
 			percentage: PropTypes.number.isRequired
 		}).isRequired
 	).isRequired,
@@ -165,6 +179,7 @@ Table.propTypes = {
 		market: TableUtilities.PropTypes.options,
 		rule: TableUtilities.PropTypes.options
 	}).isRequired,
+	pageSize: PropTypes.number.isRequired,
 	setup: PropTypes.object
 };
 

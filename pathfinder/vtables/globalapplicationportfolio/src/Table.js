@@ -24,7 +24,7 @@ class Table extends Component {
 					 csvHeader='application-name'
 					 filter={TableUtilities.textFilter}
 					>Application name</TableHeaderColumn>
-				<TableHeaderColumn tdStyle={{ fontSize: '.85em' }}
+				<TableHeaderColumn columnClassName='small'
 					 dataField='description'
 					 width='300px'
 					 dataAlign='left'
@@ -263,7 +263,7 @@ class Table extends Component {
 					 csvFormatExtraData={this.props.options.applicationUsage}
 					 filter={TableUtilities.selectFilter(this.props.options.applicationUsage)}
 					>Application Usage</TableHeaderColumn>
-				<TableHeaderColumn dataSort tdStyle={{ fontSize: '.85em' }}
+				<TableHeaderColumn dataSort columnClassName='small'
 					 dataField='alias'
 					 width='250px'
 					 dataAlign='left'
@@ -273,7 +273,7 @@ class Table extends Component {
 					 csvFormatExtraData={true}
 					 filter={TableUtilities.textFilter}
 					>Alternate names</TableHeaderColumn>
-				<TableHeaderColumn dataSort tdStyle={{ fontSize: '.85em' }}
+				<TableHeaderColumn dataSort columnClassName='small'
 					 dataField='externalId'
 					 width='250px'
 					 dataAlign='left'
@@ -304,7 +304,7 @@ class Table extends Component {
 					 csvFormatExtraData={this.props.options.soxPci}
 					 filter={TableUtilities.selectFilter(this.props.options.soxPci)}
 					>SOX / PCI</TableHeaderColumn>
-				<TableHeaderColumn dataSort tdStyle={{ fontSize: '.85em' }}
+				<TableHeaderColumn dataSort columnClassName='small'
 					 dataField='itOwners'
 					 width='280px'
 					 dataAlign='left'
@@ -315,7 +315,7 @@ class Table extends Component {
 					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
 					>IT Owners</TableHeaderColumn>
-				<TableHeaderColumn dataSort tdStyle={{ fontSize: '.85em' }}
+				<TableHeaderColumn dataSort columnClassName='small'
 					 dataField='businessOwners'
 					 width='280px'
 					 dataAlign='left'
@@ -326,7 +326,7 @@ class Table extends Component {
 					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
 					>Business Owners</TableHeaderColumn>
-				<TableHeaderColumn dataSort tdStyle={{ fontSize: '.85em' }}
+				<TableHeaderColumn dataSort columnClassName='small'
 					 dataField='spocs'
 					 width='280px'
 					 dataAlign='left'
@@ -337,7 +337,7 @@ class Table extends Component {
 					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
 					>SPOCs</TableHeaderColumn>
-				<TableHeaderColumn dataSort tdStyle={{ fontSize: '.85em' }}
+				<TableHeaderColumn dataSort columnClassName='small'
 					 dataField='operationsOwners'
 					 width='280px'
 					 dataAlign='left'
@@ -392,7 +392,7 @@ class Table extends Component {
 					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
 					>Network Product Families</TableHeaderColumn>
-				<TableHeaderColumn dataSort tdStyle={{ fontSize: '.85em' }}
+				<TableHeaderColumn dataSort columnClassName='small'
 					 dataField='backends'
 					 width='250px'
 					 dataAlign='left'
@@ -403,7 +403,7 @@ class Table extends Component {
 					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
 					>Backend technologies</TableHeaderColumn>
-				<TableHeaderColumn dataSort tdStyle={{ fontSize: '.85em' }}
+				<TableHeaderColumn dataSort columnClassName='small'
 					 dataField='frontends'
 					 width='250px'
 					 dataAlign='left'

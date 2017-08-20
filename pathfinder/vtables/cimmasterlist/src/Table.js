@@ -23,7 +23,7 @@ class Table extends Component {
 					 csvHeader='domain-name'
 					 filter={TableUtilities.textFilter}
 					>Domain</TableHeaderColumn>
-				<TableHeaderColumn tdStyle={{ fontSize: '.85em' }}
+				<TableHeaderColumn columnClassName='small'
 					 dataField='domainDescription'
 					 width='300px'
 					 dataAlign='left'
@@ -42,7 +42,7 @@ class Table extends Component {
 					 csvHeader='entity-name'
 					 filter={TableUtilities.textFilter}
 					>Entity name</TableHeaderColumn>
-				<TableHeaderColumn tdStyle={{ fontSize: '.85em' }}
+				<TableHeaderColumn columnClassName='small'
 					 dataField='description'
 					 width='300px'
 					 dataAlign='left'

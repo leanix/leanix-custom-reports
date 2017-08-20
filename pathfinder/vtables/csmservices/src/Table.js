@@ -54,7 +54,7 @@ class Table extends Component {
 					 csvFormatExtraData={this.props.options.serviceOrigin}
 					 filter={TableUtilities.selectFilter(this.props.options.serviceOrigin)}
 					>Service Origin</TableHeaderColumn>
-				<TableHeaderColumn dataSort tdStyle={{ fontSize: '.85em' }}
+				<TableHeaderColumn columnClassName='small'
 					 dataField='csmL2Desc'
 					 width='300px'
 					 dataAlign='left'

@@ -153,7 +153,7 @@ class Report extends Component {
 
 	render() {
 		if (this.state.data.length === 0) {
-			return null;
+			return (<h4 className='text-center'>Loading data ...</h4>);
 		}
 		return (
 			<Table data={this.state.data}
