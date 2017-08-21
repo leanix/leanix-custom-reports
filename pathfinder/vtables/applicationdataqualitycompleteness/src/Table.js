@@ -12,6 +12,13 @@ class Table extends Component {
 		this._sortPercentage = this._sortPercentage.bind(this);
 	}
 
+	_formatCompliant(cell, row) {
+		if (cell === undefined || cell === null || Number.isNaN(cell) || row.overallRule) {
+			return '';
+		}
+		return cell;
+	}
+
 	_formatPercentage(cell, row) {
 		if (cell === undefined || cell === null || Number.isNaN(cell)) {
 			return '';
@@ -78,16 +85,16 @@ class Table extends Component {
 	}
 
 	render() {
-		// TODO root csv export must have the ids aswell?
+		// TODO Once performance issue is solved, re-integrate sub tables
+		// also see https://github.com/AllenFang/react-bootstrap-table/issues/1537
 		// expandableRow={this._isExpandableRow}
 		// expandComponent={this._expandComponent}
 		// expandColumnOptions={{ expandColumnVisible: true }}
 		return (
 			<BootstrapTable data={this.props.data} keyField='id'
-				 striped hover search exportCSV
+				 striped hover exportCSV
 				 pagination ignoreSinglePage
 				 options={{
-					clearSearch: true,
 					sizePerPage: this.props.pageSize,
 					hideSizePerPage: true
 				 }}
@@ -120,6 +127,8 @@ class Table extends Component {
 					 dataField='compliant'
 					 width='260px'
 					 dataAlign='left'
+					 dataFormat={this._formatCompliant}
+					 csvFormat={this._formatCompliant}
 					 filter={TableUtilities.numberFilter}
 					>Compliant</TableHeaderColumn>
 				<TableHeaderColumn hidden export
