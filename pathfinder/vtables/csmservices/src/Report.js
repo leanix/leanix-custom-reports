@@ -42,9 +42,11 @@ class Report extends Component {
 			const index = new DataIndex();
 			index.put(tagGroups);
 			const csmId = index.getFirstTagID('CSM Type', 'CSM');
-			lx.executeGraphQL(this._createQuery(csmId)).then((data) => {
+			const cimId = index.getFirstTagID('Category', 'CIM');
+			const appMapId = index.getFirstTagID('BC Type', 'AppMap');
+			lx.executeGraphQL(this._createQuery(csmId, cimId, appMapId)).then((data) => {
 				index.put(data);
-				this._handleData(index, csmId);
+				this._handleData(index, csmId, cimId, appMapId);
 			});
 		});
 	}
@@ -55,53 +57,115 @@ class Report extends Component {
 		};
 	}
 
-	_createQuery(csmId) {
-		let csmIdFilter = ''; // initial assume tagGroup.name changed or the id couldn't be determined otherwise
-		let tagNameDef = 'tags { name }'; // initial assume to get it
+	_createQuery(csmId, cimId, appMapId) {
+		let idFilter = { csm: '', cim: '', appMap: '' }; // initial assume tagGroup.name changed or the id couldn't be determined otherwise
+		let tagNameDef = { csm: 'tags { name }', cim: 'tags { name }', appMap: 'tags { name }' }; // initial assume to get it
 		if (csmId) {
-			csmIdFilter = `, {facetKey: "CSM Type", keys: ["${csmId}"]}`;
-			tagNameDef = '';
+			idFilter.csm = `, {facetKey: "CSM Type", keys: ["${csmId}"]}`;
+			tagNameDef.csm = '';
+		}
+		if (cimId) {
+			idFilter.cim = `, {facetKey: "Category", keys: ["${cimId}"]}`;
+			tagNameDef.cim = '';
+		}
+		if (appMapId) {
+			idFilter.appMap = `, {facetKey: "BC Type", keys: ["${appMapId}"]}`;
+			tagNameDef.appMap = '';
 		}
 		return `{csm: allFactSheets(
 					sort: { mode: BY_FIELD, key: "displayName", order: asc },
 					filter: {facetFilters: [
 						{facetKey: "FactSheetTypes", keys: ["CSM"]},
 						{facetKey: "hierarchyLevel", keys: ["2"]}
-						${csmIdFilter}
+						${idFilter.csm}
 					]}
 				) {
 					edges { node {
-						id name description ${tagNameDef}
+						id name description ${tagNameDef.csm}
 						... on CSM {
 							serviceStatus serviceClassification serviceOrigin
 							relToParent { edges { node { factSheet { id name } } } }
 							relToRequires (facetFilters: [
 								{facetKey: "FactSheetTypes", keys: ["Application"]}
 							]) { edges { node { factSheet { id name tags { name } } } } }
-							relCSMToDataObject { edges { node { factSheet { id name tags { name } } } } }
+							relCSMToDataObject { edges { node { factSheet { id } } } }
+						}
+					}}
+				},
+				doCim: allFactSheets(
+					filter: {facetFilters: [
+						{facetKey: "FactSheetTypes", keys: ["DataObject"]}
+						${idFilter.cim}
+					]}
+				){
+					edges {node {
+						id name ${tagNameDef.cim}
+						... on DataObject {
+							relDataObjectToBusinessCapability { edges { node { factSheet { id } } } }
+						}
+					}}
+				},
+				bcAppMap: allFactSheets(
+					filter: {facetFilters: [
+						{facetKey: "FactSheetTypes", keys: ["BusinessCapability"]}
+						${idFilter.appMap}
+					]}
+				){
+					edges { node {
+						id ${tagNameDef.appMap}
+						... on BusinessCapability {
+							relBusinessCapabilityToBCA { edges { node { factSheet { id name tags { name } } } } }
+							relBusinessCapabilityToPlatform { edges { node { factSheet { id name tags { name } } } } }
 						}
 					}}
 				}}`;
 	}
 
-	_handleData(index, csmId) {
+	_handleData(index, csmId, cimId, appMapId) {
 		const tableData = [];
 		index.csm.nodes.forEach((csmL2) => {
 			if (!csmId && !index.includesTag(csmL2, 'CSM')) {
 				return;
 			}
 			const csmL1 = csmL2.relToParent ? csmL2.relToParent.nodes[0] : undefined;
-			const platfProdByBCs = []; // TODO
-			const platfConsByBCs = []; // TODO
-			const bcaBCs = []; // TODO
 			const tmfAPPs = csmL2.relToRequires ? csmL2.relToRequires.nodes.filter((e) => {
 				// filter for tag name (unfortunately not possible in query on relation)
-				return index.includesTag(e, 'TMF2');
+				return index.includesTag(e, 'TMF Open API');
 			}) : [];
 			const cimDOs = csmL2.relCSMToDataObject ? csmL2.relCSMToDataObject.nodes.filter((e) => {
 				// filter for tag name (unfortunately not possible in query on relation)
-				return index.includesTag(e, 'CIM');
+				return cimId ? index.doCim.byID.hasOwnProperty(e.id) : index.includesTag(index.doCim.byID[e.id], 'CIM');
 			}) : [];
+			const platformBCs = [];
+			const bcaBCs = [];
+			if (cimDOs.length) {
+				cimDOs.forEach((cim) => {
+					const appMapBCs = index.doCim.byID[cim.id].relDataObjectToBusinessCapability ? index.doCim.byID[cim.id].relDataObjectToBusinessCapability.nodes.filter((e) => {
+						// filter for tag name (unfortunately not possible in query on relation)
+						return appMapId ? index.bcAppMap.byID.hasOwnProperty(e.id) : index.includesTag(index.bcAppMap.byID[e.id], 'AppMap');
+					}) : [];
+					if (appMapBCs.length) {
+						appMapBCs.forEach((e) => {
+							const appMap = index.bcAppMap.byID[e.id];
+							if (appMap.relBusinessCapabilityToBCA) {
+								appMap.relBusinessCapabilityToBCA.nodes.forEach((bca) => {
+									if (index.includesTag(bca, 'BCA')) { // tag check not neccessary if COBRA works fine
+										bcaBCs.push(bca);
+									}
+								});
+							}
+							if (appMap.relBusinessCapabilityToPlatform) {
+								appMap.relBusinessCapabilityToPlatform.nodes.forEach((platform) => {
+									if (index.includesTag(platform, 'Platform')) { // tag check not neccessary if COBRA works fine
+										platformBCs.push(platform);
+									}
+								});
+							}
+						});
+					}
+				});
+			}
+			// TODO remove dublicated entries: platformBCs and bcaBCs
 			tableData.push({
 				csmL1Id: csmL1 ? csmL1.id : '',
 				csmL1Name: csmL1 ? csmL1.name : '',
@@ -114,16 +178,10 @@ class Report extends Component {
 					this.SERVICE_CLASSIFICATION_OPTIONS, csmL2.serviceClassification),
 				serviceOrigin: this._getOptionKeyFromValue(
 					this.SERVICE_ORIGIN_OPTIONS, csmL2.serviceOrigin),
-				platfProdByBCsIds: platfProdByBCs.map((e) => {
+				platformBCsIds: platformBCs.map((e) => {
 					return e.id;
 				}),
-				platfProdByBCsNames: platfProdByBCs.map((e) => {
-					return e.name;
-				}),
-				platfConsByBCsIds: platfConsByBCs.map((e) => {
-					return e.id;
-				}),
-				platfConsByBCsNames: platfConsByBCs.map((e) => {
+				platformBCsNames: platformBCs.map((e) => {
 					return e.name;
 				}),
 				bcaBCsIds: bcaBCs.map((e) => {
@@ -142,7 +200,7 @@ class Report extends Component {
 					return e.id;
 				}),
 				cimDOsNames: cimDOs.map((e) => {
-					return e.name;
+					return index.doCim.byID[e.id].name;
 				})
 			});
 		});

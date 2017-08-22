@@ -98,27 +98,16 @@ class Table extends Component {
 					 filter={TableUtilities.textFilter}
 					>CIM</TableHeaderColumn>
 				<TableHeaderColumn dataSort
-					 dataField='platfProdByBCsNames'
+					 dataField='platformBCsNames'
 					 width='250px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatLinkArrayFactsheets(this.props.setup)}
-					 formatExtraData={{ type: 'BusinessCapability', id: 'platfProdByBCsIds' }}
-					 csvHeader='platform-produced-by'
+					 formatExtraData={{ type: 'BusinessCapability', id: 'platformBCsIds' }}
+					 csvHeader='platform'
 					 csvFormat={TableUtilities.formatArray}
 					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
-					>Platform (produced by)</TableHeaderColumn>
-				<TableHeaderColumn dataSort
-					 dataField='platfConsByBCsNames'
-					 width='250px'
-					 dataAlign='left'
-					 dataFormat={TableUtilities.formatLinkArrayFactsheets(this.props.setup)}
-					 formatExtraData={{ type: 'BusinessCapability', id: 'platfConsByBCsIds' }}
-					 csvHeader='platform-consumed-by'
-					 csvFormat={TableUtilities.formatArray}
-					 csvFormatExtraData=';'
-					 filter={TableUtilities.textFilter}
-					>Platform (consumed by)</TableHeaderColumn>
+					>Platform</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='tmfAppNames'
 					 width='250px'
@@ -146,10 +135,8 @@ Table.propTypes = {
 			serviceStatus: PropTypes.number,
 			serviceClass: PropTypes.number,
 			serviceOrigin: PropTypes.number,
-			platfProdByBCsIds: TableUtilities.PropTypes.idArray('platfProdByBCsNames'),
-			platfProdByBCsNames: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
-			platfConsByBCsIds: TableUtilities.PropTypes.idArray('platfConsByBCsNames'),
-			platfConsByBCsNames: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
+			platformBCsIds: TableUtilities.PropTypes.idArray('platformBCsNames'),
+			platformBCsNames: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
 			bcaBCsIds: TableUtilities.PropTypes.idArray('bcaBCsNames'),
 			bcaBCsNames: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
 			tmfAppIds: TableUtilities.PropTypes.idArray('tmfAppNames'),
