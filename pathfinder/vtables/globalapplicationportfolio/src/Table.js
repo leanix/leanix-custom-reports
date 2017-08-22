@@ -107,7 +107,7 @@ class Table extends Component {
 					 csvFormat={TableUtilities.formatEnum}
 					 csvFormatExtraData={this.props.options.costCentre}
 					 filter={TableUtilities.selectFilter(this.props.options.costCentre)}
-					>Cost Centre</TableHeaderColumn>
+					>Cost centre</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='stack'
 					 width='160px'
@@ -129,7 +129,7 @@ class Table extends Component {
 					 csvFormat={TableUtilities.formatEnum}
 					 csvFormatExtraData={this.props.options.admScope}
 					 filter={TableUtilities.selectFilter(this.props.options.admScope)}
-					>In AD&M Scope</TableHeaderColumn>
+					>In AD&M scope</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='cotsPackage'
 					 width='160px'
@@ -140,7 +140,7 @@ class Table extends Component {
 					 csvFormat={TableUtilities.formatEnum}
 					 csvFormatExtraData={this.props.options.cotsPackage}
 					 filter={TableUtilities.selectFilter(this.props.options.cotsPackage)}
-					>COTS Package</TableHeaderColumn>
+					>COTS package</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='cotsSoftware'
 					 width='300px'
@@ -151,7 +151,7 @@ class Table extends Component {
 					 csvFormat={TableUtilities.formatArray}
 					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
-					>COTS Software</TableHeaderColumn>
+					>COTS software</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='cotsVendors'
 					 width='300px'
@@ -162,7 +162,7 @@ class Table extends Component {
 					 csvFormat={TableUtilities.formatArray}
 					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
-					>COTS Vendors</TableHeaderColumn>
+					>COTS vendors</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='lastUpgrade'
 					 width='250px'
@@ -249,7 +249,7 @@ class Table extends Component {
 					 csvFormat={TableUtilities.formatEnum}
 					 csvFormatExtraData={this.props.options.applicationComplexity}
 					 filter={TableUtilities.selectFilter(this.props.options.applicationComplexity)}
-					>Application Complexity</TableHeaderColumn>
+					>Application complexity</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='businessCriticality'
 					 width='170px'
@@ -260,7 +260,7 @@ class Table extends Component {
 					 csvFormat={TableUtilities.formatEnum}
 					 csvFormatExtraData={this.props.options.businessCriticality}
 					 filter={TableUtilities.selectFilter(this.props.options.businessCriticality)}
-					>Business Criticality</TableHeaderColumn>
+					>Business criticality</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='usage'
 					 width='130px'
@@ -271,7 +271,7 @@ class Table extends Component {
 					 csvFormat={TableUtilities.formatEnum}
 					 csvFormatExtraData={this.props.options.applicationUsage}
 					 filter={TableUtilities.selectFilter(this.props.options.applicationUsage)}
-					>Application Usage</TableHeaderColumn>
+					>Application usage</TableHeaderColumn>
 				<TableHeaderColumn dataSort columnClassName='small'
 					 dataField='alias'
 					 width='250px'
@@ -323,7 +323,7 @@ class Table extends Component {
 					 csvFormat={TableUtilities.formatArray}
 					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
-					>IT Owners</TableHeaderColumn>
+					>IT owners</TableHeaderColumn>
 				<TableHeaderColumn dataSort columnClassName='small'
 					 dataField='businessOwners'
 					 width='280px'
@@ -334,7 +334,7 @@ class Table extends Component {
 					 csvFormat={TableUtilities.formatArray}
 					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
-					>Business Owners</TableHeaderColumn>
+					>Business owners</TableHeaderColumn>
 				<TableHeaderColumn dataSort columnClassName='small'
 					 dataField='spocs'
 					 width='280px'
@@ -356,7 +356,7 @@ class Table extends Component {
 					 csvFormat={TableUtilities.formatArray}
 					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
-					>Operations Owners</TableHeaderColumn>
+					>Operations owners</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='accessType'
 					 width='130px'
@@ -412,7 +412,7 @@ class Table extends Component {
 						});
 					 }}
 					 filter={TableUtilities.textFilter}
-					>Network Product Families</TableHeaderColumn>
+					>Network product families</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='obsolescence'
 					 width='160px'
