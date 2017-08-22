@@ -165,15 +165,13 @@ class Table extends Component {
 					>COTS Vendors</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='lastUpgrade'
-					 width='140px'
-					 dataAlign='left'
-					 dataFormat={TableUtilities.formatEnum}
-					 formatExtraData={this.props.options.lastMajorUpgrade}
+					 width='250px'
+					 headerAlign='left'
+					 dataAlign='right'
+					 dataFormat={TableUtilities.formatDate}
 					 csvHeader='last-major-upgrade'
-					 csvFormat={TableUtilities.formatEnum}
-					 csvFormatExtraData={this.props.options.lastMajorUpgrade}
-					 filterFormatted
-					 filter={TableUtilities.textFilter}
+					 csvFormat={TableUtilities.csvFormatDate}
+					 filter={TableUtilities.dateFilter}
 					>Last major upgrade</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='remedyNames'
@@ -191,12 +189,23 @@ class Table extends Component {
 					 width='300px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatLinkArrayFactsheets(this.props.setup)}
-					 formatExtraData={{ type: 'ITComponent', id: 'supportIds' }}
+					 formatExtraData={{ type: 'Provider', id: 'supportIds' }}
 					 csvHeader='supported-by'
 					 csvFormat={TableUtilities.formatArray}
 					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
 					>Supported by</TableHeaderColumn>
+				<TableHeaderColumn dataSort
+					 dataField='siProviderNames'
+					 width='300px'
+					 dataAlign='left'
+					 dataFormat={TableUtilities.formatLinkArrayFactsheets(this.props.setup)}
+					 formatExtraData={{ type: 'Provider', id: 'siProviderIds' }}
+					 csvHeader='si-providers'
+					 csvFormat={TableUtilities.formatArray}
+					 csvFormatExtraData=';'
+					 filter={TableUtilities.textFilter}
+					>SI providers</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='customisation'
 					 width='150px'
@@ -385,13 +394,57 @@ class Table extends Component {
 					 dataField='networkProductFamilies'
 					 width='220px'
 					 dataAlign='left'
-					 dataFormat={TableUtilities.formatArray}
-					 formatExtraData='<br/>'
+					 dataFormat={TableUtilities.formatEnumArray}
+					 formatExtraData={{
+						enums: this.props.options.networkTechnicalProductFamily,
+						delimiter: '<br/>'
+					 }}
 					 csvHeader='network-product-families'
-					 csvFormat={TableUtilities.formatArray}
-					 csvFormatExtraData=';'
+					 csvFormat={TableUtilities.formatEnumArray}
+					 csvFormatExtraData={{
+						enums: this.props.options.networkTechnicalProductFamily,
+						delimiter: ';'
+					 }}
+					 filterValue={(cell, row) => {
+						return TableUtilities.formatEnumArray(cell, row, {
+							enums: this.props.options.networkTechnicalProductFamily,
+							delimiter: ','
+						});
+					 }}
 					 filter={TableUtilities.textFilter}
 					>Network Product Families</TableHeaderColumn>
+				<TableHeaderColumn dataSort
+					 dataField='obsolescence'
+					 width='160px'
+					 dataAlign='left'
+					 dataFormat={TableUtilities.formatEnum}
+					 formatExtraData={this.props.options.obsolescence}
+					 csvFormat={TableUtilities.formatEnum}
+					 csvFormatExtraData={this.props.options.obsolescence}
+					 filter={TableUtilities.selectFilter(this.props.options.obsolescence)}
+					>Obsolescence</TableHeaderColumn>
+				<TableHeaderColumn dataSort
+					 dataField='cloudMaturity'
+					 width='160px'
+					 dataAlign='left'
+					 dataFormat={TableUtilities.formatEnum}
+					 formatExtraData={this.props.options.cloudMaturity}
+					 csvHeader='cloud-maturity'
+					 csvFormat={TableUtilities.formatEnum}
+					 csvFormatExtraData={this.props.options.cloudMaturity}
+					 filter={TableUtilities.selectFilter(this.props.options.cloudMaturity)}
+					>Cloud maturity</TableHeaderColumn>
+				<TableHeaderColumn dataSort
+					 dataField='cloudDeploymentModel'
+					 width='160px'
+					 dataAlign='left'
+					 dataFormat={TableUtilities.formatEnum}
+					 formatExtraData={this.props.options.cloudDeploymentModel}
+					 csvHeader='cloud-deployment-model'
+					 csvFormat={TableUtilities.formatEnum}
+					 csvFormatExtraData={this.props.options.cloudDeploymentModel}
+					 filter={TableUtilities.selectFilter(this.props.options.cloudDeploymentModel)}
+					>Cloud deployment model</TableHeaderColumn>
 				<TableHeaderColumn dataSort columnClassName='small'
 					 dataField='backends'
 					 width='250px'
@@ -440,11 +493,13 @@ Table.propTypes = {
 			cotsSoftware: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
 			cotsVendorIds: TableUtilities.PropTypes.idArray('cotsVendors'),
 			cotsVendors: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
-			lastUpgrade: PropTypes.number,
+			lastUpgrade: PropTypes.instanceOf(Date),
 			remedyIds: TableUtilities.PropTypes.idArray('remedyNames'),
 			remedyNames: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
 			supportIds: TableUtilities.PropTypes.idArray('supportNames'),
 			supportNames: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
+			siProviderIds: TableUtilities.PropTypes.idArray('siProviderNames'),
+			siProviderNames: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
 			customisation: PropTypes.number,
 			businessValue: PropTypes.number,
 			technicalCondition: PropTypes.number,
@@ -464,7 +519,10 @@ Table.propTypes = {
 			usedByMarkets: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
 			usedBySegmentIds: TableUtilities.PropTypes.idArray('usedBySegments'),
 			usedBySegments: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
-			networkProductFamilies: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
+			networkProductFamilies: PropTypes.arrayOf(PropTypes.number.isRequired).isRequired,
+			obsolescence: PropTypes.number,
+			cloudMaturity: PropTypes.number,
+			cloudDeploymentModel: PropTypes.number,
 			backends: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
 			frontends: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired
 		}).isRequired
@@ -477,7 +535,6 @@ Table.propTypes = {
 		stack: TableUtilities.PropTypes.options,
 		admScope: TableUtilities.PropTypes.options,
 		cotsPackage: TableUtilities.PropTypes.options,
-		lastMajorUpgrade: TableUtilities.PropTypes.options,
 		customisation: TableUtilities.PropTypes.options,
 		functionalSuitability: TableUtilities.PropTypes.options,
 		technicalSuitability: TableUtilities.PropTypes.options,
@@ -486,7 +543,11 @@ Table.propTypes = {
 		applicationUsage: TableUtilities.PropTypes.options,
 		deployment: TableUtilities.PropTypes.options,
 		soxPci: TableUtilities.PropTypes.options,
-		accessType: TableUtilities.PropTypes.options
+		accessType: TableUtilities.PropTypes.options,
+		networkTechnicalProductFamily: TableUtilities.PropTypes.options,
+		obsolescence: TableUtilities.PropTypes.options,
+		cloudMaturity: TableUtilities.PropTypes.options,
+		cloudDeploymentModel: TableUtilities.PropTypes.options
 	}).isRequired,
 	setup: PropTypes.object
 };

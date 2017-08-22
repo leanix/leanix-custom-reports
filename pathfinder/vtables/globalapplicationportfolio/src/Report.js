@@ -12,6 +12,7 @@ class Report extends Component {
 		super(props);
 		this._initReport = this._initReport.bind(this);
 		this._handleData = this._handleData.bind(this);
+		this._getMultipleOptionKeysFromValue = this._getMultipleOptionKeysFromValue.bind(this);
 		this.LIFECYCLE_PHASE_OPTIONS = {};
 		this.RECOMMENDATION_OPTIONS = {};
 		this.MARKET_OPTIONS = {};
@@ -29,7 +30,10 @@ class Report extends Component {
 		this.DEPLOYMENT_OPTIONS = {};
 		this.SOX_PCI_OPTIONS = {};
 		this.ACCESS_TYPE_OPTIONS = {};
-		//this.NETWORK_TECHNICAL_PRODUCT_FAMILY_OPTIONS = {};
+		this.NETWORK_TECHNICAL_PRODUCT_FAMILY_OPTIONS = {};
+		this.OBSOLESCENCE_OPTIONS = {};
+		this.CLOUD_MATURITY_OPTIONS = {};
+		this.CLOUD_DEPLOYMENT_MODEL_OPTIONS = {};
 		this.state = {
 			setup: null,
 			data: []
@@ -72,6 +76,14 @@ class Report extends Component {
 			factsheetModel, 'fields.soxPci.values');
 		this.ACCESS_TYPE_OPTIONS = Utilities.createOptionsObjFrom(
 			factsheetModel, 'fields.accessType.values');
+		this.NETWORK_TECHNICAL_PRODUCT_FAMILY_OPTIONS = Utilities.createOptionsObjFrom(
+			factsheetModel, 'fields.networkTechnicalProductFamily.values');
+		this.OBSOLESCENCE_OPTIONS = Utilities.createOptionsObjFrom(
+			factsheetModel, 'fields.obsolescence.values');
+		this.CLOUD_MATURITY_OPTIONS = Utilities.createOptionsObjFrom(
+			factsheetModel, 'fields.cloudMaturity.values');
+		this.CLOUD_DEPLOYMENT_MODEL_OPTIONS = Utilities.createOptionsObjFrom(
+			factsheetModel, 'fields.cloudDeploymentModel.values');
 		// get all tags, then the data
 		lx.executeGraphQL(CommonQueries.tagGroups).then((tagGroups) => {
 			const index = new DataIndex();
@@ -81,14 +93,6 @@ class Report extends Component {
 			this.RECOMMENDATION_OPTIONS = Utilities.createOptionsObj(index.getTags('Recommendation'));
 			this.COST_CENTRE_OPTIONS = Utilities.createOptionsObj(index.getTags('CostCentre'));
 			this.COTS_PACKAGE_OPTIONS = Utilities.createOptionsObj(index.getTags('COTS Package'));
-			// TODO replace w/ data field once data model is final (note: data type)
-			this.LAST_MAJOR_UPGRADE_OPTIONS = Utilities.createOptionsObj(
-				index.getTags('Last Major Upgrade').map((e) => {
-				return e.name;
-			}));
-			// TODO replace w/ data field once data model is final (note: multi select value)
-			//this.NETWORK_TECHNICAL_PRODUCT_FAMILY_OPTIONS = Utilities.createOptionsObjFrom(
-			//	index.getTags('Network Technical Product Family'));
 			lx.executeGraphQL(this._createQuery(applicationTagId, appMapId)).then((data) => {
 				index.put(data);
 				this._handleData(index, applicationTagId, appMapId);
@@ -127,9 +131,12 @@ class Report extends Component {
 							applicationComplexity businessCriticality applicationUsage
 							deployment alias externalId { externalId }
 							soxPci accessType lifecycle { asString phases { phase startDate } }
+							networkTechnicalProductFamily obsolescence cloudMaturity cloudDeploymentModel
+							lastMajorUpgrade { phases { startDate } }
 							relApplicationToBusinessCapability { edges { node { factSheet { id } } } }
 							relApplicationToITComponent { edges { node { factSheet { id } } } }
-							relApplicationToUserGroup { edges { node { usageType factSheet { id } } } }
+							relApplicationToUserGroup { edges { node { factSheet { id } } } }
+							relApplicationToProvider { edges { node { factSheet { id } } } }
 						}
 					}}
 				}
@@ -147,10 +154,10 @@ class Report extends Component {
 						}
 					}}
 				}
-				itComponentsHardwareAndService: allFactSheets(
+				itComponentsOthers: allFactSheets(
 					filter: {facetFilters: [
 						{facetKey: "FactSheetTypes", keys: ["ITComponent"]},
-						{facetKey: "category", operator: OR, keys: ["hardware", "service"]}
+						{facetKey: "category", operator: OR, keys: ["hardware", "service", "developmentTechnology"]}
 					]}
 				) {
 					edges { node {
@@ -221,7 +228,7 @@ class Report extends Component {
 			const subIndexITCs = e.relApplicationToITComponent;
 			if (subIndexITCs) {
 				subIndexITCs.nodes.forEach((e2) => {
-					// access itComponentsSoftware & itComponentsHardwareAndService
+					// access itComponentsSoftware & itComponentsOthers
 					const itc = index.byID[e2.id];
 					if (!itc) {
 						return;
@@ -231,24 +238,12 @@ class Report extends Component {
 							if (itc.name.endsWith('Software Product')) {
 								break;
 							}
-							const subIndexProv = itc.relITComponentToProvider;
-							let providerId = undefined;
-							let providerName = undefined;
-							if (subIndexProv) {
-								// v workspace note: only one provider possible
-								const provId = subIndexProv.nodes[0].id;
-								// access providers
-								const provider = index.byID[provId];
-								if (provider) {
-									providerId = provider.id;
-									providerName = provider.name;
-								}
-							}
+							const provider = this._getProvider(index, itc);
 							cotsSoftware.push({
 								id: itc.id,
 								name: itc.displayName,
-								providerId: providerId,
-								provider: providerName
+								providerId: provider ? provider.id : undefined,
+								provider: provider ? provider.name : undefined
 							});
 							break;
 						case 'hardware':
@@ -256,19 +251,47 @@ class Report extends Component {
 							break;
 						case 'service':
 							if (index.includesTag(itc, 'Development Technology')) {
+								// TODO future note: data model changes
 								if (itc.name.endsWith('(Back End)')) {
 									backends.push(itc.name.replace(' (Back End)' , ''));
 								} else if (itc.name.endsWith('(Front End)')) {
 									frontends.push(itc.name.replace(' (Front End)' , ''));
 								}
 							} else {
-								supports.push(itc);
+								const provider = this._getProvider(index, itc);
+								if (provider) {
+									supports.push(provider);
+								}
+							}
+							break;
+						case 'developmentTechnology':
+							// TODO check for duplicates
+							// TODO future note: data model changes
+							if (itc.name.endsWith('(Back End)')) {
+								backends.push(itc.name.replace(' (Back End)' , ''));
+							} else if (itc.name.endsWith('(Front End)')) {
+								frontends.push(itc.name.replace(' (Front End)' , ''));
 							}
 							break;
 					}
 				});
 			}
 			const cotsVendors = this._getCotsVendors(cotsSoftware);
+			const siProvidersSet = {};
+			const subIndexProviders = e.relApplicationToProvider;
+			if (subIndexProviders) {
+				subIndexProviders.nodes.forEach((e2) => {
+					// access providers
+					const provider = index.byID[e2.id];
+					if (provider) {
+						siProvidersSet[provider.id] = provider;
+					}
+				});
+			}
+			const siProviders = [];
+			for (let key in siProvidersSet) {
+				siProviders.push(siProvidersSet[key]);
+			}
 			const itOwners = [];
 			const businessOwners = [];
 			const spocs = [];
@@ -314,11 +337,13 @@ class Report extends Component {
 					}
 					if (index.includesTag(userGroup, 'Segment')) {
 						usedBySegments.push(userGroup);
-					} else if (e2.relationAttr.usageType === 'user') {
+					} else {
+						// v workspace note: relApplicationToUserGroup only contains usageType 'user'
 						usedByMarkets.push(userGroup);
 					}
 				});
 			}
+			const lastUpgrade = this._getLastMajorUpgrade(e);
 			tableData.push({
 				id: e.id,
 				name: e.name,
@@ -350,7 +375,7 @@ class Report extends Component {
 				cotsVendors: cotsVendors.map((e2) => {
 					return e2.name;
 				}),
-				lastUpgrade: this._getOptionKeyFromValue(this.LAST_MAJOR_UPGRADE_OPTIONS, this._getTagFromGroup(index, e, 'Last Major Upgrade')),
+				lastUpgrade: lastUpgrade ? new Date(lastUpgrade) : undefined,
 				remedyIds: remedies.map((e2) => {
 					return e2.id;
 				}),
@@ -361,6 +386,12 @@ class Report extends Component {
 					return e2.id;
 				}),
 				supportNames: supports.map((e2) => {
+					return e2.name;
+				}),
+				siProviderIds: siProviders.map((e2) => {
+					return e2.id;
+				}),
+				siProviderNames: siProviders.map((e2) => {
 					return e2.name;
 				}),
 				customisation: this._getOptionKeyFromValue(this.CUSTOMISATION_LEVEL_OPTIONS, e.customisationLevel),
@@ -375,7 +406,7 @@ class Report extends Component {
 				soxpciFlag: this._getOptionKeyFromValue(this.SOX_PCI_OPTIONS, e.soxPci),
 				itOwners: itOwners,
 				businessOwners: businessOwners,
-				spocs:spocs,
+				spocs: spocs,
 				operationsOwners: operationsOwners,
 				accessType: this._getOptionKeyFromValue(this.ACCESS_TYPE_OPTIONS, e.accessType),
 				usedByMarketIds: usedByMarkets.map((e2) => {
@@ -390,9 +421,10 @@ class Report extends Component {
 				usedBySegments: usedBySegments.map((e2) => {
 					return e2.name;
 				}),
-				networkProductFamilies: index.getTagsFromGroup(e, 'Network Technical Product Family').map((e2) => {
-					return e2.name;
-				}),
+				networkProductFamilies: this._getMultipleOptionKeysFromValue(this.NETWORK_TECHNICAL_PRODUCT_FAMILY_OPTIONS, e.networkTechnicalProductFamily),
+				obsolescence: this._getOptionKeyFromValue(this.OBSOLESCENCE_OPTIONS, e.obsolescence),
+				cloudMaturity: this._getOptionKeyFromValue(this.CLOUD_MATURITY_OPTIONS, e.cloudMaturity),
+				cloudDeploymentModel: this._getOptionKeyFromValue(this.CLOUD_DEPLOYMENT_MODEL_OPTIONS, e.cloudDeploymentModel),
 				backends: backends,
 				frontends: frontends
 			});
@@ -402,6 +434,30 @@ class Report extends Component {
 		this.setState({
 			data: tableData
 		});
+	}
+
+	_getLastMajorUpgrade(application) {
+		const phases = Utilities.getFrom(application, 'lastMajorUpgrade.phases', []);
+		if (phases.length === 0) {
+			return;
+		}
+		// v workspace note: its always the first one
+		const startDate = phases[0].startDate;
+		if (!startDate) {
+			return;
+		}
+		// that's a timestamp as number
+		return Date.parse(startDate + ' 00:00:00');
+	}
+
+	_getProvider(index, itc) {
+		const subIndex = itc.relITComponentToProvider;
+		if (subIndex) {
+			// v workspace note: only one provider possible
+			const provId = subIndex.nodes[0].id;
+			// access providers
+			return index.byID[provId];
+		}
 	}
 
 	_getCotsVendors(cotsSoftware) {
@@ -430,6 +486,23 @@ class Report extends Component {
 		return key !== undefined && key !== null ? parseInt(key, 10) : undefined;
 	}
 
+	_getMultipleOptionKeysFromValue(options, values) {
+		if (!values || !Array.isArray(values)) {
+			return [];
+		}
+		const result = [];
+		values.forEach((e) => {
+			if (!e) {
+				return;
+			}
+			const key = this._getOptionKeyFromValue(options, e);
+			if (key !== undefined && key !== null) {
+				result.push(key);
+			}
+		});
+		return result;
+	}
+
 	_getTagFromGroup(index, node, tagGroupName) {
 		const tag = index.getFirstTagFromGroup(node, tagGroupName);
 		return tag ? tag.name : '';
@@ -449,7 +522,6 @@ class Report extends Component {
 					stack: this.STACK_OPTIONS,
 					admScope: this.ADM_SCOPE_OPTIONS,
 					cotsPackage: this.COTS_PACKAGE_OPTIONS,
-					lastMajorUpgrade: this.LAST_MAJOR_UPGRADE_OPTIONS,
 					customisation: this.CUSTOMISATION_LEVEL_OPTIONS,
 					functionalSuitability: this.FUNCTIONAL_SUITABILITY_OPTIONS,
 					technicalSuitability: this.TECHNICAL_SUITABILITY_OPTIONS,
@@ -458,7 +530,11 @@ class Report extends Component {
 					applicationUsage: this.APPLICATION_USAGE_OPTIONS,
 					deployment: this.DEPLOYMENT_OPTIONS,
 					soxPci: this.SOX_PCI_OPTIONS,
-					accessType: this.ACCESS_TYPE_OPTIONS
+					accessType: this.ACCESS_TYPE_OPTIONS,
+					networkTechnicalProductFamily: this.NETWORK_TECHNICAL_PRODUCT_FAMILY_OPTIONS,
+					obsolescence: this.OBSOLESCENCE_OPTIONS,
+					cloudMaturity: this.CLOUD_MATURITY_OPTIONS,
+					cloudDeploymentModel: this.CLOUD_DEPLOYMENT_MODEL_OPTIONS
 				}}
 				setup={this.state.setup} />
 		);

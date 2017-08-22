@@ -55,6 +55,33 @@ function formatEnum(cell, row, enums) {
 	return enums[cell] ? enums[cell] : '';
 }
 
+function formatEnumArray(cell, row, extraData) {
+	let result = '';
+	if (!cell || !extraData || !extraData.delimiter || !extraData.enums) {
+		return result;
+	}
+	let first = false;
+	cell.forEach((e) => {
+		const formatted = formatEnum(e, row, extraData.enums);
+		if (formatted === '') {
+			return;
+		}
+		if (first) {
+			result += extraData.delimiter;
+		} else {
+			first = true;
+		}
+		result += formatted;
+	});
+	if (extraData.delimiter === '<br/>') {
+		return (
+			<div style={OVERFLOW_CELL_STYLE}
+				dangerouslySetInnerHTML={{ __html: result }} />
+		);
+	}
+	return result;
+}
+
 function formatOptionalText(cell, row, formatRaw) {
 	if (!cell) {
 		return '';
@@ -192,6 +219,7 @@ export default {
 	formatLinkFactsheet: formatLinkFactsheet,
 	formatLinkArrayFactsheets: formatLinkArrayFactsheets,
 	formatEnum: formatEnum,
+	formatEnumArray: formatEnumArray,
 	formatOptionalText: formatOptionalText,
 	formatDate: formatDate,
 	formatArray: formatArray,
