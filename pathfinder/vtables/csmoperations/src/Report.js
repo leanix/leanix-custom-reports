@@ -38,10 +38,11 @@ class Report extends Component {
 			const index = new DataIndex();
 			index.put(tagGroups);
 			const csmId = index.getFirstTagID('CSM Type', 'CSM');
-			const platformId = index.getFirstTagID('BC Type', 'Platform');
-			lx.executeGraphQL(this._createQuery(csmId, platformId)).then((data) => {
+			const cimId = index.getFirstTagID('Category', 'CIM');
+			const appMapId = index.getFirstTagID('BC Type', 'AppMap');
+			lx.executeGraphQL(this._createQuery(csmId, cimId, appMapId)).then((data) => {
 				index.put(data);
-				this._handleData(index, csmId, platformId);
+				this._handleData(index, csmId, cimId, appMapId);
 			});
 		});
 	}
@@ -52,47 +53,73 @@ class Report extends Component {
 		};
 	}
 
-	_createQuery(csmId, platformId) {
-		let csmIdFilter = ''; // initial assume tagGroup.name changed or the id couldn't be determined otherwise
-		let csmTagNameDef = 'tags { name }'; // initial assume to get it
+	_createQuery(csmId, cimId, appMapId) {
+		// initial assume tagGroup.name changed or the id couldn't be determined otherwise
+		let idFilter = { csm: '', cim: '', appMap: '' };
+		// initial assume to get it
+		let tagNameDef = {
+			csm: 'tags { name }',
+			cim: 'tags { name }',
+			appMap: 'tags { name }'
+		};
 		if (csmId) {
-			csmIdFilter = `, {facetKey: "CSM Type", keys: ["${csmId}"]}`;
-			csmTagNameDef = '';
+			idFilter.csm = `, {facetKey: "CSM Type", keys: ["${csmId}"]}`;
+			tagNameDef.csm = '';
 		}
-		let platformIdFilter = ''; // initial assume tagGroup.name changed or the id couldn't be determined otherwise
-		let platfTagNameDef = 'tags { name }'; // initial assume to get it
-		if (platformId) {
-			platformIdFilter = `, {facetKey: "BC Type", keys: ["${platformId}"]}`;
-			platfTagNameDef = '';
+		if (cimId) {
+			idFilter.cim = `, {facetKey: "Category", keys: ["${cimId}"]}`;
+			tagNameDef.cim = '';
 		}
-		// TODO: add 'relation CSM to Platform' to the query
+		if (appMapId) {
+			idFilter.appMap = `, {facetKey: "BC Type", keys: ["${appMapId}"]}`;
+			tagNameDef.appMap = '';
+		}
 		return `{csm: allFactSheets(
 					sort: { mode: BY_FIELD, key: "displayName", order: asc },
 					filter: {facetFilters: [
 						{facetKey: "FactSheetTypes", keys: ["CSM"]},
 						{facetKey: "hierarchyLevel", operator: OR, keys: ["1", "2", "3"]}
-						${csmIdFilter}
+						${idFilter.csm}
 					]}
 				) {
 					edges { node {
-						id name description level ${csmTagNameDef}
+						id name description level ${tagNameDef.csm}
 						... on CSM {
 							serviceStatus
 							relToParent { edges { node { factSheet { id } } } }
+							relCSMToDataObject { edges { node { factSheet { id } } } }
 						}
 					}}
 				}
-				businessCapabilities: allFactSheets(
+				doCim: allFactSheets(
+					filter: {facetFilters: [
+						{facetKey: "FactSheetTypes", keys: ["DataObject"]}
+						${idFilter.cim}
+					]}
+				){
+					edges {node {
+						id ${tagNameDef.cim}
+						... on DataObject {
+							relDataObjectToBusinessCapability { edges { node { factSheet { id } } } }
+						}
+					}}
+				},
+				bcAppMap: allFactSheets(
 					filter: {facetFilters: [
 						{facetKey: "FactSheetTypes", keys: ["BusinessCapability"]}
-						${platformIdFilter}
+						${idFilter.appMap}
 					]}
-				) {
-					edges { node { id name ${platfTagNameDef} } }
+				){
+					edges { node {
+						id ${tagNameDef.appMap}
+						... on BusinessCapability {
+							relBusinessCapabilityToPlatform { edges { node { factSheet { id name } } } }
+						}
+					}}
 				}}`;
 	}
 
-	_handleData(index, csmId, platformId) {
+	_handleData(index, csmId, cimId, appMapId) {
 		const tableData = [];
 		index.csm.nodes.forEach((e) => {
 			if (!csmId && !index.includesTag(e, 'CSM')) {
@@ -104,19 +131,42 @@ class Report extends Component {
 				hierarchy['L' + tmp.level] = tmp;
 				tmp = index.getParent('csm', tmp.id);
 			}
-			let platformBCs = [];
-			// TODO: relation CSM to Platform
-			/* const subIndex = e.relCsmToPlatform;
-			if (subIndex) {
-				subIndex.nodes.forEach((e2) => {
-					// access businessCapabilities
-					const bc = index.byID[e2.id];
-					if (!bc || (!platformId && !index.includesTag(e2, 'Platform'))) {
+			const cimDOs = [];
+			const subIndexCIM = e.relCSMToDataObject;
+			if (subIndexCIM) {
+				subIndexCIM.nodes.forEach((e2) => {
+					// access doCim
+					const cim = index.doCim.byID[e2.id];
+					if (!cim || (!cimId && !index.includesTag(cim, 'CIM'))) {
 						return;
 					}
-					platformBCs.push(bc);
+					cimDOs.push(cim);
 				});
-			} */
+			}
+			const platformBCsSet = {};
+			cimDOs.forEach((cim) => {
+				const appMapBCs = [];
+				const subIndexAppMapBCs = cim.relDataObjectToBusinessCapability;
+				if (subIndexAppMapBCs) {
+					subIndexAppMapBCs.nodes.forEach((e2) => {
+						// access bcAppMap
+						const appMap = index.bcAppMap.byID[e2.id];
+						if (!appMap || (!appMapId && !index.includesTag(appMap, 'AppMap'))) {
+							return;
+						}
+						const subIndexPlatformBCs = appMap.relBusinessCapabilityToPlatform;
+						if (subIndexPlatformBCs) {
+							subIndexPlatformBCs.nodes.forEach((e3) => {
+								platformBCsSet[e3.id] = e3;
+							});
+						}
+					});
+				}
+			});
+			const platformBCs = [];
+			for (let key in platformBCsSet) {
+				platformBCs.push(platformBCsSet[key]);
+			}
 			tableData.push({
 				id: e.id,
 				level: e.level,

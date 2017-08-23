@@ -13,6 +13,7 @@ class Table extends Component {
 		return (
 			<BootstrapTable data={this.props.data} keyField='id'
 				 striped hover search exportCSV
+				 pagination ignoreSinglePage
 				 options={{ clearSearch: true }}>
 				<TableHeaderColumn dataSort
 					 dataField='level'
@@ -87,7 +88,7 @@ class Table extends Component {
 					 csvFormat={TableUtilities.formatArray}
 					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
-					>Platforms</TableHeaderColumn>
+					>Platforms (produced)</TableHeaderColumn>
 			</BootstrapTable>
 		);
 	}
