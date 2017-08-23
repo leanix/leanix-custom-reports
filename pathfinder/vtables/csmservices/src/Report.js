@@ -44,10 +44,11 @@ class Report extends Component {
 			const csmId = index.getFirstTagID('CSM Type', 'CSM');
 			const cimId = index.getFirstTagID('Category', 'CIM');
 			const appMapId = index.getFirstTagID('BC Type', 'AppMap');
-			const tmfId = index.getFirstTagID('CSM Type', 'TMF2');
-			lx.executeGraphQL(this._createQuery(csmId, cimId, appMapId, tmfId)).then((data) => {
+			const tmfId = index.getFirstTagID('CSM Type', 'TMF Open API');
+			const platformId = index.getFirstTagID('BC Type', 'Platform');
+			lx.executeGraphQL(this._createQuery(csmId, cimId, appMapId, tmfId, platformId)).then((data) => {
 				index.put(data);
-				this._handleData(index, csmId, cimId, appMapId, tmfId);
+				this._handleData(index, csmId, cimId, appMapId, tmfId, platformId);
 			});
 		});
 	}
@@ -58,15 +59,16 @@ class Report extends Component {
 		};
 	}
 
-	_createQuery(csmId, cimId, appMapId, tmfId) {
+	_createQuery(csmId, cimId, appMapId, tmfId, platformId) {
 		// initial assume tagGroup.name changed or the id couldn't be determined otherwise
-		let idFilter = { csm: '', cim: '', appMap: '', tmf: '' };
+		let idFilter = { csm: '', cim: '', appMap: '', tmf: '', platform: '' };
 		// initial assume to get it
 		let tagNameDef = {
 			csm: 'tags { name }',
 			cim: 'tags { name }',
 			appMap: 'tags { name }',
-			tmf: 'tags { name }'
+			tmf: 'tags { name }',
+			platform: 'tags { name }'
 		};
 		if (csmId) {
 			idFilter.csm = `, {facetKey: "CSM Type", keys: ["${csmId}"]}`;
@@ -84,6 +86,10 @@ class Report extends Component {
 			idFilter.tmf = `, {facetKey: "CSM Type", keys: ["${tmfId}"]}`;
 			tagNameDef.tmf = '';
 		}
+		if (platformId) {
+			idFilter.platform = `, {facetKey: "BC Type", keys: ["${platformId}"]}`;
+			tagNameDef.platform = '';
+		}
 		return `{csm: allFactSheets(
 					sort: { mode: BY_FIELD, key: "displayName", order: asc },
 					filter: {facetFilters: [
@@ -99,6 +105,11 @@ class Report extends Component {
 							relToParent { edges { node { factSheet { id name } } } }
 							relToRequires (facetFilters: [
 								{facetKey: "FactSheetTypes", keys: ["CSM"]}
+							]) {
+								edges { node { factSheet { id } } }
+							}
+							relToRequiredBy (facetFilters: [
+								{facetKey: "FactSheetTypes", keys: ["BusinessCapability"]}
 							]) {
 								edges { node { factSheet { id } } }
 							}
@@ -136,16 +147,26 @@ class Report extends Component {
 					]}
 				) {
 					edges { node {
-						id ${tagNameDef.appMap}
+						id name ${tagNameDef.appMap}
 						... on BusinessCapability {
 							relBusinessCapabilityToBCA { edges { node { factSheet { id name } } } }
 							relBusinessCapabilityToPlatform { edges { node { factSheet { id name } } } }
 						}
 					}}
+				}
+				bcPlatform: allFactSheets(
+					filter: {facetFilters: [
+						{facetKey: "FactSheetTypes", keys: ["BusinessCapability"]}
+						${idFilter.platform}
+					]}
+				) {
+					edges { node {
+						id name ${tagNameDef.platform}
+					}}
 				}}`;
 	}
 
-	_handleData(index, csmId, cimId, appMapId, tmfId) {
+	_handleData(index, csmId, cimId, appMapId, tmfId, platformId) {
 		const tableData = [];
 		index.csm.nodes.forEach((csmL2) => {
 			if (!csmId && !index.includesTag(csmL2, 'CSM')) {
@@ -158,7 +179,7 @@ class Report extends Component {
 				subIndexRequires.nodes.forEach((e) => {
 					// access csmTmf
 					const tmf = index.csmTmf.byID[e.id];
-					if (!tmf || (!tmfId && !index.includesTag(tmf, 'TMF2'))) {
+					if (!tmf || (!tmfId && !index.includesTag(tmf, 'TMF Open API'))) {
 						return;
 					}
 					tmfApps.push(tmf);
@@ -176,6 +197,19 @@ class Report extends Component {
 					cimDOs.push(cim);
 				});
 			}
+			const platfConsBCs = [];
+			const subIndexPlatformCons = csmL2.relToRequiredBy;
+			if (subIndexPlatformCons) {
+				subIndexPlatformCons.nodes.forEach((e) => {
+					// access bcPlatform
+					const platform = index.bcPlatform.byID[e.id];
+					if (!platform || (!platformId && !index.includesTag(platform, 'Platform'))) {
+						return;
+					}
+					platfConsBCs.push(platform);
+				});
+			}
+			const appMapBCsSet = {};
 			const platformBCsSet = {};
 			const bcaBCsSet = {};
 			cimDOs.forEach((cim) => {
@@ -188,6 +222,7 @@ class Report extends Component {
 						if (!appMap || (!appMapId && !index.includesTag(appMap, 'AppMap'))) {
 							return;
 						}
+						appMapBCsSet[appMap.id] = appMap;
 						const subIndexBcaBCs = appMap.relBusinessCapabilityToBCA;
 						if (subIndexBcaBCs) {
 							subIndexBcaBCs.nodes.forEach((e2) => {
@@ -203,6 +238,10 @@ class Report extends Component {
 					});
 				}
 			});
+			const appMapBCs = [];
+			for (let key in appMapBCsSet) {
+				appMapBCs.push(appMapBCsSet[key]);
+			}
 			const platformBCs = [];
 			for (let key in platformBCsSet) {
 				platformBCs.push(platformBCsSet[key]);
@@ -245,6 +284,18 @@ class Report extends Component {
 					return e.id;
 				}),
 				cimDOsNames: cimDOs.map((e) => {
+					return e.name;
+				}),
+				appMapBCsIds: appMapBCs.map((e) => {
+					return e.id;
+				}),
+				appMapBCsNames: appMapBCs.map((e) => {
+					return e.name;
+				}),
+				platfConsBCsIds: platfConsBCs.map((e) => {
+					return e.id;
+				}),
+				platfConsBCsNames: platfConsBCs.map((e) => {
 					return e.name;
 				})
 			});

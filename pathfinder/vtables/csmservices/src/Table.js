@@ -99,16 +99,38 @@ class Table extends Component {
 					 filter={TableUtilities.textFilter}
 					>CIMs</TableHeaderColumn>
 				<TableHeaderColumn dataSort
+					 dataField='appMapBCsNames'
+					 width='300px'
+					 dataAlign='left'
+					 dataFormat={TableUtilities.formatLinkArrayFactsheets(this.props.setup)}
+					 formatExtraData={{ type: 'BusinessCapability', id: 'appMapBCsIds' }}
+					 csvHeader='appmap'
+					 csvFormat={TableUtilities.formatArray}
+					 csvFormatExtraData=';'
+					 filter={TableUtilities.textFilter}
+					>AppMaps</TableHeaderColumn>
+				<TableHeaderColumn dataSort
 					 dataField='platformBCsNames'
 					 width='300px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatLinkArrayFactsheets(this.props.setup)}
 					 formatExtraData={{ type: 'BusinessCapability', id: 'platformBCsIds' }}
-					 csvHeader='platform'
+					 csvHeader='platform-produced'
 					 csvFormat={TableUtilities.formatArray}
 					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
-					>Platforms</TableHeaderColumn>
+					>Platforms (produced)</TableHeaderColumn>
+				<TableHeaderColumn dataSort
+					 dataField='platfConsBCsNames'
+					 width='300px'
+					 dataAlign='left'
+					 dataFormat={TableUtilities.formatLinkArrayFactsheets(this.props.setup)}
+					 formatExtraData={{ type: 'BusinessCapability', id: 'platfConsBCsIds' }}
+					 csvHeader='platform-consumed'
+					 csvFormat={TableUtilities.formatArray}
+					 csvFormatExtraData=';'
+					 filter={TableUtilities.textFilter}
+					>Platforms (consumed)</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='tmfAppNames'
 					 width='300px'
@@ -119,7 +141,7 @@ class Table extends Component {
 					 csvFormat={TableUtilities.formatArray}
 					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
-					>TMF2s</TableHeaderColumn>
+					>TMF Open API</TableHeaderColumn>
 			</BootstrapTable>
 		);
 	}
@@ -143,7 +165,11 @@ Table.propTypes = {
 			tmfAppIds: TableUtilities.PropTypes.idArray('tmfAppNames'),
 			tmfAppNames: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
 			cimDOsIds: TableUtilities.PropTypes.idArray('cimDOsNames'),
-			cimDOsNames: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired
+			cimDOsNames: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
+			appMapBCsIds: TableUtilities.PropTypes.idArray('appMapBCsNames'),
+			appMapBCsNames: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
+			platfConsBCsIds: TableUtilities.PropTypes.idArray('platfConsBCsNames'),
+			platfConsBCsNames: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired
 		}).isRequired
 	).isRequired,
 	options: PropTypes.shape({
