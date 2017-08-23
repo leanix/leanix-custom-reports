@@ -108,10 +108,7 @@ class Report extends Component {
 							]) {
 								edges { node { factSheet { id } } }
 							}
-							relToRequiredBy (facetFilters: [
-								{facetKey: "FactSheetTypes", keys: ["BusinessCapability"]}
-							]) {
-								edges { node { factSheet { id } } }
+							relCSMToPlatform { edges { node { factSheet { id } } }
 							}
 							relCSMToDataObject { edges { node { factSheet { id } } } }
 						}
@@ -198,7 +195,7 @@ class Report extends Component {
 				});
 			}
 			const platfConsBCs = [];
-			const subIndexPlatformCons = csmL2.relToRequiredBy;
+			const subIndexPlatformCons = csmL2.relCSMToPlatform;
 			if (subIndexPlatformCons) {
 				subIndexPlatformCons.nodes.forEach((e) => {
 					// access bcPlatform
