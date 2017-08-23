@@ -44,9 +44,10 @@ class Report extends Component {
 			const csmId = index.getFirstTagID('CSM Type', 'CSM');
 			const cimId = index.getFirstTagID('Category', 'CIM');
 			const appMapId = index.getFirstTagID('BC Type', 'AppMap');
-			lx.executeGraphQL(this._createQuery(csmId, cimId, appMapId)).then((data) => {
+			const tmfId = index.getFirstTagID('CSM Type', 'TMF2');
+			lx.executeGraphQL(this._createQuery(csmId, cimId, appMapId, tmfId)).then((data) => {
 				index.put(data);
-				this._handleData(index, csmId, cimId, appMapId);
+				this._handleData(index, csmId, cimId, appMapId, tmfId);
 			});
 		});
 	}
@@ -57,9 +58,16 @@ class Report extends Component {
 		};
 	}
 
-	_createQuery(csmId, cimId, appMapId) {
-		let idFilter = { csm: '', cim: '', appMap: '' }; // initial assume tagGroup.name changed or the id couldn't be determined otherwise
-		let tagNameDef = { csm: 'tags { name }', cim: 'tags { name }', appMap: 'tags { name }' }; // initial assume to get it
+	_createQuery(csmId, cimId, appMapId, tmfId) {
+		// initial assume tagGroup.name changed or the id couldn't be determined otherwise
+		let idFilter = { csm: '', cim: '', appMap: '', tmf: '' };
+		// initial assume to get it
+		let tagNameDef = {
+			csm: 'tags { name }',
+			cim: 'tags { name }',
+			appMap: 'tags { name }',
+			tmf: 'tags { name }'
+		};
 		if (csmId) {
 			idFilter.csm = `, {facetKey: "CSM Type", keys: ["${csmId}"]}`;
 			tagNameDef.csm = '';
@@ -71,6 +79,10 @@ class Report extends Component {
 		if (appMapId) {
 			idFilter.appMap = `, {facetKey: "BC Type", keys: ["${appMapId}"]}`;
 			tagNameDef.appMap = '';
+		}
+		if (tmfId) {
+			idFilter.tmf = `, {facetKey: "CSM Type", keys: ["${tmfId}"]}`;
+			tagNameDef.tmf = '';
 		}
 		return `{csm: allFactSheets(
 					sort: { mode: BY_FIELD, key: "displayName", order: asc },
@@ -86,86 +98,119 @@ class Report extends Component {
 							serviceStatus serviceClassification serviceOrigin
 							relToParent { edges { node { factSheet { id name } } } }
 							relToRequires (facetFilters: [
-								{facetKey: "FactSheetTypes", keys: ["Application"]}
-							]) { edges { node { factSheet { id name tags { name } } } } }
+								{facetKey: "FactSheetTypes", keys: ["CSM"]}
+							]) {
+								edges { node { factSheet { id } } }
+							}
 							relCSMToDataObject { edges { node { factSheet { id } } } }
 						}
 					}}
-				},
+				}
+				csmTmf: allFactSheets(
+					filter: {facetFilters: [
+						{facetKey: "FactSheetTypes", keys: ["CSM"]}
+						${idFilter.tmf}
+					]}
+				) {
+					edges { node {
+						id name ${tagNameDef.tmf}
+					}}
+				}
 				doCim: allFactSheets(
 					filter: {facetFilters: [
 						{facetKey: "FactSheetTypes", keys: ["DataObject"]}
 						${idFilter.cim}
 					]}
-				){
-					edges {node {
+				) {
+					edges { node {
 						id name ${tagNameDef.cim}
 						... on DataObject {
 							relDataObjectToBusinessCapability { edges { node { factSheet { id } } } }
 						}
 					}}
-				},
+				}
 				bcAppMap: allFactSheets(
 					filter: {facetFilters: [
 						{facetKey: "FactSheetTypes", keys: ["BusinessCapability"]}
 						${idFilter.appMap}
 					]}
-				){
+				) {
 					edges { node {
 						id ${tagNameDef.appMap}
 						... on BusinessCapability {
-							relBusinessCapabilityToBCA { edges { node { factSheet { id name tags { name } } } } }
-							relBusinessCapabilityToPlatform { edges { node { factSheet { id name tags { name } } } } }
+							relBusinessCapabilityToBCA { edges { node { factSheet { id name } } } }
+							relBusinessCapabilityToPlatform { edges { node { factSheet { id name } } } }
 						}
 					}}
 				}}`;
 	}
 
-	_handleData(index, csmId, cimId, appMapId) {
+	_handleData(index, csmId, cimId, appMapId, tmfId) {
 		const tableData = [];
 		index.csm.nodes.forEach((csmL2) => {
 			if (!csmId && !index.includesTag(csmL2, 'CSM')) {
 				return;
 			}
 			const csmL1 = csmL2.relToParent ? csmL2.relToParent.nodes[0] : undefined;
-			const tmfAPPs = csmL2.relToRequires ? csmL2.relToRequires.nodes.filter((e) => {
-				// filter for tag name (unfortunately not possible in query on relation)
-				return index.includesTag(e, 'TMF Open API');
-			}) : [];
-			const cimDOs = csmL2.relCSMToDataObject ? csmL2.relCSMToDataObject.nodes.filter((e) => {
-				// filter for tag name (unfortunately not possible in query on relation)
-				return cimId ? index.doCim.byID.hasOwnProperty(e.id) : index.includesTag(index.doCim.byID[e.id], 'CIM');
-			}) : [];
-			const platformBCs = [];
-			const bcaBCs = [];
-			if (cimDOs.length) {
-				cimDOs.forEach((cim) => {
-					const appMapBCs = index.doCim.byID[cim.id].relDataObjectToBusinessCapability ? index.doCim.byID[cim.id].relDataObjectToBusinessCapability.nodes.filter((e) => {
-						// filter for tag name (unfortunately not possible in query on relation)
-						return appMapId ? index.bcAppMap.byID.hasOwnProperty(e.id) : index.includesTag(index.bcAppMap.byID[e.id], 'AppMap');
-					}) : [];
-					if (appMapBCs.length) {
-						appMapBCs.forEach((e) => {
-							const appMap = index.bcAppMap.byID[e.id];
-							if (appMap.relBusinessCapabilityToBCA) {
-								appMap.relBusinessCapabilityToBCA.nodes.forEach((bca) => {
-									if (index.includesTag(bca, 'BCA')) { // tag check not neccessary if COBRA works fine
-										bcaBCs.push(bca);
-									}
-								});
-							}
-							if (appMap.relBusinessCapabilityToPlatform) {
-								appMap.relBusinessCapabilityToPlatform.nodes.forEach((platform) => {
-									if (index.includesTag(platform, 'Platform')) { // tag check not neccessary if COBRA works fine
-										platformBCs.push(platform);
-									}
-								});
-							}
-						});
+			const tmfApps = [];
+			const subIndexRequires = csmL2.relToRequires;
+			if (subIndexRequires) {
+				subIndexRequires.nodes.forEach((e) => {
+					// access csmTmf
+					const tmf = index.csmTmf.byID[e.id];
+					if (!tmf || (!tmfId && !index.includesTag(tmf, 'TMF2'))) {
+						return;
 					}
+					tmfApps.push(tmf);
 				});
 			}
-			// TODO remove dublicated entries: platformBCs and bcaBCs
+			const cimDOs = [];
+			const subIndexCIM = csmL2.relCSMToDataObject;
+			if (subIndexCIM) {
+				subIndexCIM.nodes.forEach((e) => {
+					// access doCim
+					const cim = index.doCim.byID[e.id];
+					if (!cim || (!cimId && !index.includesTag(cim, 'CIM'))) {
+						return;
+					}
+					cimDOs.push(cim);
+				});
+			}
+			const platformBCsSet = {};
+			const bcaBCsSet = {};
+			cimDOs.forEach((cim) => {
+				const appMapBCs = [];
+				const subIndexAppMapBCs = cim.relDataObjectToBusinessCapability;
+				if (subIndexAppMapBCs) {
+					subIndexAppMapBCs.nodes.forEach((e) => {
+						// access bcAppMap
+						const appMap = index.byID[e.id];
+						if (!appMap || (!appMapId && !index.includesTag(appMap, 'AppMap'))) {
+							return;
+						}
+						const subIndexBcaBCs = appMap.relBusinessCapabilityToBCA;
+						if (subIndexBcaBCs) {
+							subIndexBcaBCs.nodes.forEach((e2) => {
+								bcaBCsSet[e2.id] = e2;
+							});
+						}
+						const subIndexPlatformBCs = appMap.relBusinessCapabilityToPlatform;
+						if (subIndexPlatformBCs) {
+							subIndexPlatformBCs.nodes.forEach((e2) => {
+								platformBCsSet[e2.id] = e2;
+							});
+						}
+					});
+				}
+			});
+			const platformBCs = [];
+			for (let key in platformBCsSet) {
+				platformBCs.push(platformBCsSet[key]);
+			}
+			const bcaBCs = [];
+			for (let key in bcaBCsSet) {
+				bcaBCs.push(bcaBCsSet[key]);
+			}
 			tableData.push({
 				csmL1Id: csmL1 ? csmL1.id : '',
 				csmL1Name: csmL1 ? csmL1.name : '',
@@ -190,17 +235,17 @@ class Report extends Component {
 				bcaBCsNames: bcaBCs.map((e) => {
 					return e.name;
 				}),
-				tmfAppIds: tmfAPPs.map((e) => {
+				tmfAppIds: tmfApps.map((e) => {
 					return e.id;
 				}),
-				tmfAppNames: tmfAPPs.map((e) => {
+				tmfAppNames: tmfApps.map((e) => {
 					return e.name;
 				}),
 				cimDOsIds: cimDOs.map((e) => {
 					return e.id;
 				}),
 				cimDOsNames: cimDOs.map((e) => {
-					return index.doCim.byID[e.id].name;
+					return e.name;
 				})
 			});
 		});

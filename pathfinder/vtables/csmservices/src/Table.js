@@ -13,6 +13,7 @@ class Table extends Component {
 		return (
 			<BootstrapTable data={this.props.data} keyField='csmL2Id'
 				 striped hover search exportCSV
+				 pagination ignoreSinglePage
 				 options={{ clearSearch: true }}>
 				<TableHeaderColumn dataSort
 					 dataField='csmL1Name'
@@ -22,7 +23,7 @@ class Table extends Component {
 					 formatExtraData={{ type: 'CSM', id: 'csmL1Id' }}
 					 csvHeader='serive-domain'
 					 filter={TableUtilities.textFilter}
-					>Service Domain</TableHeaderColumn>
+					>Service domain</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='serviceClass'
 					 width='200px'
@@ -33,7 +34,7 @@ class Table extends Component {
 					 csvFormat={TableUtilities.formatEnum}
 					 csvFormatExtraData={this.props.options.serviceClassification}
 					 filter={TableUtilities.selectFilter(this.props.options.serviceClassification)}
-					>Service Classification</TableHeaderColumn>
+					>Service classification</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='csmL2Name'
 					 width='300px'
@@ -42,10 +43,10 @@ class Table extends Component {
 					 formatExtraData={{ type: 'CSM', id: 'csmL2Id' }}
 					 csvHeader='service-name'
 					 filter={TableUtilities.textFilter}
-					>Service Name</TableHeaderColumn>
+					>Service name</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='serviceOrigin'
-					 width='200px'
+					 width='150px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatEnum}
 					 formatExtraData={this.props.options.serviceOrigin}
@@ -53,7 +54,7 @@ class Table extends Component {
 					 csvFormat={TableUtilities.formatEnum}
 					 csvFormatExtraData={this.props.options.serviceOrigin}
 					 filter={TableUtilities.selectFilter(this.props.options.serviceOrigin)}
-					>Service Origin</TableHeaderColumn>
+					>Service origin</TableHeaderColumn>
 				<TableHeaderColumn columnClassName='small'
 					 dataField='csmL2Desc'
 					 width='300px'
@@ -63,10 +64,10 @@ class Table extends Component {
 					 csvFormat={TableUtilities.formatOptionalText}
 					 csvFormatExtraData={true}
 					 filter={TableUtilities.textFilter}
-					>Service Description</TableHeaderColumn>
+					>Service description</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='serviceStatus'
-					 width='200px'
+					 width='170px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatEnum}
 					 formatExtraData={this.props.options.serviceStatus}
@@ -74,10 +75,10 @@ class Table extends Component {
 					 csvFormat={TableUtilities.formatEnum}
 					 csvFormatExtraData={this.props.options.serviceStatus}
 					 filter={TableUtilities.selectFilter(this.props.options.serviceStatus)}
-					>Service Status</TableHeaderColumn>
+					>Service status</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='bcaBCsNames'
-					 width='250px'
+					 width='300px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatLinkArrayFactsheets(this.props.setup)}
 					 formatExtraData={{ type: 'BusinessCapability', id: 'bcaBCsIds' }}
@@ -85,10 +86,10 @@ class Table extends Component {
 					 csvFormat={TableUtilities.formatArray}
 					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
-					>BCA</TableHeaderColumn>
+					>BCAs</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='cimDOsNames'
-					 width='250px'
+					 width='300px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatLinkArrayFactsheets(this.props.setup)}
 					 formatExtraData={{ type: 'DataObject', id: 'cimDOsIds' }}
@@ -96,10 +97,10 @@ class Table extends Component {
 					 csvFormat={TableUtilities.formatArray}
 					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
-					>CIM</TableHeaderColumn>
+					>CIMs</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='platformBCsNames'
-					 width='250px'
+					 width='300px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatLinkArrayFactsheets(this.props.setup)}
 					 formatExtraData={{ type: 'BusinessCapability', id: 'platformBCsIds' }}
@@ -107,18 +108,18 @@ class Table extends Component {
 					 csvFormat={TableUtilities.formatArray}
 					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
-					>Platform</TableHeaderColumn>
+					>Platforms</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='tmfAppNames'
-					 width='250px'
+					 width='300px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatLinkArrayFactsheets(this.props.setup)}
-					 formatExtraData={{ type: 'Application', id: 'tmfAppIds' }}
+					 formatExtraData={{ type: 'CSM', id: 'tmfAppIds' }}
 					 csvHeader='tmf-open-api'
 					 csvFormat={TableUtilities.formatArray}
 					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
-					>TMF Open API</TableHeaderColumn>
+					>TMF2s</TableHeaderColumn>
 			</BootstrapTable>
 		);
 	}
