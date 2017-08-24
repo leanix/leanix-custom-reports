@@ -84,11 +84,11 @@ class Table extends Component {
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatLinkArrayFactsheets(this.props.setup)}
 					 formatExtraData={{ type: 'BusinessCapability', id: 'platformIds' }}
-					 csvHeader='platform-names'
+					 csvHeader='platforms-provided'
 					 csvFormat={TableUtilities.formatArray}
 					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
-					>Platforms (produced)</TableHeaderColumn>
+					>Platforms (provided)</TableHeaderColumn>
 			</BootstrapTable>
 		);
 	}
