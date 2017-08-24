@@ -54,8 +54,6 @@ class Report extends Component {
 		this.LIFECYCLE_PHASE_OPTIONS = Utilities.createOptionsObj(
 			Utilities.getLifecycleModel(setup, 'Application'));
 		const factsheetModel = setup.settings.dataModel.factSheets.Application;
-		this.STACK_OPTIONS = Utilities.createOptionsObjFrom(
-			factsheetModel, 'fields.stack.values');
 		this.ADM_SCOPE_OPTIONS = Utilities.createOptionsObjFrom(
 			factsheetModel, 'fields.admScope.values');
 		this.CUSTOMISATION_LEVEL_OPTIONS = Utilities.createOptionsObjFrom(
@@ -78,12 +76,6 @@ class Report extends Component {
 			factsheetModel, 'fields.accessType.values');
 		this.NETWORK_TECHNICAL_PRODUCT_FAMILY_OPTIONS = Utilities.createOptionsObjFrom(
 			factsheetModel, 'fields.networkTechnicalProductFamily.values');
-		this.OBSOLESCENCE_OPTIONS = Utilities.createOptionsObjFrom(
-			factsheetModel, 'fields.obsolescence.values');
-		this.CLOUD_MATURITY_OPTIONS = Utilities.createOptionsObjFrom(
-			factsheetModel, 'fields.cloudMaturity.values');
-		this.CLOUD_DEPLOYMENT_MODEL_OPTIONS = Utilities.createOptionsObjFrom(
-			factsheetModel, 'fields.cloudDeploymentModel.values');
 		// get all tags, then the data
 		lx.executeGraphQL(CommonQueries.tagGroups).then((tagGroups) => {
 			const index = new DataIndex();
@@ -93,6 +85,9 @@ class Report extends Component {
 			this.RECOMMENDATION_OPTIONS = Utilities.createOptionsObj(index.getTags('Recommendation'));
 			this.COST_CENTRE_OPTIONS = Utilities.createOptionsObj(index.getTags('CostCentre'));
 			this.COTS_PACKAGE_OPTIONS = Utilities.createOptionsObj(index.getTags('COTS Package'));
+			this.STACK_OPTIONS = Utilities.createOptionsObj(index.getTags('Stack'));
+			this.OBSOLESCENCE_OPTIONS = Utilities.createOptionsObj(index.getTags('Obsolescence'));
+			this.CLOUD_MATURITY_OPTIONS = Utilities.createOptionsObj(index.getTags('Cloud Maturity'));
 			lx.executeGraphQL(this._createQuery(applicationTagId, appMapId)).then((data) => {
 				index.put(data);
 				this._handleData(index, applicationTagId, appMapId);
@@ -126,16 +121,15 @@ class Report extends Component {
 						id name description tags { name }
 						subscriptions { edges { node { roles { name } user { email } } } }
 						... on Application {
-							stack admScope
-							customisationLevel functionalSuitability technicalSuitability
+							admScope customisationLevel functionalSuitability technicalSuitability
 							applicationComplexity businessCriticality applicationUsage
 							deployment alias externalId { externalId }
 							soxPci accessType lifecycle { asString phases { phase startDate } }
-							networkTechnicalProductFamily obsolescence cloudMaturity cloudDeploymentModel
-							lastMajorUpgrade { phases { startDate } }
+							networkTechnicalProductFamily lastMajorUpgrade { phases { startDate } }
 							relApplicationToBusinessCapability { edges { node { factSheet { id } } } }
 							relApplicationToITComponent { edges { node { factSheet { id } } } }
 							relApplicationToUserGroup { edges { node { factSheet { id } } } }
+							relApplicationToSegment { edges { node { factSheet { id } } } }
 							relApplicationToProvider { edges { node { factSheet { id } } } }
 						}
 					}}
@@ -326,7 +320,6 @@ class Report extends Component {
 				});
 			}
 			const usedByMarkets = [];
-			const usedBySegments = [];
 			const subIndexUG = e.relApplicationToUserGroup;
 			if (subIndexUG) {
 				subIndexUG.nodes.forEach((e2) => {
@@ -335,12 +328,20 @@ class Report extends Component {
 					if (!userGroup) {
 						return;
 					}
-					if (index.includesTag(userGroup, 'Segment')) {
-						usedBySegments.push(userGroup);
-					} else {
-						// v workspace note: relApplicationToUserGroup only contains usageType 'user'
-						usedByMarkets.push(userGroup);
+					// v workspace note: relApplicationToUserGroup only contains usageType 'user'
+					usedByMarkets.push(userGroup);
+				});
+			}
+			const usedBySegments = [];
+			const subIndexSegments = e.relApplicationToSegment;
+			if (subIndexSegments) {
+				subIndexSegments.nodes.forEach((e2) => {
+					// access userGroups
+					const userGroup = index.byID[e2.id];
+					if (!userGroup || !index.includesTag(userGroup, 'Segment')) {
+						return;
 					}
+					usedBySegments.push(userGroup);
 				});
 			}
 			const lastUpgrade = this._getLastMajorUpgrade(e);
@@ -360,7 +361,7 @@ class Report extends Component {
 				recommendation: this._getOptionKeyFromValue(this.RECOMMENDATION_OPTIONS, this._getTagFromGroup(index, e, 'Recommendation')),
 				market: marketIndex < 0 ? undefined : marketIndex,
 				costCentre: this._getOptionKeyFromValue(this.COST_CENTRE_OPTIONS, this._getTagFromGroup(index, e, 'CostCentre')),
-				stack: this._getOptionKeyFromValue(this.STACK_OPTIONS, e.stack),
+				stack: this._getOptionKeyFromValue(this.STACK_OPTIONS, this._getTagFromGroup(index, e, 'Stack')),
 				admScope: this._getOptionKeyFromValue(this.ADM_SCOPE_OPTIONS, e.admScope),
 				cotsPackage: this._getOptionKeyFromValue(this.COTS_PACKAGE_OPTIONS, this._getTagFromGroup(index, e, 'COTS Package')),
 				cotsSoftwareIds: cotsSoftware.map((e2) => {
@@ -422,9 +423,8 @@ class Report extends Component {
 					return e2.name;
 				}),
 				networkProductFamilies: this._getMultipleOptionKeysFromValue(this.NETWORK_TECHNICAL_PRODUCT_FAMILY_OPTIONS, e.networkTechnicalProductFamily),
-				obsolescence: this._getOptionKeyFromValue(this.OBSOLESCENCE_OPTIONS, e.obsolescence),
-				cloudMaturity: this._getOptionKeyFromValue(this.CLOUD_MATURITY_OPTIONS, e.cloudMaturity),
-				cloudDeploymentModel: this._getOptionKeyFromValue(this.CLOUD_DEPLOYMENT_MODEL_OPTIONS, e.cloudDeploymentModel),
+				obsolescence: this._getOptionKeyFromValue(this.OBSOLESCENCE_OPTIONS, this._getTagFromGroup(index, e, 'Obsolescence')),
+				cloudMaturity: this._getOptionKeyFromValue(this.CLOUD_MATURITY_OPTIONS, this._getTagFromGroup(index, e, 'Cloud Maturity')),
 				backends: backends,
 				frontends: frontends
 			});
@@ -533,8 +533,7 @@ class Report extends Component {
 					accessType: this.ACCESS_TYPE_OPTIONS,
 					networkTechnicalProductFamily: this.NETWORK_TECHNICAL_PRODUCT_FAMILY_OPTIONS,
 					obsolescence: this.OBSOLESCENCE_OPTIONS,
-					cloudMaturity: this.CLOUD_MATURITY_OPTIONS,
-					cloudDeploymentModel: this.CLOUD_DEPLOYMENT_MODEL_OPTIONS
+					cloudMaturity: this.CLOUD_MATURITY_OPTIONS
 				}}
 				setup={this.state.setup} />
 		);

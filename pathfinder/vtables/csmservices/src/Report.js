@@ -108,8 +108,7 @@ class Report extends Component {
 							]) {
 								edges { node { factSheet { id } } }
 							}
-							relCSMToPlatform { edges { node { factSheet { id } } }
-							}
+							relCSMToPlatform { edges { node { factSheet { id } } } }
 							relCSMToDataObject { edges { node { factSheet { id } } } }
 						}
 					}}
@@ -147,7 +146,7 @@ class Report extends Component {
 						id name ${tagNameDef.appMap}
 						... on BusinessCapability {
 							relBusinessCapabilityToBCA { edges { node { factSheet { id name } } } }
-							relBusinessCapabilityToPlatform { edges { node { factSheet { id name } } } }
+							relBusinessCapabilityToPlatform { edges { node { factSheet { id } } } }
 						}
 					}}
 				}
@@ -229,7 +228,12 @@ class Report extends Component {
 						const subIndexPlatformBCs = appMap.relBusinessCapabilityToPlatform;
 						if (subIndexPlatformBCs) {
 							subIndexPlatformBCs.nodes.forEach((e2) => {
-								platformBCsSet[e2.id] = e2;
+								// access bcPlatform
+								const platform = index.bcPlatform.byID[e2.id];
+								if (!platform) {
+									return;
+								}
+								platformBCsSet[platform.id] = platform;
 							});
 						}
 					});

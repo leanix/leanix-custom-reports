@@ -289,7 +289,7 @@ function _isRetired(application) {
 		return false;
 	}
 	const phase = application.lifecycle.phases.find((e) => {
-		return e.phase === 'endOfLife' && e.startDate && Date.parse(e.startDate) > ONE_YEAR_BEFORE;
+		return e.phase === 'endOfLife' && e.startDate && Date.parse(e.startDate + ' 00:00:00') > ONE_YEAR_BEFORE;
 	});
 	return phase !== undefined && phase !== null;
 }
