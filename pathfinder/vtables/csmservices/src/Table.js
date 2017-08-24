@@ -115,18 +115,18 @@ class Table extends Component {
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatLinkArrayFactsheets(this.props.setup)}
 					 formatExtraData={{ type: 'BusinessCapability', id: 'platformBCsIds' }}
-					 csvHeader='platform-produced'
+					 csvHeader='platforms-provided'
 					 csvFormat={TableUtilities.formatArray}
 					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
-					>Platforms (produced)</TableHeaderColumn>
+					>Platforms (provided)</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='platfConsBCsNames'
 					 width='300px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatLinkArrayFactsheets(this.props.setup)}
 					 formatExtraData={{ type: 'BusinessCapability', id: 'platfConsBCsIds' }}
-					 csvHeader='platform-consumed'
+					 csvHeader='platforms-consumed'
 					 csvFormat={TableUtilities.formatArray}
 					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
