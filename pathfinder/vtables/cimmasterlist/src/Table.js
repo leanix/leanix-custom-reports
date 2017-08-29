@@ -64,16 +64,38 @@ class Table extends Component {
 					 filter={TableUtilities.selectFilter(this.props.options.landscape)}
 					>Landscape Available?</TableHeaderColumn>
 				<TableHeaderColumn
-					 dataField='appMaps'
+					 dataField='appMapsL1'
 					 width='250px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatLinkArrayFactsheets(this.props.setup)}
-					 formatExtraData={{ type: 'BusinessCapability', id: 'appMapIds' }}
+					 formatExtraData={{ type: 'BusinessCapability', id: 'appMapIdsL1' }}
+					 csvHeader='appmap-domains'
+					 csvFormat={TableUtilities.formatArray}
+					 csvFormatExtraData=';'
+					 filter={TableUtilities.textFilter}
+					>AppMap Domains</TableHeaderColumn>
+				<TableHeaderColumn
+					 dataField='appMapsL2'
+					 width='250px'
+					 dataAlign='left'
+					 dataFormat={TableUtilities.formatLinkArrayFactsheets(this.props.setup)}
+					 formatExtraData={{ type: 'BusinessCapability', id: 'appMapIdsL2' }}
 					 csvHeader='appmap-names'
 					 csvFormat={TableUtilities.formatArray}
 					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
 					>Mappings to AppMap</TableHeaderColumn>
+				<TableHeaderColumn
+					 dataField='platforms'
+					 width='250px'
+					 dataAlign='left'
+					 dataFormat={TableUtilities.formatLinkArrayFactsheets(this.props.setup)}
+					 formatExtraData={{ type: 'BusinessCapability', id: 'platformIds' }}
+					 csvHeader='platforms'
+					 csvFormat={TableUtilities.formatArray}
+					 csvFormatExtraData=';'
+					 filter={TableUtilities.textFilter}
+					>Platforms</TableHeaderColumn>
 			</BootstrapTable>
 		);
 	}
@@ -89,8 +111,12 @@ Table.propTypes = {
 			name: PropTypes.string.isRequired,
 			description: PropTypes.string,
 			landscapeAvailable: PropTypes.number,
-			appMapIds: TableUtilities.PropTypes.idArray('appMaps'),
-			appMaps: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired
+			appMapIdsL1: TableUtilities.PropTypes.idArray('appMapsL1'),
+			appMapsL1: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
+			appMapIdsL2: TableUtilities.PropTypes.idArray('appMapsL2'),
+			appMapsL2: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
+			platformIds: TableUtilities.PropTypes.idArray('platforms'),
+			platforms: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired
 		}).isRequired
 	).isRequired,
 	options: PropTypes.shape({

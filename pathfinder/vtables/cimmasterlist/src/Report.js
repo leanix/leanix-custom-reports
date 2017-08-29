@@ -36,9 +36,10 @@ class Report extends Component {
 			index.put(tagGroups);
 			const appMapId = index.getFirstTagID('BC Type', 'AppMap');
 			const cimId = index.getFirstTagID('Category', 'CIM');
-			lx.executeGraphQL(this._createQuery(cimId, appMapId)).then((data) => {
+			const platformId = index.getFirstTagID('BC Type', 'Platform');
+			lx.executeGraphQL(this._createQuery(cimId, appMapId, platformId)).then((data) => {
 				index.put(data);
-				this._handleData(index, cimId, appMapId);
+				this._handleData(index, cimId, appMapId, platformId);
 			});
 		});
 	}
@@ -49,13 +50,19 @@ class Report extends Component {
 		};
 	}
 
-	_createQuery(cimId, appMapId) {
+	_createQuery(cimId, appMapId, platformId) {
 		const cimIdFilter = cimId ? `, {facetKey: "Category", keys: ["${cimId}"]}` : '';
 		let appMapIdFilter = ''; // initial assume tagGroup.name changed or the id couldn't be determined otherwise
 		let tagNameDef = 'tags { name }'; // initial assume to get it
 		if (appMapId) {
 			appMapIdFilter = `, {facetKey: "BC Type", keys: ["${appMapId}"]}`;
 			tagNameDef = '';
+		}
+		let platformIdFilter = ''; // initial assume tagGroup.name changed or the id couldn't be determined otherwise
+		let platformTagNameDef = 'tags { name }'; // initial assume to get it
+		if (platformId) {
+			platformIdFilter = `, {facetKey: "BC Type", keys: ["${platformId}"]}`;
+			platformTagNameDef = '';
 		}
 		return `{dataObjectsL1: allFactSheets(
 					filter: {facetFilters: [
@@ -82,17 +89,33 @@ class Report extends Component {
 						}
 					}}
 				}
-				businessCapabilities: allFactSheets(
+				bcAppMap: allFactSheets(
 					filter: {facetFilters: [
 						{facetKey: "FactSheetTypes", keys: ["BusinessCapability"]}
 						${appMapIdFilter}
 					]}
 				) {
-					edges { node { id name ${tagNameDef} } }
+					edges { node {
+						id name ${tagNameDef}
+						... on BusinessCapability {
+							relToParent { edges { node { factSheet { id } } } }
+							relBusinessCapabilityToPlatform { edges { node { factSheet { id } } } }
+						}
+					} }
+				}
+				bcPlatform: allFactSheets(
+					filter: {facetFilters: [
+						{facetKey: "FactSheetTypes", keys: ["BusinessCapability"]}
+						${platformIdFilter}
+					]}
+				) {
+					edges { node {
+						id name ${platformTagNameDef}
+					}}
 				}}`;
 	}
 
-	_handleData(index, cimId, appMapId) {
+	_handleData(index, cimId, appMapId, platformId) {
 		const tableData = [];
 		index.dataObjectsL2.nodes.forEach((e) => {
 			if (!cimId && !index.includesTag(e, 'CIM')) {
@@ -103,7 +126,7 @@ class Report extends Component {
 			const subIndex = e.relDataObjectToBusinessCapability;
 			if (subIndex) {
 				subIndex.nodes.forEach((e2) => {
-					// access businessCapabilities
+					// access bcAppMap
 					const bc = index.byID[e2.id];
 					if (!bc || (!appMapId && !index.includesTag(e2, 'AppMap'))) {
 						return;
@@ -111,6 +134,44 @@ class Report extends Component {
 					appMapBCs.push(bc);
 				});
 			}
+			const platformBCsSet = {};
+			appMapBCs.forEach((e2) => {
+				const subIndex = e2.relBusinessCapabilityToPlatform;
+				if (subIndex) {
+					subIndex.nodes.forEach((e3) => {
+						// access bcPlatform
+						const platform = index.bcPlatform.byID[e3.id];
+						if (!platform || (!platformId && !index.includesTag(platform, 'Platform'))) {
+							return;
+						}
+						platformBCsSet[platform.id] = platform;
+					});
+				}
+			});
+			const platformBCs = [];
+			for (let key in platformBCsSet) {
+				platformBCs.push(platformBCsSet[key]);
+			}
+			const appMapL1BCsSet = {};
+			appMapBCs.forEach((e2) => {
+				let parent2 = index.getParent('bcAppMap', e2.id);
+				if (!parent2) {
+					// e2 belongs to L1
+					parent2 = {
+						name: e2.name,
+						id: e2.id
+					};
+					e2.id = '';
+				}
+				appMapL1BCsSet[parent2.id] = parent2;
+			});
+			const appMapL1BCs = [];
+			for (let key in appMapL1BCsSet) {
+				appMapL1BCs.push(appMapL1BCsSet[key]);
+			}
+			const appMapL2BCs = appMapBCs.filter((e2) => {
+				return e2.id.length;
+			});
 			tableData.push({
 				domainId: parent ? parent.id : '',
 				domainName: parent ? parent.name : '',
@@ -119,10 +180,22 @@ class Report extends Component {
 				name: e.name,
 				description: e.description,
 				landscapeAvailable: index.includesTag(e, 'Landscape Available') ? 0 : 1,
-				appMaps: appMapBCs.map((e2) => {
+				appMapsL1: appMapL1BCs.map((e2) => {
 					return e2.name;
 				}),
-				appMapIds: appMapBCs.map((e2) => {
+				appMapIdsL1: appMapL1BCs.map((e2) => {
+					return e2.id;
+				}),
+				appMapsL2: appMapL2BCs.map((e2) => {
+					return e2.name;
+				}),
+				appMapIdsL2: appMapL2BCs.map((e2) => {
+					return e2.id;
+				}),
+				platforms: platformBCs.map((e2) => {
+					return e2.name;
+				}),
+				platformIds: platformBCs.map((e2) => {
 					return e2.id;
 				})
 			});
