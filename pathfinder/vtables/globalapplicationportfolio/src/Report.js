@@ -123,7 +123,7 @@ class Report extends Component {
 						... on Application {
 							admScope customisationLevel functionalSuitability technicalSuitability
 							applicationComplexity businessCriticality applicationUsage
-							deployment alias externalId { externalId }
+							deployment alias externalId { externalId } leanixV3IdApplication { externalId }
 							soxPci accessType lifecycle { asString phases { phase startDate } }
 							networkTechnicalProductFamily lastMajorUpgrade { phases { startDate } }
 							relApplicationToBusinessCapability { edges { node { factSheet { id } } } }
@@ -403,6 +403,7 @@ class Report extends Component {
 				usage: this._getOptionKeyFromValue(this.APPLICATION_USAGE_OPTIONS, e.applicationUsage),
 				alias: e.alias,
 				externalId: Utilities.getFrom(e, 'externalId.externalId'),
+				leanixV3Id: Utilities.getFrom(e, 'leanixV3IdApplication.externalId'),
 				deployment: this._getOptionKeyFromValue(this.DEPLOYMENT_OPTIONS, e.deployment),
 				soxpciFlag: this._getOptionKeyFromValue(this.SOX_PCI_OPTIONS, e.soxPci),
 				itOwners: itOwners,

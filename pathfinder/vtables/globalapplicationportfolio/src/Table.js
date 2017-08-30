@@ -196,6 +196,17 @@ class Table extends Component {
 				   filter={TableUtilities.textFilter}
 				>Supported by</TableHeaderColumn>
 				<TableHeaderColumn dataSort
+					 dataField='siProviderNames'
+					 width='300px'
+					 dataAlign='left'
+					 dataFormat={TableUtilities.formatLinkArrayFactsheets(this.props.setup)}
+					 formatExtraData={{ type: 'Provider', id: 'siProviderIds' }}
+					 csvHeader='si-providers'
+					 csvFormat={TableUtilities.formatArray}
+					 csvFormatExtraData=';'
+					 filter={TableUtilities.textFilter}
+					>SI providers</TableHeaderColumn>
+				<TableHeaderColumn dataSort
 				   dataField='customisation'
 				   width='150px'
 				   dataAlign='left'
@@ -271,16 +282,6 @@ class Table extends Component {
 				   csvFormatExtraData={true}
 				   filter={TableUtilities.textFilter}
 				>Alternate names</TableHeaderColumn>
-				<TableHeaderColumn dataSort columnClassName='small'
-				   dataField='externalId'
-				   width='250px'
-				   dataAlign='left'
-				   dataFormat={TableUtilities.formatOptionalText}
-				   csvHeader='external-id'
-				   csvFormat={TableUtilities.formatOptionalText}
-				   csvFormatExtraData={true}
-				   filter={TableUtilities.textFilter}
-				>External ID</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='deployment'
 					 width='250px'
@@ -435,17 +436,6 @@ class Table extends Component {
 					 filter={TableUtilities.selectFilter(this.props.options.cloudMaturity)}
 					>Cloud maturity</TableHeaderColumn>
 				<TableHeaderColumn dataSort
-					 dataField='siProviderNames'
-					 width='300px'
-					 dataAlign='left'
-					 dataFormat={TableUtilities.formatLinkArrayFactsheets(this.props.setup)}
-					 formatExtraData={{ type: 'Provider', id: 'siProviderIds' }}
-					 csvHeader='si-providers'
-					 csvFormat={TableUtilities.formatArray}
-					 csvFormatExtraData=';'
-					 filter={TableUtilities.textFilter}
-					>SI providers</TableHeaderColumn>
-				<TableHeaderColumn dataSort
 					 dataField='accessType'
 					 width='130px'
 					 dataAlign='left'
@@ -456,6 +446,26 @@ class Table extends Component {
 					 csvFormatExtraData={this.props.options.accessType}
 					 filter={TableUtilities.selectFilter(this.props.options.accessType)}
 					>Access type</TableHeaderColumn>
+				<TableHeaderColumn dataSort columnClassName='small'
+				   dataField='externalId'
+				   width='250px'
+				   dataAlign='left'
+				   dataFormat={TableUtilities.formatOptionalText}
+				   csvHeader='external-id'
+				   csvFormat={TableUtilities.formatOptionalText}
+				   csvFormatExtraData={true}
+				   filter={TableUtilities.textFilter}
+				>External ID</TableHeaderColumn>
+				<TableHeaderColumn dataSort columnClassName='small'
+				   dataField='leanixV3Id'
+				   width='130px'
+				   dataAlign='left'
+				   dataFormat={TableUtilities.formatOptionalText}
+				   csvHeader='leanix-v3-id'
+				   csvFormat={TableUtilities.formatOptionalText}
+				   csvFormatExtraData={true}
+				   filter={TableUtilities.textFilter}
+				>LeanIX v3 ID</TableHeaderColumn>
 			</BootstrapTable>
 		);
 	}
@@ -497,6 +507,7 @@ Table.propTypes = {
 			usage: PropTypes.number,
 			alias: PropTypes.string,
 			externalId: PropTypes.string,
+			leanixV3Id: PropTypes.string,
 			deployment: PropTypes.number,
 			soxpciFlag: PropTypes.number,
 			itOwners: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
