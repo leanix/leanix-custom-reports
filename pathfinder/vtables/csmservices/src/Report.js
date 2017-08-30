@@ -253,9 +253,9 @@ class Report extends Component {
 			}
 			tableData.push({
 				csmL1Id: csmL1 ? csmL1.id : '',
-				csmL1Name: csmL1 ? csmL1.name : '',
+				csmL1Name: csmL1 ? this._removeNumbering(csmL1.name) : '',
 				csmL2Id: csmL2.id,
-				csmL2Name: csmL2.name,
+				csmL2Name: this._removeNumbering(csmL2.name),
 				csmL2Desc: csmL2.description,
 				serviceStatus: this._getOptionKeyFromValue(
 					this.SERVICE_STATUS_OPTIONS, csmL2.serviceStatus),
@@ -313,6 +313,20 @@ class Report extends Component {
 		}
 		const key = Utilities.getKeyToValue(options, value);
 		return key !== undefined && key !== null ? parseInt(key, 10) : undefined;
+	}
+
+	// TODO move _removeNumbering to Utilities.js
+	_removeNumbering(name) {
+		const hierarchyNumberRE = /^([0-9]{2}(\.[0-9]{2})*\s)/;
+		if (!name) {
+			return;
+		}
+		const n = hierarchyNumberRE.exec(name);
+		if (!n) {
+			return name;
+		}
+		// first one (n[1]) is the match, followed by group matches
+		return name.substring(n[1].length);
 	}
 
 	render() {

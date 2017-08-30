@@ -171,11 +171,11 @@ class Report extends Component {
 				id: e.id,
 				level: e.level,
 				domainId: hierarchy.L1 ? hierarchy.L1.id : '',
-				domain: hierarchy.L1 ? hierarchy.L1.name : '',
+				domain: hierarchy.L1 ? this._removeNumbering(hierarchy.L1.name) : '',
 				nameId: hierarchy.L2 ? hierarchy.L2.id : '',
-				name: hierarchy.L2 ? hierarchy.L2.name : '',
+				name: hierarchy.L2 ? this._removeNumbering(hierarchy.L2.name) : '',
 				operationId: hierarchy.L3 ? hierarchy.L3.id : '',
-				operation: hierarchy.L3 ? hierarchy.L3.name : '',
+				operation: hierarchy.L3 ? this._removeNumbering(hierarchy.L3.name) : '',
 				description: e.description,
 				operationStatus: this._getOptionKeyFromValue(
 					this.SERVICE_STATUS_OPTIONS, e.serviceStatus),
@@ -199,6 +199,20 @@ class Report extends Component {
 		}
 		const key = Utilities.getKeyToValue(options, value);
 		return key !== undefined && key !== null ? parseInt(key, 10) : undefined;
+	}
+
+	// TODO move _removeNumbering to Utilities.js
+	_removeNumbering(name) {
+		const hierarchyNumberRE = /^([0-9]{2}(\.[0-9]{2})*\s)/;
+		if (!name) {
+			return;
+		}
+		const n = hierarchyNumberRE.exec(name);
+		if (!n) {
+			return name;
+		}
+		// first one (n[1]) is the match, followed by group matches
+		return name.substring(n[1].length);
 	}
 
 	render() {
