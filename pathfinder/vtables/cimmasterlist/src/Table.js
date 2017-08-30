@@ -80,11 +80,11 @@ class Table extends Component {
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatLinkArrayFactsheets(this.props.setup)}
 					 formatExtraData={{ type: 'BusinessCapability', id: 'appMapIdsL2' }}
-					 csvHeader='appmap-names'
+					 csvHeader='appmap-solution-areas'
 					 csvFormat={TableUtilities.formatArray}
 					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
-					>Mappings to AppMap</TableHeaderColumn>
+					>AppMap Solution Areas</TableHeaderColumn>
 				<TableHeaderColumn
 					 dataField='platforms'
 					 width='250px'
