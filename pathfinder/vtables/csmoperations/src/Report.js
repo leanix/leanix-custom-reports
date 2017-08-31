@@ -143,6 +143,20 @@ class Report extends Component {
 					cimDOs.push(cim);
 				});
 			}
+			if (e.level === 3) {
+				const parent = index.getParent('csm', e.id)
+				const subIndexCIM = parent.relCSMToDataObject;
+				if (subIndexCIM) {
+					subIndexCIM.nodes.forEach((e2) => {
+						// access doCim
+						const cim = index.doCim.byID[e2.id];
+						if (!cim || (!cimId && !index.includesTag(cim, 'CIM'))) {
+							return;
+						}
+						cimDOs.push(cim);
+					});
+				}
+			}
 			const platformBCsSet = {};
 			cimDOs.forEach((cim) => {
 				const appMapBCs = [];

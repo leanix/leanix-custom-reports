@@ -23,7 +23,7 @@ class Table extends Component {
 						type: 'NumberFilter',
 						placeholder: 'Please choose',
 						options: this.props.options.level,
-						numberComparators: ['<='],
+						numberComparators: ['<=', '=', '>='],
 						defaultValue: {
 							number: this.props.options.level[this.props.options.level.length - 1],
 							comparator: '<='
