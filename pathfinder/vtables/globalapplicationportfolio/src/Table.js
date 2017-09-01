@@ -9,12 +9,12 @@ class Table extends Component {
 		super(props);
 	}
 
-	_formatToCSV(cell,row){
+
+	_formatToCSV(cell){
 		if (!cell) {
 			return '';
 		}
-		var b = cell.replace(/"/g, `'`);
-		console.log(cell);
+		return cell.replace(/"/g, `'`).replace(/\n/g, ` `);
 	}
 
 	render() {
