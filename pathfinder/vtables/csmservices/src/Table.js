@@ -14,14 +14,25 @@ class Table extends Component {
 			<BootstrapTable data={this.props.data} keyField='csmL2Id'
 				 striped hover search exportCSV
 				 pagination ignoreSinglePage
-				 options={{ clearSearch: true }}>
+				 options={
+					 { clearSearch: true },
+					 { sizePerPageList: [
+						{ text: '5', value: 5 },
+						{ text: '25', value: 25 },
+						{ text: '50', value: 50 },
+						{ text: 'All', value: this.props.data.length }
+						],
+						sizePerPage: 5
+					 }
+				 }
+				>
 				<TableHeaderColumn dataSort
 					 dataField='csmL1Name'
 					 width='250px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatLinkFactsheet(this.props.setup)}
 					 formatExtraData={{ type: 'CSM', id: 'csmL1Id' }}
-					 csvHeader='serive-domain'
+					 csvHeader='service-domain'
 					 filter={TableUtilities.textFilter}
 					>Service domain</TableHeaderColumn>
 				<TableHeaderColumn dataSort
