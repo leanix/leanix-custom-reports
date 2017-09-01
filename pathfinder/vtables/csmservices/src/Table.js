@@ -88,16 +88,27 @@ class Table extends Component {
 					 filter={TableUtilities.selectFilter(this.props.options.serviceStatus)}
 					>Service status</TableHeaderColumn>
 				<TableHeaderColumn dataSort
-					 dataField='bcaBCsNames'
+					 dataField='bcaL1BCsNames'
 					 width='300px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatLinkArrayFactsheets(this.props.setup)}
-					 formatExtraData={{ type: 'BusinessCapability', id: 'bcaBCsIds' }}
-					 csvHeader='bca'
+					 formatExtraData={{ type: 'BusinessCapability', id: 'bcaL1BCsIds' }}
+					 csvHeader='bca-L1'
 					 csvFormat={TableUtilities.formatArray}
 					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
-					>BCAs</TableHeaderColumn>
+					>BCAs L1</TableHeaderColumn>
+				<TableHeaderColumn dataSort
+					 dataField='bcaL4BCsNames'
+					 width='300px'
+					 dataAlign='left'
+					 dataFormat={TableUtilities.formatLinkArrayFactsheets(this.props.setup)}
+					 formatExtraData={{ type: 'BusinessCapability', id: 'bcaL4BCsIds' }}
+					 csvHeader='bca-L4'
+					 csvFormat={TableUtilities.formatArray}
+					 csvFormatExtraData=';'
+					 filter={TableUtilities.textFilter}
+					>BCAs L4</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='cimDOsNames'
 					 width='300px'
@@ -171,8 +182,10 @@ Table.propTypes = {
 			serviceOrigin: PropTypes.number,
 			platformBCsIds: TableUtilities.PropTypes.idArray('platformBCsNames'),
 			platformBCsNames: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
-			bcaBCsIds: TableUtilities.PropTypes.idArray('bcaBCsNames'),
-			bcaBCsNames: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
+			bcaL1BCsIds: TableUtilities.PropTypes.idArray('bcaL1BCsNames'),
+			bcaL1BCsNames: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
+			bcaL4BCsIds: TableUtilities.PropTypes.idArray('bcaL4BCsNames'),
+			bcaL4BCsNames: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
 			tmfAppIds: TableUtilities.PropTypes.idArray('tmfAppNames'),
 			tmfAppNames: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
 			cimDOsIds: TableUtilities.PropTypes.idArray('cimDOsNames'),
