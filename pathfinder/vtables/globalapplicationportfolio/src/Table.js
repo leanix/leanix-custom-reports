@@ -9,6 +9,14 @@ class Table extends Component {
 		super(props);
 	}
 
+
+	_formatToCSV(cell){
+		if (!cell) {
+			return '';
+		}
+		return cell.replace(/"/g, `'`).replace(/\n/g, ` `);
+	}
+
 	render() {
 		return (
 			<BootstrapTable data={this.props.data} keyField='id'
@@ -30,7 +38,7 @@ class Table extends Component {
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatOptionalText}
 					 csvHeader='description'
-					 csvFormat={TableUtilities.formatOptionalText}
+					 csvFormat={ this._formatToCSV }
 					 csvFormatExtraData={true}
 					 filter={TableUtilities.textFilter}
 					>Description</TableHeaderColumn>
