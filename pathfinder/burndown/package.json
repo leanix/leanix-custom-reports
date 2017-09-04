@@ -39,7 +39,7 @@
 	"dependencies": {
 		"@leanix/reporting": "0.1.3",
 		"bootstrap": "3.3.7",
-		"c3": "0.4.16",
+		"c3": "0.4.17",
 		"jquery": "2.2.4",
 		"lodash": "4.14.2",
 		"moment": "2.18.1",
