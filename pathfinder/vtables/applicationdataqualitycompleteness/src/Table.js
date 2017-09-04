@@ -109,9 +109,9 @@ class Table extends Component {
 					 csvFormatExtraData={this.props.options.market}
 					 filter={TableUtilities.selectFilter(this.props.options.market)}
 					>Market</TableHeaderColumn>
-				<TableHeaderColumn dataSort
+				<TableHeaderColumn dataSort columnClassName='small'
 					 dataField='rule'
-					 width='400px'
+					 width='500px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatEnum}
 					 formatExtraData={this.props.options.rule}

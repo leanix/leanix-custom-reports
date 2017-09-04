@@ -73,7 +73,7 @@ class Report extends Component {
 						... on Application {
 							lifecycle { asString phases { phase startDate } }
 							functionalSuitability technicalSuitability
-							relApplicationToProject { edges { node { factSheet { id } } } }
+							relApplicationToProject { edges { node { projectImpact factSheet { id } } } }
 							relApplicationToBusinessCapability { edges { node { factSheet { id } } } }
 							relApplicationToITComponent { edges { node { factSheet { id } } } }
 						}
@@ -94,6 +94,13 @@ class Report extends Component {
 					]}
 				) {
 					edges { node { id tags { name } } }
+				}
+				projects: allFactSheets(
+					filter: {facetFilters: [
+						{facetKey: "FactSheetTypes", keys: ["Project"]}
+					]}
+				) {
+					edges { node { id name } }
 				}}`;
 	}
 

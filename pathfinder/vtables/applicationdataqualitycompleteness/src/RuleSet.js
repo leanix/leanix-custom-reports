@@ -1,7 +1,7 @@
 import Utilities from './common/Utilities';
 
 export default [{
-		name: 'Adding applications, but no project',
+		name: 'Adding applications having any projects',
 		compute: (index, applications, config) => {
 			const result = {
 				compliant: [],
@@ -25,7 +25,7 @@ export default [{
 			return result;
 		}
 	}, {
-		name: 'Retiring applications, but no project',
+		name: 'Retiring applications having project (w/ impact \'Sunsets\' or decommissioning)',
 		compute: (index, applications, config) => {
 			const result = {
 				compliant: [],
@@ -40,7 +40,7 @@ export default [{
 					result.nonCompliant.push(e);
 					return;
 				}
-				if (subIndex.nodes.length > 0) {
+				if (subIndex.nodes.length > 0 && _isRetiringProjectAttached(index, subIndex)) {
 					result.compliant.push(e);
 				} else {
 					result.nonCompliant.push(e);
@@ -64,7 +64,6 @@ export default [{
 				const compliantBCs = subIndex.nodes.filter((e2) => {
 					// access businessCapabilities
 					const bc = index.byID[e2.id];
-					// TODO ueberarbeiten
 					return bc && (!config.appMapId ? index.includesTag(bc, 'AppMap') : true);
 				});
 				if (compliantBCs.length === 1) {
@@ -92,7 +91,7 @@ export default [{
 			return result;
 		}
 	}, {
-		name: 'has Software Product (only active, w/ Tag "COTS Package")',
+		name: 'has Software Product (only active, w/ Tag \'COTS Package\')',
 		compute: (index, applications, config) => {
 			const result = {
 				compliant: [],
@@ -117,7 +116,7 @@ export default [{
 			return result;
 		}
 	}, {
-		name: 'has Software Product, but no Placeholder (only active, w/ Tag "COTS Package")',
+		name: 'has Software Product, but no Placeholder (only active, w/ Tag \'COTS Package\')',
 		compute: (index, applications, config) => {
 			const result = {
 				compliant: [],
@@ -292,6 +291,16 @@ function _isRetired(application) {
 		return e.phase === 'endOfLife' && e.startDate && Date.parse(e.startDate + ' 00:00:00') > ONE_YEAR_BEFORE;
 	});
 	return phase !== undefined && phase !== null;
+}
+
+const decommissioningRE = /decommissioning/i;
+
+function _isRetiringProjectAttached(index, subIndex) {
+	return subIndex.nodes.some((e) => {
+		// access projects
+		const project = index.byID[e.id];
+		return (e.projectImpact && e.projectImpact === 'sunsets') || (project && decommissioningRE.test(project.name));
+	});
 }
 
 function _hasSubscriptionRole(application, subscriptionRole) {

@@ -92,6 +92,7 @@ class Report extends Component {
 		const addSubNodes = (subIndex, outputItem, idPrefix, check) => {
 			let nothingAdded = true;
 			subIndex.nodes.forEach((e) => {
+				// access projects
 				const project = index.byID[e.id];
 				if (!project) {
 					return;
@@ -151,21 +152,21 @@ class Report extends Component {
 					case 'phaseIn':
 						nothingAdded = addSubNodes(subIndex, outputItem, e2.phase, (name, impact) => {
 							// project doesn't contain decommissioning in name and impact is 'adds'
-							return !decommissioningRE.test(name) && impact === 'adds';
+							return impact === 'adds' && !decommissioningRE.test(name);
 						});
 						break;
 					case 'active':
 						nothingAdded = addSubNodes(subIndex, outputItem, e2.phase, (name, impact) => {
 							// project doesn't contain decommissioning in name and impact is 'adds', 'modifies' or no impact
-							return !decommissioningRE.test(name)
-								&& (!impact || impact === 'adds' || impact === 'modifies');
+							return (!impact || impact === 'adds' || impact === 'modifies')
+								&& !decommissioningRE.test(name);
 						});
 						break;
 					case 'phaseOut':
 					case 'endOfLife':
 						nothingAdded = addSubNodes(subIndex, outputItem, e2.phase, (name, impact) => {
 							// project does contain decommissioning in name or impact is 'sunsets'
-							return decommissioningRE.test(name) || impact === 'sunsets';
+							return impact === 'sunsets' || decommissioningRE.test(name);
 						});
 						break;
 					default:
