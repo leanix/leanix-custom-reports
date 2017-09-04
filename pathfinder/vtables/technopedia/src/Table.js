@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 import TableUtilities from './common/TableUtilities';
-import Link from './common/Link';
 
 class Table extends Component {
 
@@ -13,13 +12,10 @@ class Table extends Component {
 	/* formatting functions for the table */
 
 	_formatState(cell, row, enums) {
-		if ((!cell && cell !== 0) || cell === 3) {
+		if (!cell && cell !== 0) {
 			return '';
 		}
-		if (cell === 0) {
-			return (<Link link={row.stateRef} target='_blank' text={enums[cell]} />);
-		}
-		return enums[cell] ? enums[cell] : '';
+		return enums[cell] && enums[cell] !== 'n/a' ? enums[cell] : '';
 	}
 
 	render() {
@@ -90,7 +86,6 @@ Table.propTypes = {
 			itcmpId: PropTypes.string.isRequired,
 			itcmpCategory: PropTypes.number,
 			state: PropTypes.number,
-			stateRef: PropTypes.string,
 			count: PropTypes.number.isRequired
 		}).isRequired
 	).isRequired,

@@ -16,9 +16,9 @@ class Report extends Component {
 		this.CATEGORY_OPTIONS = {};
 		// TODO: get Technopedia state from model as soon as it is available as attribute
 		this.TECHNOP_STATE = {
-			0: 'URL',
-			1: 'Ignored',
-			2: 'Missing',
+			0: 'LINKED',
+			1: 'IGNORED',
+			2: 'MISSING',
 			3: 'n/a'
 		};
 		this.state = {
@@ -85,32 +85,17 @@ class Report extends Component {
 						}
 					}}
 				}
-				itComponentsSoftware: allFactSheets(
+				itComponents: allFactSheets(
 					filter: {facetFilters: [
 						{facetKey: "FactSheetTypes", keys: ["ITComponent"]},
-						{facetKey: "category", keys: ["software"]}
+						{facetKey: "category", keys: ["software", "hardware"]}
 					]}
 				) {
 					edges { node {
-						id name displayName documents { edges { node { name url } } }
+						id name displayName
 						... on ITComponent {
 							category
-							relITComponentToApplication {
-								edges { node { factSheet { id } } }
-							}
-						}
-					}}
-				}
-				itComponentsHardware: allFactSheets(
-					filter: {facetFilters: [
-						{facetKey: "FactSheetTypes", keys: ["ITComponent"]},
-						{facetKey: "category", keys: ["hardware"]}
-					]}
-				) {
-					edges { node {
-						id name documents { edges { node { name url } } }
-						... on ITComponent {
-							category
+							technopediaId { status }
 							relITComponentToApplication {
 								edges { node { factSheet { id } } }
 							}
@@ -121,7 +106,6 @@ class Report extends Component {
 
 	_handleData(index, applicationTagId) {
 		const tableData = [];
-		let tmpDocChoice = 0; // for doc test only
 		index.applications.nodes.forEach((app) => {
 			if (!applicationTagId && !index.includesTag(app, 'Application')) {
 				return;
@@ -130,35 +114,13 @@ class Report extends Component {
 			if (!subIndex) {
 				return;
 			}
+
 			subIndex.nodes.forEach((e2) => {
-				// access itComponentsSoftware & itComponentsHardware
-				const itcmp = index.byID[e2.id];
+				// access itComponents (Software & Hardware)
+				const itcmp = index.itComponents.byID[e2.id];
 				if (!itcmp) {
 					return;
 				}
-				/* excluded in cause of 'for doc test only'
-				 * const documents = itcmp.documents ? itcmp.documents.nodes : [];
-				 */
-				const documents = this._getDocuments(tmpDocChoice);  // for doc test only
-				if (tmpDocChoice > 5) {tmpDocChoice = 0} else {tmpDocChoice++};  // for doc test only
-				const doc = { state: 3, ref: '' };
-				documents.forEach((e) => {
-					/* TODO:
-						use attribute for state as soon as it is available
-						instead of parsing document name
-					*/
-					if (!e.name.startsWith('Technopedia entry')) {
-						return;
-					}
-					if (e.name.endsWith('ignored')) {
-						doc.state = 1;
-					} else if (e.name.endsWith('missing')) {
-						doc.state = 2;
-					} else {
-						doc.state = 0;
-						doc.ref = e.url ? e.url : '';
-					}
-				});
 				tableData.push({
 					id: app.id + '-' + itcmp.id,
 					appName: app.name,
@@ -166,8 +128,7 @@ class Report extends Component {
 					itcmpName: itcmp.category === 'hardware' ? itcmp.name : itcmp.displayName,
 					itcmpId: itcmp.id,
 					itcmpCategory: this._getOptionKeyFromValue(this.CATEGORY_OPTIONS, itcmp.category),
-					state: doc.state,
-					stateRef: doc.ref,
+					state: this._getOptionKeyFromValue(this.TECHNOP_STATE, itcmp.technopediaId ? itcmp.technopediaId.status : 'n/a'),
 					count: this._getCountInOtherMarkets(index, itcmp, Utilities.getMarket(app))
 				});
 			});
@@ -200,47 +161,6 @@ class Report extends Component {
 		}
 		const key = Utilities.getKeyToValue(options, value);
 		return key !== undefined && key !== null ? parseInt(key, 10) : undefined;
-	}
-
-	/* a workaround for doc testing only because 'allFactSheets' don't deliver documents */
-	_getDocuments(what) {
-		const nodes = [];
-		switch (what) {
-			case 0:
-				// TDBF
-				nodes.push({
-					name: 'Technopedia entry',
-					url: 'http://technopedia.com/release/67015598'
-				});
-				break;
-			case 1:
-				// ignore
-				nodes.push({
-					name: 'Technopedia entry - ignored',
-					url: 'http://www.technopedia.com'
-				});
-				break;
-			case 2:
-				// miss
-				nodes.push({
-					name: 'Technopedia entry - missing',
-					url: 'http://www.technopedia.com'
-				});
-				break;
-			case 3:
-				// TDMaker
-				nodes.push({
-					name: 'Technopedia entry',
-					url: 'http://technopedia.com/release/74423149'
-				});
-				// add other
-				nodes.push({
-					name: 'other',
-					url: 'https://heise.de'
-				});
-				break;
-		}
-		return nodes;
 	}
 
 	render() {
