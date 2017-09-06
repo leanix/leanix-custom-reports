@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 import TableUtilities from './common/TableUtilities';
-import SubTables from './SubTables';
 
 class Table extends Component {
 
@@ -57,19 +56,6 @@ class Table extends Component {
 		return '';
 	}
 
-	_isExpandableRow(row) {
-		if (row.overallRule || (row.compliant === 0 && row.nonCompliant === 0)) {
-			return false;
-		}
-		return true;
-	}
-
-	_expandComponent(row) {
-		return (
-			<SubTables data={{ compliantApps: row.compliantApps, nonCompliantApps: row.nonCompliantApps }} />
-		);
-	}
-
 	_sortPercentage(a, b, order) {
 		if (order) {
 			return order === 'desc' ? this._sortPercentage(b, a) : this._sortPercentage(a, b);
@@ -85,11 +71,6 @@ class Table extends Component {
 	}
 
 	render() {
-		// TODO Once performance issue is solved, re-integrate sub tables
-		// also see https://github.com/AllenFang/react-bootstrap-table/issues/1537
-		// expandableRow={this._isExpandableRow}
-		// expandComponent={this._expandComponent}
-		// expandColumnOptions={{ expandColumnVisible: true }}
 		return (
 			<BootstrapTable data={this.props.data} keyField='id'
 				 striped hover exportCSV

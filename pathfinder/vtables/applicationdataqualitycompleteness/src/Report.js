@@ -131,32 +131,42 @@ class Report extends Component {
 		};
 		for (let market in groupedByMarket) {
 			const allApplications = groupedByMarket[market];
-			const onlyActive = allApplications.filter((e) => {
-				const currentLifecycle = Utilities.getCurrentLifecycle(e);
-				return currentLifecycle && currentLifecycle.phase === 'active';
-			});
-			const onlyActiveCOTSPackage = onlyActive.filter((e) => {
-				return index.includesTag(e, 'COTS Package');
-			});
-			const applications = {
-				all: allApplications,
-				onlyActive: onlyActive,
-				onlyActiveCOTSPackage: onlyActiveCOTSPackage
-			};
 			// apply rule set
 			const compliants = {};
 			const nonCompliants = {};
-			RuleSet.forEach((e) => {
-				let ruleResult = undefined;
-				if (e.overall) {
-					ruleResult = e.compute(compliants, nonCompliants, ruleConfig);
-				} else {
-					ruleResult = e.compute(index, applications, ruleConfig);
-					compliants[e.name] = ruleResult.compliant.length;
-					nonCompliants[e.name] = ruleResult.nonCompliant.length;
+			allApplications.forEach((e2) => {
+				RuleSet.forEach((e3) => {
+					if (e3.overall) {
+						return;
+					}
+					if (!compliants[e3.name]) {
+						compliants[e3.name] = [];
+						nonCompliants[e3.name] = [];
+					}
+					if (!e3.appliesTo(index, e2)) {
+						return;
+					}
+					const ruleResult = e3.compute(index, e2, ruleConfig);
+					if (ruleResult) {
+						compliants[e3.name].push(e2);
+					} else {
+						nonCompliants[e3.name].push(e2);
+					}
+				});
+			});
+			// process overall rules
+			RuleSet.forEach((e2) => {
+				if (!e2.overall) {
+					return;
 				}
-				const compliant = e.overall ? ruleResult.compliant : ruleResult.compliant.length;
-				const nonCompliant = e.overall ? ruleResult.nonCompliant : ruleResult.nonCompliant.length;
+				const ruleResult = e2.compute(compliants, nonCompliants, ruleConfig);
+				compliants[e2.name] = ruleResult.compliant;
+				nonCompliants[e2.name] = ruleResult.nonCompliant;
+			});
+			// add results to tableData
+			RuleSet.forEach((e2) => {
+				const compliant = e2.overall ? compliants[e2.name] : compliants[e2.name].length;
+				const nonCompliant = e2.overall ? nonCompliants[e2.name] : nonCompliants[e2.name].length;
 				const sum = compliant + nonCompliant;
 				let percentage = undefined;
 				if (sum === 0) {
@@ -170,23 +180,23 @@ class Report extends Component {
 					percentage = Math.floor(compliant * 100 / sum);
 				}
 				tableData.push({
-					id: market + '-' + e.name,
+					id: market + '-' + e2.name,
 					market: this._getOptionKeyFromValue(this.MARKET_OPTIONS, market),
-					rule: this._getOptionKeyFromValue(RULE_OPTIONS, e.name),
-					overallRule: e.overall === true,
+					rule: this._getOptionKeyFromValue(RULE_OPTIONS, e2.name),
+					overallRule: e2.overall === true,
 					compliant: compliant,
-					compliantApps: e.overall ? [] : ruleResult.compliant.map((e2) => {
-						return e2.name;
+					compliantApps: e2.overall ? [] : compliants[e2.name].map((e3) => {
+						return e3.name;
 					}),
-					compliantAppIds: e.overall ? [] : ruleResult.compliant.map((e2) => {
-						return e2.id;
+					compliantAppIds: e2.overall ? [] : compliants[e2.name].map((e3) => {
+						return e3.id;
 					}),
 					nonCompliant: nonCompliant,
-					nonCompliantApps: e.overall ? [] : ruleResult.nonCompliant.map((e2) => {
-						return e2.name;
+					nonCompliantApps: e2.overall ? [] : nonCompliants[e2.name].map((e3) => {
+						return e3.name;
 					}),
-					nonCompliantAppIds: e.overall ? [] : ruleResult.nonCompliant.map((e2) => {
-						return e2.id;
+					nonCompliantAppIds: e2.overall ? [] : nonCompliants[e2.name].map((e3) => {
+						return e3.id;
 					}),
 					percentage: percentage
 				});

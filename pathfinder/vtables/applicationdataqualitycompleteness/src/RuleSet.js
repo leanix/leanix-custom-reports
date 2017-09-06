@@ -2,255 +2,152 @@ import Utilities from './common/Utilities';
 
 export default [{
 		name: 'Adding applications having any projects',
-		compute: (index, applications, config) => {
-			const result = {
-				compliant: [],
-				nonCompliant: []
-			};
-			applications.all.forEach((e) => {
-				if (!_hasProductionLifecycle(e)) {
-					return;
-				}
-				const subIndex = e.relApplicationToProject;
-				if (!subIndex) {
-					result.nonCompliant.push(e);
-					return;
-				}
-				if (subIndex.nodes.length > 0) {
-					result.compliant.push(e);
-				} else {
-					result.nonCompliant.push(e);
-				}
-			});
-			return result;
+		appliesTo: (index, application) => {
+			return _hasProductionLifecycle(application);
+		},
+		compute: (index, application, config) => {
+			const subIndex = application.relApplicationToProject;
+			if (!subIndex) {
+				return false;
+			}
+			return subIndex.nodes.length > 0;
 		}
 	}, {
 		name: 'Retiring applications having project (w/ impact \'Sunsets\' or decommissioning)',
-		compute: (index, applications, config) => {
-			const result = {
-				compliant: [],
-				nonCompliant: []
-			};
-			applications.all.forEach((e) => {
-				if (!_isRetired(e)) {
-					return;
-				}
-				const subIndex = e.relApplicationToProject;
-				if (!subIndex) {
-					result.nonCompliant.push(e);
-					return;
-				}
-				if (subIndex.nodes.length > 0 && _isRetiringProjectAttached(index, subIndex)) {
-					result.compliant.push(e);
-				} else {
-					result.nonCompliant.push(e);
-				}
-			});
-			return result;
+		appliesTo: (index, application) => {
+			return _isRetiring(application);
+		},
+		compute: (index, application, config) => {
+			const subIndex = application.relApplicationToProject;
+			if (!subIndex) {
+				return false;
+			}
+			return subIndex.nodes.length > 0 && _isRetiringProjectAttached(index, subIndex);
 		}
 	}, {
 		name: 'has COBRA (only active, exactly one)',
-		compute: (index, applications, config) => {
-			const result = {
-				compliant: [],
-				nonCompliant: []
-			};
-			applications.onlyActive.forEach((e) => {
-				const subIndex = e.relApplicationToBusinessCapability;
-				if (!subIndex || subIndex.nodes.length < 1) {
-					result.nonCompliant.push(e);
-					return;
-				}
-				const compliantBCs = subIndex.nodes.filter((e2) => {
-					// access businessCapabilities
-					const bc = index.byID[e2.id];
-					return bc && (!config.appMapId ? index.includesTag(bc, 'AppMap') : true);
-				});
-				if (compliantBCs.length === 1) {
-					result.compliant.push(e);
-				} else {
-					result.nonCompliant.push(e);
-				}
+		appliesTo: (index, application) => {
+			const currentLifecycle = Utilities.getCurrentLifecycle(application);
+			return currentLifecycle && currentLifecycle.phase === 'active';
+		},
+		compute: (index, application, config) => {
+			const subIndex = application.relApplicationToBusinessCapability;
+			if (!subIndex || subIndex.nodes.length < 1) {
+				return false;
+			}
+			const compliantBCs = subIndex.nodes.filter((e) => {
+				// access businessCapabilities
+				const bc = index.byID[e.id];
+				return bc && (!config.appMapId ? index.includesTag(bc, 'AppMap') : true);
 			});
-			return result;
+			return compliantBCs.length === 1;
 		}
 	}, {
 		name: 'has COTS Package TagGroup assigned (only active)',
-		compute: (index, applications, config) => {
-			const result = {
-				compliant: [],
-				nonCompliant: []
-			};
-			applications.onlyActive.forEach((e) => {
-				if (index.getFirstTagFromGroup(e, 'COTS Package')) {
-					result.compliant.push(e);
-				} else {
-					result.nonCompliant.push(e);
-				}
-			});
-			return result;
+		appliesTo: (index, application) => {
+			const currentLifecycle = Utilities.getCurrentLifecycle(application);
+			return currentLifecycle && currentLifecycle.phase === 'active';
+		},
+		compute: (index, application, config) => {
+			return index.getFirstTagFromGroup(application, 'COTS Package') ? true : false;
 		}
 	}, {
 		name: 'has Software Product (only active, w/ Tag \'COTS Package\')',
-		compute: (index, applications, config) => {
-			const result = {
-				compliant: [],
-				nonCompliant: []
-			};
-			applications.onlyActiveCOTSPackage.forEach((e) => {
-				const subIndex = e.relApplicationToITComponent;
-				if (!subIndex || subIndex.nodes.length < 1) {
-					result.nonCompliant.push(e);
-					return;
-				}
-				const compliantITComp = subIndex.nodes.find((e2) => {
-					// access itComponents
-					return index.byID[e2.id];
-				});
-				if (compliantITComp) {
-					result.compliant.push(e);
-				} else {
-					result.nonCompliant.push(e);
-				}
+		appliesTo: (index, application) => {
+			const currentLifecycle = Utilities.getCurrentLifecycle(application);
+			return currentLifecycle && currentLifecycle.phase === 'active'
+				&& index.includesTag(application, 'COTS Package');
+		},
+		compute: (index, application, config) => {
+			const subIndex = application.relApplicationToITComponent;
+			if (!subIndex || subIndex.nodes.length < 1) {
+				return false;
+			}
+			const compliantITComp = subIndex.nodes.find((e) => {
+				// access itComponents
+				return index.byID[e.id];
 			});
-			return result;
+			return compliantITComp ? true : false;
 		}
 	}, {
 		name: 'has Software Product, but no Placeholder (only active, w/ Tag \'COTS Package\')',
-		compute: (index, applications, config) => {
-			const result = {
-				compliant: [],
-				nonCompliant: []
-			};
-			applications.onlyActiveCOTSPackage.forEach((e) => {
-				const subIndex = e.relApplicationToITComponent;
-				if (!subIndex || subIndex.nodes.length < 1) {
-					return;
-				}
-				const compliantITComp = subIndex.nodes.find((e2) => {
-					// access itComponents
-					return index.byID[e2.id];
-				});
+		appliesTo: (index, application) => {
+			const currentLifecycle = Utilities.getCurrentLifecycle(application);
+			return currentLifecycle && currentLifecycle.phase === 'active'
+				&& index.includesTag(application, 'COTS Package')
+				&& application.relApplicationToITComponent
+				&& application.relApplicationToITComponent.nodes.length > 0;
+		},
+		compute: (index, application, config) => {
+			const subIndex = application.relApplicationToITComponent;
+			const compliantITComp = subIndex.nodes.find((e) => {
 				// access itComponents
-				if (index.includesTag(compliantITComp ? index.byID[compliantITComp.id] : undefined, 'Placeholder')) {
-					result.nonCompliant.push(e);
-				} else {
-					result.compliant.push(e);
-				}
+				return index.byID[e.id];
 			});
-			return result;
+			// access itComponents
+			return !index.includesTag(compliantITComp ? index.byID[compliantITComp.id] : undefined, 'Placeholder');
 		}
 	}, {
 		name: 'has Description (only active)',
-		compute: (index, applications, config) => {
-			const result = {
-				compliant: [],
-				nonCompliant: []
-			};
-			applications.onlyActive.forEach((e) => {
-				if (e.description) {
-					result.compliant.push(e);
-				} else {
-					result.nonCompliant.push(e);
-				}
-			});
-			return result;
+		appliesTo: (index, application) => {
+			const currentLifecycle = Utilities.getCurrentLifecycle(application);
+			return currentLifecycle && currentLifecycle.phase === 'active';
+		},
+		compute: (index, application, config) => {
+			return application.description ? true : false;
 		}
 	}, {
 		name: 'has Lifecycle',
-		compute: (index, applications, config) => {
-			const result = {
-				compliant: [],
-				nonCompliant: []
-			};
-			applications.all.forEach((e) => {
-				if (Utilities.getCurrentLifecycle(e)) {
-					result.compliant.push(e);
-				} else {
-					result.nonCompliant.push(e);
-				}
-			});
-			return result;
+		appliesTo: (index, application) => {
+			return true;
+		},
+		compute: (index, application, config) => {
+			return Utilities.getCurrentLifecycle(application) ? true : false;
 		}
 	}, {
 		name: 'has IT Owner (only active)',
-		compute: (index, applications, config) => {
-			const result = {
-				compliant: [],
-				nonCompliant: []
-			};
-			applications.onlyActive.forEach((e) => {
-				if (_hasSubscriptionRole(e, 'IT Owner')) {
-					result.compliant.push(e);
-				} else {
-					result.nonCompliant.push(e);
-				}
-			});
-			return result;
+		appliesTo: (index, application) => {
+			const currentLifecycle = Utilities.getCurrentLifecycle(application);
+			return currentLifecycle && currentLifecycle.phase === 'active';
+		},
+		compute: (index, application, config) => {
+			return _hasSubscriptionRole(application, 'IT Owner');
 		}
 	}, {
 		name: 'has SPOC (only active)',
-		compute: (index, applications, config) => {
-			const result = {
-				compliant: [],
-				nonCompliant: []
-			};
-			applications.onlyActive.forEach((e) => {
-				if (_hasSubscriptionRole(e, 'SPOC')) {
-					result.compliant.push(e);
-				} else {
-					result.nonCompliant.push(e);
-				}
-			});
-			return result;
+		appliesTo: (index, application) => {
+			const currentLifecycle = Utilities.getCurrentLifecycle(application);
+			return currentLifecycle && currentLifecycle.phase === 'active';
+		},
+		compute: (index, application, config) => {
+			return _hasSubscriptionRole(application, 'SPOC');
 		}
 	}, {
 		name: 'has Business Value (only active)',
-		compute: (index, applications, config) => {
-			const result = {
-				compliant: [],
-				nonCompliant: []
-			};
-			applications.onlyActive.forEach((e) => {
-				if (e.functionalSuitability) {
-					result.compliant.push(e);
-				} else {
-					result.nonCompliant.push(e);
-				}
-			});
-			return result;
+		appliesTo: (index, application) => {
+			const currentLifecycle = Utilities.getCurrentLifecycle(application);
+			return currentLifecycle && currentLifecycle.phase === 'active';
+		},
+		compute: (index, application, config) => {
+			return application.functionalSuitability ? true : false;
 		}
 	}, {
 		name: 'has Technical Condition (only active)',
-		compute: (index, applications, config) => {
-			const result = {
-				compliant: [],
-				nonCompliant: []
-			};
-			applications.onlyActive.forEach((e) => {
-				if (e.technicalSuitability) {
-					result.compliant.push(e);
-				} else {
-					result.nonCompliant.push(e);
-				}
-			});
-			return result;
+		appliesTo: (index, application) => {
+			const currentLifecycle = Utilities.getCurrentLifecycle(application);
+			return currentLifecycle && currentLifecycle.phase === 'active';
+		},
+		compute: (index, application, config) => {
+			return application.technicalSuitability ? true : false;
 		}
 	}, {
 		name: 'has Cost Centre (only active)',
-		compute: (index, applications, config) => {
-			const result = {
-				compliant: [],
-				nonCompliant: []
-			};
-			applications.onlyActive.forEach((e) => {
-				if (index.getFirstTagFromGroup(e, 'CostCentre')) {
-					result.compliant.push(e);
-				} else {
-					result.nonCompliant.push(e);
-				}
-			});
-			return result;
+		appliesTo: (index, application) => {
+			const currentLifecycle = Utilities.getCurrentLifecycle(application);
+			return currentLifecycle && currentLifecycle.phase === 'active';
+		},
+		compute: (index, application, config) => {
+			return index.getFirstTagFromGroup(application, 'CostCentre') ? true : false;
 		}
 	}, {
 		name: 'Overall Quality',
@@ -261,8 +158,8 @@ export default [{
 				nonCompliant: 0
 			};
 			for (let key in compliants) {
-				result.compliant += compliants[key];
-				result.nonCompliant += nonCompliants[key];
+				result.compliant += compliants[key].length;
+				result.nonCompliant += nonCompliants[key].length;
 			}
 			return result;
 		}
@@ -282,7 +179,7 @@ function _hasProductionLifecycle(application) {
 	return currentLifecycle && Utilities.isProductionPhase(currentLifecycle) && currentLifecycle.startDate > ONE_YEAR_BEFORE;
 }
 
-function _isRetired(application) {
+function _isRetiring(application) {
 	if (!application || !application.lifecycle || !application.lifecycle.phases
 		 || !Array.isArray(application.lifecycle.phases)) {
 		return false;
