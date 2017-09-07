@@ -1,7 +1,7 @@
 import Utilities from './common/Utilities';
 
 export default [{
-		name: 'Adding applications having project (w/ impact \'Adds\')',
+		name: 'Adding application has project (w/ impact \'Adds\')',
 		appliesTo: (index, application) => {
 			return _hasProductionLifecycle(application);
 		},
@@ -13,7 +13,7 @@ export default [{
 			return subIndex.nodes.length > 0 && _hasProjectWithImpact(subIndex, 'adds');
 		}
 	}, {
-		name: 'Retiring applications having project (w/ impact \'Sunsets\')',
+		name: 'Retiring application has project (w/ impact \'Sunsets\')',
 		appliesTo: (index, application) => {
 			return _isRetiring(application);
 		},
