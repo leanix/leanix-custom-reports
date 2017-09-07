@@ -13,7 +13,7 @@ export default [{
 			return subIndex.nodes.length > 0;
 		}
 	}, {
-		name: 'Retiring applications having project (w/ impact \'Sunsets\' or decommissioning)',
+		name: 'Retiring applications having project (w/ impact \'Sunsets\')',
 		appliesTo: (index, application) => {
 			return _isRetiring(application);
 		},
@@ -22,7 +22,7 @@ export default [{
 			if (!subIndex) {
 				return false;
 			}
-			return subIndex.nodes.length > 0 && _isRetiringProjectAttached(index, subIndex);
+			return subIndex.nodes.length > 0 && _hasProjectWithImpact(subIndex, 'sunsets');
 		}
 	}, {
 		name: 'has COBRA (only active, exactly one)',
@@ -192,11 +192,9 @@ function _isRetiring(application) {
 
 const decommissioningRE = /decommissioning/i;
 
-function _isRetiringProjectAttached(index, subIndex) {
+function _hasProjectWithImpact(subIndex, impact) {
 	return subIndex.nodes.some((e) => {
-		// access projects
-		const project = index.byID[e.id];
-		return e.relationAttr.projectImpact === 'sunsets' || (project && decommissioningRE.test(project.name));
+		return e.relationAttr.projectImpact === impact;
 	});
 }
 

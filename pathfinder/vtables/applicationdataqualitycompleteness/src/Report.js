@@ -94,13 +94,6 @@ class Report extends Component {
 					]}
 				) {
 					edges { node { id tags { name } } }
-				}
-				projects: allFactSheets(
-					filter: {facetFilters: [
-						{facetKey: "FactSheetTypes", keys: ["Project"]}
-					]}
-				) {
-					edges { node { id name } }
 				}}`;
 	}
 
