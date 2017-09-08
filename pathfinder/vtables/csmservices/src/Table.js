@@ -56,15 +56,15 @@ class Table extends Component {
 					 filter={TableUtilities.textFilter}
 					>Service name</TableHeaderColumn>
 				<TableHeaderColumn dataSort
-					 dataField='serviceOrigin'
-					 width='150px'
+					 dataField='serviceOriginUGsNames'
+					 width='300px'
 					 dataAlign='left'
-					 dataFormat={TableUtilities.formatEnum}
-					 formatExtraData={this.props.options.serviceOrigin}
+					 dataFormat={TableUtilities.formatLinkArrayFactsheets(this.props.setup)}
+					 formatExtraData={{ type: 'UserGroup', id: 'serviceOriginUGsIds' }}
 					 csvHeader='service-origin'
-					 csvFormat={TableUtilities.formatEnum}
-					 csvFormatExtraData={this.props.options.serviceOrigin}
-					 filter={TableUtilities.selectFilter(this.props.options.serviceOrigin)}
+					 csvFormat={TableUtilities.formatArray}
+					 csvFormatExtraData=';'
+					 filter={TableUtilities.textFilter}
 					>Service origin</TableHeaderColumn>
 				<TableHeaderColumn columnClassName='small'
 					 dataField='csmL2Desc'
@@ -179,7 +179,8 @@ Table.propTypes = {
 			csmL2Desc: PropTypes.string,
 			serviceStatus: PropTypes.number,
 			serviceClass: PropTypes.number,
-			serviceOrigin: PropTypes.number,
+			serviceOriginUGsIds: TableUtilities.PropTypes.idArray('serviceOriginUGsNames'),
+			serviceOriginUGsNames: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
 			platformBCsIds: TableUtilities.PropTypes.idArray('platformBCsNames'),
 			platformBCsNames: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
 			bcaL1BCsIds: TableUtilities.PropTypes.idArray('bcaL1BCsNames'),
@@ -199,7 +200,6 @@ Table.propTypes = {
 	options: PropTypes.shape({
 		serviceStatus: TableUtilities.PropTypes.options,
 		serviceClassification: TableUtilities.PropTypes.options,
-		serviceOrigin: TableUtilities.PropTypes.options
 	}).isRequired,
 	setup: PropTypes.object
 };
