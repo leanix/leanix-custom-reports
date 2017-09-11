@@ -1,4 +1,5 @@
 var path = require('path');
+var webpack = require('webpack');
 var CopyWebpackPlugin = require('copy-webpack-plugin');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 
@@ -9,7 +10,11 @@ module.exports = {
 		filename: 'report.[chunkhash].js'
 	},
 	module: {
-		rules: [{
+		rules: [
+			/**
+			 * Bundle JavaScript (ES6)
+			 */
+			{
 				test: /\.js$/,
 				exclude: /(node_modules|bower_components)/,
 				use: {
@@ -18,15 +23,42 @@ module.exports = {
 						presets: ['env']
 					}
 				}
+			},
+			/**
+			 * Bundle CSS
+			 */
+			{
+				test: /\.css$/,
+				use: [
+					require.resolve('style-loader'), {
+						loader: require.resolve('css-loader')
+					}
+				]
 			}
 		]
 	},
 	plugins: [
+		/**
+		 * Make jquery and lodash globally available
+		 * (dependencies of @leanix/reporting library)
+		 */
+		new webpack.ProvidePlugin({
+			$: 'jquery',
+			jQuery: 'jquery',
+			'_': 'lodash'
+		}),
+		/**
+		 * Copy assets into dist folder.
+		 */
 		new CopyWebpackPlugin([{
 					from: 'src/assets',
 					to: 'assets'
 				}
 			]),
+		/**
+		 * Insert created bundles as script tags at the end
+		 * of the body tag in index.html
+		 */
 		new HtmlWebpackPlugin({
 			inject: true,
 			template: 'src/index.html'

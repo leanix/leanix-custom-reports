@@ -28,20 +28,20 @@
 		"babel-loader": "7.1.0",
 		"babel-preset-env": "1.5.2",
 		"copy-webpack-plugin": "4.0.1",
+		"css-loader": "0.28.4",
 		"fstream": "1.0.11",
 		"html-webpack-plugin": "2.28.0",
 		"http-proxy": "1.16.2",
 		"request": "2.81.0",
+		"style-loader": "0.18.2",
 		"tar": "3.1.5",
 		"webpack": "3.0.0",
 		"webpack-dev-server": "2.5.0"
 	},
 	"dependencies": {
-		"@leanix/reporting": "0.1.3",
+		"@leanix/reporting": "0.2.0",
 		"bootstrap": "3.3.7",
 		"c3": "0.4.17",
-		"jquery": "2.2.4",
-		"lodash": "4.14.2",
 		"moment": "2.18.1",
 		"moment-range": "3.0.3"
 	}
