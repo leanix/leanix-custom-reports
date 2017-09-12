@@ -1,7 +1,14 @@
 import Utilities from './common/Utilities';
 
-export default [{
+const ONE_YEAR_BEFORE_DATE = new Date();
+ONE_YEAR_BEFORE_DATE.setFullYear(ONE_YEAR_BEFORE_DATE.getFullYear() - 1);
+const ONE_YEAR_BEFORE = ONE_YEAR_BEFORE_DATE.getTime();
+
+const singleRules = [{
 		name: 'Adding application has project (w/ impact \'Adds\')',
+		additionalNote: 'Rule includes applications which have a current life cycle phase of either '
+			+ '"Phase In", "Active" or "Phase Out" and the start date of this phase must be greater than '
+			+ ONE_YEAR_BEFORE_DATE.toLocaleDateString() + '.',
 		appliesTo: (index, application) => {
 			return _hasProductionLifecycle(application);
 		},
@@ -14,6 +21,9 @@ export default [{
 		}
 	}, {
 		name: 'Retiring application has project (w/ impact \'Sunsets\')',
+		additionalNote: 'Rule includes applications which have a life cycle phase of '
+			+ '"End Of Life" and the start date of this phase must be greater than '
+			+ ONE_YEAR_BEFORE_DATE.toLocaleDateString() + '.',
 		appliesTo: (index, application) => {
 			return _isRetiring(application);
 		},
@@ -36,10 +46,10 @@ export default [{
 				return false;
 			}
 			const compliantBCs = subIndex.nodes.filter((e) => {
-				// access businessCapabilities
-				const bc = index.byID[e.id];
-				return bc && (!config.appMapId ? index.includesTag(bc, 'AppMap') : true);
-			});
+					// access businessCapabilities
+					const bc = index.byID[e.id];
+					return bc && (!config.appMapId ? index.includesTag(bc, 'AppMap') : true);
+				});
 			return compliantBCs.length === 1;
 		}
 	}, {
@@ -56,7 +66,7 @@ export default [{
 		appliesTo: (index, application) => {
 			const currentLifecycle = Utilities.getCurrentLifecycle(application);
 			return currentLifecycle && currentLifecycle.phase === 'active'
-				&& index.includesTag(application, 'COTS Package');
+			 && index.includesTag(application, 'COTS Package');
 		},
 		compute: (index, application, config) => {
 			const subIndex = application.relApplicationToITComponent;
@@ -64,9 +74,9 @@ export default [{
 				return false;
 			}
 			const compliantITComp = subIndex.nodes.find((e) => {
-				// access itComponents
-				return index.byID[e.id];
-			});
+					// access itComponents
+					return index.byID[e.id];
+				});
 			return compliantITComp ? true : false;
 		}
 	}, {
@@ -74,16 +84,16 @@ export default [{
 		appliesTo: (index, application) => {
 			const currentLifecycle = Utilities.getCurrentLifecycle(application);
 			return currentLifecycle && currentLifecycle.phase === 'active'
-				&& index.includesTag(application, 'COTS Package')
-				&& application.relApplicationToITComponent
-				&& application.relApplicationToITComponent.nodes.length > 0;
+			 && index.includesTag(application, 'COTS Package')
+			 && application.relApplicationToITComponent
+			 && application.relApplicationToITComponent.nodes.length > 0;
 		},
 		compute: (index, application, config) => {
 			const subIndex = application.relApplicationToITComponent;
 			const compliantITComp = subIndex.nodes.find((e) => {
-				// access itComponents
-				return index.byID[e.id];
-			});
+					// access itComponents
+					return index.byID[e.id];
+				});
 			// access itComponents
 			return !index.includesTag(compliantITComp ? index.byID[compliantITComp.id] : undefined, 'Placeholder');
 		}
@@ -149,26 +159,8 @@ export default [{
 		compute: (index, application, config) => {
 			return index.getFirstTagFromGroup(application, 'CostCentre') ? true : false;
 		}
-	}, {
-		name: 'Overall Quality',
-		overall: true,
-		compute: (compliants, nonCompliants, config) => {
-			const result = {
-				compliant: 0,
-				nonCompliant: 0
-			};
-			for (let key in compliants) {
-				result.compliant += compliants[key].length;
-				result.nonCompliant += nonCompliants[key].length;
-			}
-			return result;
-		}
 	}
 ];
-
-const _tmp = new Date();
-_tmp.setFullYear(_tmp.getFullYear() - 1);
-const ONE_YEAR_BEFORE = _tmp.getTime();
 
 function _hasProductionLifecycle(application) {
 	if (!application || !application.lifecycle || !application.lifecycle.phases
@@ -185,12 +177,10 @@ function _isRetiring(application) {
 		return false;
 	}
 	const phase = application.lifecycle.phases.find((e) => {
-		return e.phase === 'endOfLife' && e.startDate && Date.parse(e.startDate + ' 00:00:00') > ONE_YEAR_BEFORE;
-	});
+			return e.phase === 'endOfLife' && e.startDate && Date.parse(e.startDate + ' 00:00:00') > ONE_YEAR_BEFORE;
+		});
 	return phase !== undefined && phase !== null;
 }
-
-const decommissioningRE = /decommissioning/i;
 
 function _hasProjectWithImpact(subIndex, impact) {
 	return subIndex.nodes.some((e) => {
@@ -210,3 +200,23 @@ function _hasSubscriptionRole(application, subscriptionRole) {
 		});
 	});
 }
+
+const overallRule = {
+	name: 'Overall Quality',
+	compute: (compliants, nonCompliants, config) => {
+		const result = {
+			compliant: 0,
+			nonCompliant: 0
+		};
+		for (let key in compliants) {
+			result.compliant += compliants[key].length;
+			result.nonCompliant += nonCompliants[key].length;
+		}
+		return result;
+	}
+};
+
+export default {
+	singleRules: singleRules,
+	overallRule: overallRule
+};

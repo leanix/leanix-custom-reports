@@ -5,7 +5,8 @@ import Utilities from './common/Utilities';
 import RuleSet from './RuleSet';
 import Table from './Table';
 
-const RULE_OPTIONS = Utilities.createOptionsObj(RuleSet);
+const RULE_OPTIONS = Utilities.createOptionsObj(
+	RuleSet.singleRules.concat(RuleSet.overallRule));
 
 class Report extends Component {
 
@@ -13,6 +14,7 @@ class Report extends Component {
 		super(props);
 		this._initReport = this._initReport.bind(this);
 		this._handleData = this._handleData.bind(this);
+		this._renderAdditionalNotes = this._renderAdditionalNotes.bind(this);
 		this.MARKET_OPTIONS = {};
 		this.state = {
 			setup: null,
@@ -99,6 +101,16 @@ class Report extends Component {
 
 	_handleData(index, applicationTagId, itTagId, appMapId) {
 		const tableData = [];
+		let additionalNotesMarker = 0;
+		const additionalNotes = RuleSet.singleRules.reduce((obj, e) => {
+			if (e.additionalNote) {
+				obj[e.name] = {
+					marker: additionalNotesMarker++,
+					note: e.additionalNote
+				};
+			}
+			return obj;
+		}, {});
 		let marketCount = 0;
 		// group applications by market
 		const groupedByMarket = {};
@@ -124,14 +136,11 @@ class Report extends Component {
 		};
 		for (let market in groupedByMarket) {
 			const allApplications = groupedByMarket[market];
-			// apply rule set
+			// process single rules
 			const compliants = {};
 			const nonCompliants = {};
 			allApplications.forEach((e2) => {
-				RuleSet.forEach((e3) => {
-					if (e3.overall) {
-						return;
-					}
+				RuleSet.singleRules.forEach((e3) => {
 					if (!compliants[e3.name]) {
 						compliants[e3.name] = [];
 						nonCompliants[e3.name] = [];
@@ -147,58 +156,69 @@ class Report extends Component {
 					}
 				});
 			});
-			// process overall rules
-			RuleSet.forEach((e2) => {
-				if (!e2.overall) {
-					return;
-				}
-				const ruleResult = e2.compute(compliants, nonCompliants, ruleConfig);
-				compliants[e2.name] = ruleResult.compliant;
-				nonCompliants[e2.name] = ruleResult.nonCompliant;
-			});
 			// add results to tableData
-			RuleSet.forEach((e2) => {
-				const compliant = e2.overall ? compliants[e2.name] : compliants[e2.name].length;
-				const nonCompliant = e2.overall ? nonCompliants[e2.name] : nonCompliants[e2.name].length;
-				const sum = compliant + nonCompliant;
-				let percentage = undefined;
-				if (sum === 0) {
-					percentage = Number.NaN;
-				} else if (compliant > 0 && nonCompliant === 0) {
-					percentage = 100;
-				} else if (compliant === 0 && nonCompliant > 0) {
-					percentage = 0;
-				} else {
-					// note: floor cuts the post comma digits (rounding down)
-					percentage = Math.floor(compliant * 100 / sum);
-				}
+			RuleSet.singleRules.forEach((e2) => {
+				const compliant = compliants[e2.name].length;
+				const nonCompliant = nonCompliants[e2.name].length;
 				tableData.push({
 					id: market + '-' + e2.name,
 					market: this._getOptionKeyFromValue(this.MARKET_OPTIONS, market),
 					rule: this._getOptionKeyFromValue(RULE_OPTIONS, e2.name),
-					overallRule: e2.overall === true,
+					overallRule: false,
 					compliant: compliant,
-					compliantApps: e2.overall ? [] : compliants[e2.name].map((e3) => {
+					compliantApps: compliants[e2.name].map((e3) => {
 						return e3.name;
 					}),
-					compliantAppIds: e2.overall ? [] : compliants[e2.name].map((e3) => {
+					compliantAppIds: compliants[e2.name].map((e3) => {
 						return e3.id;
 					}),
 					nonCompliant: nonCompliant,
-					nonCompliantApps: e2.overall ? [] : nonCompliants[e2.name].map((e3) => {
+					nonCompliantApps: nonCompliants[e2.name].map((e3) => {
 						return e3.name;
 					}),
-					nonCompliantAppIds: e2.overall ? [] : nonCompliants[e2.name].map((e3) => {
+					nonCompliantAppIds: nonCompliants[e2.name].map((e3) => {
 						return e3.id;
 					}),
-					percentage: percentage
+					percentage: this._computePercentage(compliant, nonCompliant)
 				});
+			});
+			// process overall rule
+			const overallRuleResult = RuleSet.overallRule.compute(compliants, nonCompliants, ruleConfig);
+			tableData.push({
+				id: market + '-' + RuleSet.overallRule.name,
+				market: this._getOptionKeyFromValue(this.MARKET_OPTIONS, market),
+				rule: this._getOptionKeyFromValue(RULE_OPTIONS, RuleSet.overallRule.name),
+				overallRule: true,
+				compliant: overallRuleResult.compliant,
+				compliantApps: [],
+				compliantAppIds: [],
+				nonCompliant: overallRuleResult.nonCompliant,
+				nonCompliantApps: [],
+				nonCompliantAppIds: [],
+				percentage: this._computePercentage(overallRuleResult.compliant, overallRuleResult.nonCompliant)
 			});
 		}
 		lx.hideSpinner();
 		this.setState({
-			data: tableData
+			data: tableData,
+			additionalNotes: additionalNotes
 		});
+	}
+
+	_computePercentage(compliant, nonCompliant) {
+		const sum = compliant + nonCompliant;
+		let percentage = undefined;
+		if (sum === 0) {
+			percentage = Number.NaN;
+		} else if (compliant > 0 && nonCompliant === 0) {
+			percentage = 100;
+		} else if (compliant === 0 && nonCompliant > 0) {
+			percentage = 0;
+		} else {
+			// note: floor cuts the post comma digits (rounding down)
+			percentage = Math.floor(compliant * 100 / sum);
+		}
+		return percentage;
 	}
 
 	_getOptionKeyFromValue(options, value) {
@@ -214,13 +234,37 @@ class Report extends Component {
 			return (<h4 className='text-center'>Loading data ...</h4>);
 		}
 		return (
-			<Table data={this.state.data}
-				options={{
-					market: this.MARKET_OPTIONS,
-					rule: RULE_OPTIONS
-				}}
-				pageSize={RuleSet.length}
-				setup={this.state.setup} />
+			<div>
+				<Table data={this.state.data}
+					additionalNotes={this.state.additionalNotes}
+					options={{
+						market: this.MARKET_OPTIONS,
+						rule: RULE_OPTIONS
+					}}
+					pageSize={RuleSet.singleRules.length + 1}
+					setup={this.state.setup} />
+				{this._renderAdditionalNotes()}
+			</div>
+		);
+	}
+
+	_renderAdditionalNotes() {
+		const arr = [];
+		for (let key in this.state.additionalNotes) {
+			const additionalNote = this.state.additionalNotes[key];
+			arr[additionalNote.marker] = additionalNote.note;
+		}
+		return (
+			<dl className='small'>
+				{arr.map((e, i) => {
+					return (
+						<span key={i}>
+							<dt>{i + 1}.</dt>
+							<dd>{e}</dd>
+						</span>
+					);
+				})}
+			</dl>
 		);
 	}
 }

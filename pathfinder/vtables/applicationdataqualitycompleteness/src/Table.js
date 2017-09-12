@@ -7,8 +7,19 @@ class Table extends Component {
 
 	constructor(props) {
 		super(props);
+		this._formatRule = this._formatRule.bind(this);
 		this._formatPercentage = this._formatPercentage.bind(this);
 		this._sortPercentage = this._sortPercentage.bind(this);
+	}
+
+	_formatRule(cell, row, enums) {
+		const text = TableUtilities.formatEnum(cell, row, enums);
+		const additionalNote = this.props.additionalNotes[text];
+		if (additionalNote) {
+			const marker = additionalNote.marker + 1;
+			return text + ' <sup><b>' + marker + '.</b></sup>';
+		}
+		return text;
 	}
 
 	_formatCompliant(cell, row) {
@@ -40,6 +51,13 @@ class Table extends Component {
 				}}>{cell + ' %'}</span>
 			</div>
 		);
+	}
+
+	_csvFormatPercentage(cell, row) {
+		if (cell === undefined || cell === null || Number.isNaN(cell)) {
+			return '';
+		}
+		return cell;
 	}
 
 	_getGreenToRed(percent) {
@@ -74,7 +92,7 @@ class Table extends Component {
 		return (
 			<BootstrapTable data={this.props.data} keyField='id'
 				 striped hover exportCSV
-				 pagination ignoreSinglePage
+				 pagination
 				 options={{
 					sizePerPage: this.props.pageSize,
 					hideSizePerPage: true
@@ -94,16 +112,12 @@ class Table extends Component {
 					 dataField='rule'
 					 width='450px'
 					 dataAlign='left'
-					 dataFormat={TableUtilities.formatEnum}
+					 dataFormat={this._formatRule}
 					 formatExtraData={this.props.options.rule}
 					 csvFormat={TableUtilities.formatEnum}
 					 csvFormatExtraData={this.props.options.rule}
 					 filter={TableUtilities.selectFilter(this.props.options.rule)}
 					>Rule</TableHeaderColumn>
-				<TableHeaderColumn hidden export
-					 dataField='overallRule'
-					 csvHeader='overall-rule'
-					>overallRule</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='compliant'
 					 width='200px'
@@ -142,6 +156,7 @@ class Table extends Component {
 					 dataAlign='left'
 					 dataFormat={this._formatPercentage}
 					 csvHeader='compliant-percentage'
+					 csvFormat={this._csvFormatPercentage}
 					 filter={TableUtilities.numberFilter}
 					>% Compliant</TableHeaderColumn>
 			</BootstrapTable>
@@ -165,6 +180,7 @@ Table.propTypes = {
 			percentage: PropTypes.number.isRequired
 		}).isRequired
 	).isRequired,
+	additionalNotes: PropTypes.object.isRequired,
 	options: PropTypes.shape({
 		market: TableUtilities.PropTypes.options,
 		rule: TableUtilities.PropTypes.options
