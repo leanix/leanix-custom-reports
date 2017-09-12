@@ -92,7 +92,7 @@ class Table extends Component {
 					>Market</TableHeaderColumn>
 				<TableHeaderColumn dataSort columnClassName='small'
 					 dataField='rule'
-					 width='500px'
+					 width='450px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatEnum}
 					 formatExtraData={this.props.options.rule}
@@ -106,7 +106,7 @@ class Table extends Component {
 					>overallRule</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='compliant'
-					 width='260px'
+					 width='200px'
 					 dataAlign='left'
 					 dataFormat={this._formatCompliant}
 					 csvFormat={this._formatCompliant}
@@ -120,7 +120,7 @@ class Table extends Component {
 					>Compliant Applications</TableHeaderColumn>
 				<TableHeaderColumn dataSort
 					 dataField='nonCompliant'
-					 width='260px'
+					 width='200px'
 					 dataAlign='left'
 					 csvHeader='non-compliant'
 					 filter={TableUtilities.numberFilter}
@@ -138,7 +138,7 @@ class Table extends Component {
 					>Non-Compliant Applications</TableHeaderColumn>
 				<TableHeaderColumn dataSort sortFunc={this._sortPercentage}
 					 dataField='percentage'
-					 width='260px'
+					 width='200px'
 					 dataAlign='left'
 					 dataFormat={this._formatPercentage}
 					 csvHeader='compliant-percentage'

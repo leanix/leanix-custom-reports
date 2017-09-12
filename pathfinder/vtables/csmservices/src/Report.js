@@ -12,7 +12,6 @@ class Report extends Component {
 		this._handleData = this._handleData.bind(this);
 		this.SERVICE_STATUS_OPTIONS = {},
 		this.SERVICE_CLASSIFICATION_OPTIONS = {},
-		this.SERVICE_ORIGIN_OPTIONS = {}
 		this.state = {
 			setup: null,
 			data: []
@@ -35,8 +34,6 @@ class Report extends Component {
 			factsheetModel, 'fields.serviceStatus.values');
 		this.SERVICE_CLASSIFICATION_OPTIONS = Utilities.createOptionsObjFrom(
 			factsheetModel, 'fields.serviceClassification.values');
-		this.SERVICE_ORIGIN_OPTIONS = Utilities.createOptionsObjFrom(
-			factsheetModel, 'fields.serviceOrigin.values');
 		// get all tags, then the data
 		lx.executeGraphQL(CommonQueries.tagGroups).then((tagGroups) => {
 			const index = new DataIndex();
@@ -107,7 +104,7 @@ class Report extends Component {
 					edges { node {
 						id name description ${tagNameDef.csm}
 						... on CSM {
-							serviceStatus serviceClassification serviceOrigin
+							serviceStatus serviceClassification
 							relToParent { edges { node { factSheet { id name } } } }
 							relToRequires (facetFilters: [
 								{facetKey: "FactSheetTypes", keys: ["CSM"]}
@@ -116,7 +113,17 @@ class Report extends Component {
 							}
 							relCSMToPlatform { edges { node { factSheet { id } } } }
 							relCSMToDataObject { edges { node { factSheet { id } } } }
+							relCSMToUserGroup { edges { node { factSheet { id } } } }
 						}
+					}}
+				}
+				ug: allFactSheets(
+					filter: {facetFilters: [
+						{facetKey: "FactSheetTypes", keys: ["UserGroup"]}
+					]}
+				) {
+					edges { node {
+						id name
 					}}
 				}
 				csmTmf: allFactSheets(
@@ -286,6 +293,18 @@ class Report extends Component {
 			for (let key in bcaL1BCsSet) {
 				bcaL1BCs.push(bcaL1BCsSet[key]);
 			}
+			const serviceOriginUGs = [];
+			const subIndexUg = csmL2.relCSMToUserGroup;
+			if (subIndexUg) {
+				subIndexUg.nodes.forEach((e) => {
+					// access ug
+					const ug = index.ug.byID[e.id];
+					if (!ug) {
+						return;
+					}
+					serviceOriginUGs.push(ug);
+				});
+			}
 			tableData.push({
 				csmL1Id: csmL1 ? csmL1.id : '',
 				csmL1Name: csmL1 ? this._removeNumbering(csmL1.name) : '',
@@ -296,8 +315,12 @@ class Report extends Component {
 					this.SERVICE_STATUS_OPTIONS, csmL2.serviceStatus),
 				serviceClass: this._getOptionKeyFromValue(
 					this.SERVICE_CLASSIFICATION_OPTIONS, csmL2.serviceClassification),
-				serviceOrigin: this._getOptionKeyFromValue(
-					this.SERVICE_ORIGIN_OPTIONS, csmL2.serviceOrigin),
+				serviceOriginUGsIds: serviceOriginUGs.map((e) => {
+					return e.id;
+				}),
+				serviceOriginUGsNames: serviceOriginUGs.map((e) => {
+					return e.name;
+				}),
 				platformBCsIds: platformBCs.map((e) => {
 					return e.id;
 				}),
@@ -388,7 +411,6 @@ class Report extends Component {
 				options={{
 					serviceStatus: this.SERVICE_STATUS_OPTIONS,
 					serviceClassification: this.SERVICE_CLASSIFICATION_OPTIONS,
-					serviceOrigin: this.SERVICE_ORIGIN_OPTIONS
 				}}
 				setup={this.state.setup} />
 		);
