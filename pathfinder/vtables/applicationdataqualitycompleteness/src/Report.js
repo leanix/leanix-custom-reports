@@ -241,7 +241,7 @@ class Report extends Component {
 						market: this.MARKET_OPTIONS,
 						rule: RULE_OPTIONS
 					}}
-					pageSize={RuleSet.singleRules.length + 1}
+					pageSize={RuleSet.ruleCount}
 					setup={this.state.setup} />
 				{this._renderAdditionalNotes()}
 			</div>

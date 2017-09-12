@@ -1,6 +1,7 @@
 import Utilities from './common/Utilities';
 
 const ONE_YEAR_BEFORE_DATE = new Date();
+ONE_YEAR_BEFORE_DATE.setHours(0, 0, 0, 0);
 ONE_YEAR_BEFORE_DATE.setFullYear(ONE_YEAR_BEFORE_DATE.getFullYear() - 1);
 const ONE_YEAR_BEFORE = ONE_YEAR_BEFORE_DATE.getTime();
 
@@ -217,6 +218,7 @@ const overallRule = {
 };
 
 export default {
+	ruleCount: singleRules.length + 1,
 	singleRules: singleRules,
 	overallRule: overallRule
 };
