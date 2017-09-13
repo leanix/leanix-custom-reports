@@ -25,7 +25,7 @@ module.exports = {
 				}
 			},
 			/**
-			 * Bundle CSS
+			 * Bundle CSS, images and fonts
 			 */
 			{
 				test: /\.css$/,
@@ -34,6 +34,21 @@ module.exports = {
 						loader: require.resolve('css-loader')
 					}
 				]
+			}, {
+				test: /\.(otf|ttf|woff|woff2)$/,
+				use: {
+					loader: 'url-loader?limit=10000'
+				}
+			}, {
+				test: /\.(jpg|png|gif)$/,
+				use: {
+					loader: 'url-loader?limit=10000'
+				}
+			}, {
+				test: /\.(eot|svg)$/,
+				use: {
+					loader: 'file-loader'
+				}
 			}
 		]
 	},

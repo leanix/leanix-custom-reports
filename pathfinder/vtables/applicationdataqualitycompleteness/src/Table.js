@@ -17,7 +17,7 @@ class Table extends Component {
 		const additionalNote = this.props.additionalNotes[text];
 		if (additionalNote) {
 			const marker = additionalNote.marker + 1;
-			return text + ' <sup><b>' + marker + '.</b></sup>';
+			return text + ' <sup><b>[' + marker + ']</b></sup>';
 		}
 		return text;
 	}

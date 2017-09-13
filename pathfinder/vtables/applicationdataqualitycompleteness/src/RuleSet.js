@@ -8,7 +8,7 @@ const ONE_YEAR_BEFORE = ONE_YEAR_BEFORE_DATE.getTime();
 const singleRules = [{
 		name: 'Adding application has project (w/ impact \'Adds\')',
 		additionalNote: 'Rule includes applications which have a current life cycle phase of either '
-			+ '"Phase In", "Active" or "Phase Out" and the start date of this phase must be greater than '
+			+ '"Phase In", "Active" or "Phase Out" and the start date of this phase must be greater than or equal to '
 			+ ONE_YEAR_BEFORE_DATE.toLocaleDateString() + '.',
 		appliesTo: (index, application) => {
 			return _hasProductionLifecycle(application);
@@ -23,7 +23,7 @@ const singleRules = [{
 	}, {
 		name: 'Retiring application has project (w/ impact \'Sunsets\')',
 		additionalNote: 'Rule includes applications which have a life cycle phase of '
-			+ '"End Of Life" and the start date of this phase must be greater than '
+			+ '"End Of Life" and the start date of this phase must be greater than or equal to '
 			+ ONE_YEAR_BEFORE_DATE.toLocaleDateString() + '.',
 		appliesTo: (index, application) => {
 			return _isRetiring(application);
@@ -169,7 +169,7 @@ function _hasProductionLifecycle(application) {
 		return false;
 	}
 	const currentLifecycle = Utilities.getCurrentLifecycle(application);
-	return currentLifecycle && Utilities.isProductionPhase(currentLifecycle) && currentLifecycle.startDate > ONE_YEAR_BEFORE;
+	return currentLifecycle && Utilities.isProductionPhase(currentLifecycle) && currentLifecycle.startDate >= ONE_YEAR_BEFORE;
 }
 
 function _isRetiring(application) {
@@ -178,7 +178,7 @@ function _isRetiring(application) {
 		return false;
 	}
 	const phase = application.lifecycle.phases.find((e) => {
-			return e.phase === 'endOfLife' && e.startDate && Date.parse(e.startDate + ' 00:00:00') > ONE_YEAR_BEFORE;
+			return e.phase === 'endOfLife' && e.startDate && Date.parse(e.startDate + ' 00:00:00') >= ONE_YEAR_BEFORE;
 		});
 	return phase !== undefined && phase !== null;
 }
