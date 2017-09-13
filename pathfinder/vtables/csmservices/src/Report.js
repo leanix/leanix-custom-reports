@@ -237,7 +237,6 @@ class Report extends Component {
 			const platformBCsSet = {};
 			const bcaL4BCsSet = {};
 			cimDOs.forEach((cim) => {
-				const appMapBCs = [];
 				const subIndexAppMapBCs = cim.relDataObjectToBusinessCapability;
 				if (subIndexAppMapBCs) {
 					subIndexAppMapBCs.nodes.forEach((e) => {
@@ -250,8 +249,8 @@ class Report extends Component {
 						const subIndexBcaBCs = appMap.relBusinessCapabilityToBCA;
 						if (subIndexBcaBCs) {
 							subIndexBcaBCs.nodes.forEach((e2) => {
-							// access bcBca
-							const bca = index.bcBca.byID[e2.id];
+								// access bcBca
+								const bca = index.bcBca.byID[e2.id];
 								bcaL4BCsSet[e2.id] = bca;
 							});
 						}
