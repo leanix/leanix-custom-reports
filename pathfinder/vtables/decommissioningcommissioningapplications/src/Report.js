@@ -101,9 +101,9 @@ class Report extends Component {
 
 	_handleData(index, applicationTagId, itTagId) {
 		const tableData = [];
-		const markets = [];
 		// group applications by market
 		const groupedByMarket = {};
+		let marketCount = 0;
 		index.applications.nodes.forEach((e) => {
 			if (!applicationTagId && !index.includesTag(e, 'Application')) {
 				return;
@@ -115,19 +115,23 @@ class Report extends Component {
 			if (!market) {
 				return;
 			}
-			if (market === 'CW') {
-				// this is a hack for a requirement by v: CW apps should be considered belonging to UK
-				market = 'UK';
-			}
 			if (!groupedByMarket[market]) {
 				groupedByMarket[market] = [];
-				markets.push(market);
+				this.MARKET_OPTIONS[marketCount++] = market;
 			}
 			groupedByMarket[market].push(e);
 		});
-		// create market options
-		markets.sort();
-		this.MARKET_OPTIONS = Utilities.createOptionsObj(markets);
+		if (groupedByMarket.CW) {
+			// this is a hack for a requirement by v: CW apps should be considered belonging to UK
+			const cwApplications = groupedByMarket.CW;
+			if (!groupedByMarket.UK) {
+				groupedByMarket.UK = cwApplications;
+			} else {
+				groupedByMarket.UK = cwApplications.concat(groupedByMarket.UK);
+			}
+			delete groupedByMarket.CW;
+			delete this.MARKET_OPTIONS[Utilities.getKeyToValue(this.MARKET_OPTIONS, 'CW')];
+		}
 		for (let market in groupedByMarket) {
 			const allApplications = groupedByMarket[market];
 			let baselineApr = 0;
@@ -191,9 +195,6 @@ class Report extends Component {
 				baselineToday: baselineToday
 			});
 		}
-		tableData.sort((a, b) => {
-			return a.id.localeCompare(b.id);
-		});
 		lx.hideSpinner();
 		this.setState({
 			data: tableData
