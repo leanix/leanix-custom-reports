@@ -18,12 +18,19 @@ const CURRENT = CURRENT_DATE.getTime();
 const APR = APR_DATE.getTime();
 const MAR = MAR_DATE.getTime();
 
+const PLAN = 'plan';
+const PHASE_IN = 'phaseIn';
+const ACTIVE = 'active';
+const PHASE_OUT = 'phaseOut';
+const END_OF_LIFE = 'endOfLife';
+
 class Report extends Component {
 
 	constructor(props) {
 		super(props);
 		this._initReport = this._initReport.bind(this);
 		this._handleData = this._handleData.bind(this);
+		this._addLifecyclePhaseEnd = this._addLifecyclePhaseEnd.bind(this);
 		this.MARKET_OPTIONS = {};
 		this.state = {
 			setup: null,
@@ -94,7 +101,7 @@ class Report extends Component {
 
 	_handleData(index, applicationTagId, itTagId) {
 		const tableData = [];
-		let marketCount = 0;
+		const markets = [];
 		// group applications by market
 		const groupedByMarket = {};
 		index.applications.nodes.forEach((e) => {
@@ -104,16 +111,23 @@ class Report extends Component {
 			if (!itTagId && !index.includesTag(e, 'IT')) {
 				return;
 			}
-			const market = Utilities.getMarket(e);
+			let market = Utilities.getMarket(e);
 			if (!market) {
 				return;
 			}
+			if (market === 'CW') {
+				// this is a hack for a requirement by v: CW apps should be considered belonging to UK
+				market = 'UK';
+			}
 			if (!groupedByMarket[market]) {
 				groupedByMarket[market] = [];
-				this.MARKET_OPTIONS[marketCount++] = market;
+				markets.push(market);
 			}
 			groupedByMarket[market].push(e);
 		});
+		// create market options
+		markets.sort();
+		this.MARKET_OPTIONS = Utilities.createOptionsObj(markets);
 		for (let market in groupedByMarket) {
 			const allApplications = groupedByMarket[market];
 			let baselineApr = 0;
@@ -128,22 +142,24 @@ class Report extends Component {
 				if (lifecycles.length === 0) {
 					return;
 				}
-				if (this._hasActiveLifecyclePhaseAfter(lifecycles, APR)) {
-					// count if 'active' lifecycle phase has a start date greater than or equal to 1st apr <CURRENT_YEAR>
+				const activePhase = Utilities.getLifecyclePhase(lifecycles, ACTIVE);
+				this._addLifecyclePhaseEnd(lifecycles, activePhase);
+				const endOfLifePhase = Utilities.getLifecyclePhase(lifecycles, END_OF_LIFE);
+				if (this._isTimestampInPhase(activePhase, APR)) {
+					// count if 1st apr <CURRENT_YEAR> is a timepoint in the 'active' lifecycle phase
 					baselineApr++;
 				}
-				if (this._hasActiveLifecyclePhaseAfter(lifecycles, MAR)) {
-					// count if 'active' lifecycle phase has a start date greater than or equal to 31th mar <CURRENT_YEAR + 1>
+				if (this._isTimestampInPhase(activePhase, MAR)) {
+					// count if 31th mar <CURRENT_YEAR + 1> is a timepoint in the 'active' lifecycle phase
 					baselineMar++;
 				}
-				if (this._hasActiveLifecyclePhaseAfter(lifecycles, CURRENT)) {
-					// count if 'active' lifecycle phase has a start date greater than or equal to <CURRENT_DATE>
+				if (this._isTimestampInPhase(activePhase, CURRENT)) {
+					// count if <CURRENT_DATE> is a timepoint in the 'active' lifecycle phase
 					baselineToday++;
 				}
-				const endOfLifePhase = Utilities.getLifecyclePhase(lifecycles, 'endOfLife');
 				// application decommissioning or decommissioned this FY?
-				// 'endOfLife' phase must be between 1st apr <CURRENT_YEAR> and 31th mar <CURRENT_YEAR + 1>
-				if (this._isLifecyclePhaseBetween(endOfLifePhase, APR, MAR)) {
+				// 'endOfLife' phase start date must be between 1st apr <CURRENT_YEAR> and 31th mar <CURRENT_YEAR + 1>
+				if (this._isLifecyclePhaseStartDateIn(endOfLifePhase, APR, MAR)) {
 					// planned (decommissioning) or actuals (decommissioned)?
 					if (endOfLifePhase.startDate < CURRENT) {
 						decommissionsPlanned++;
@@ -151,10 +167,9 @@ class Report extends Component {
 						decommissionsActuals++;
 					}
 				}
-				const activePhase = Utilities.getLifecyclePhase(lifecycles, 'active');
 				// application commissioning or commissioned this FY?
-				// 'active' phase must be between 1st apr <CURRENT_YEAR> and 31th mar <CURRENT_YEAR + 1>
-				if (this._isLifecyclePhaseBetween(activePhase, APR, MAR)) {
+				// 'active' phase start date must be between 1st apr <CURRENT_YEAR> and 31th mar <CURRENT_YEAR + 1>
+				if (this._isLifecyclePhaseStartDateIn(activePhase, APR, MAR)) {
 					// planned (commissioning) or actuals (commissioned)?
 					if (activePhase.startDate < CURRENT) {
 						commissionsPlanned++;
@@ -176,19 +191,65 @@ class Report extends Component {
 				baselineToday: baselineToday
 			});
 		}
+		tableData.sort((a, b) => {
+			return a.id.localeCompare(b.id);
+		});
 		lx.hideSpinner();
 		this.setState({
 			data: tableData
 		});
 	}
 
-	_isLifecyclePhaseBetween(lifecycle, from, to) {
-		return lifecycle && lifecycle.startDate >= from && lifecycle.startDate < to;
+	_addLifecyclePhaseEnd(lifecycles, phase) {
+		if (!lifecycles || !phase || !phase.phase || !phase.startDate) {
+			return;
+		}
+		let nextPhaseKey = this._getNextPhaseKey(phase.phase);
+		let nextPhase = Utilities.getLifecyclePhase(lifecycles, nextPhaseKey);
+		while (!nextPhase) {
+			nextPhaseKey = this._getNextPhaseKey(nextPhaseKey);
+			if (!nextPhaseKey) {
+				break;
+			}
+			nextPhase = Utilities.getLifecyclePhase(lifecycles, nextPhaseKey);
+		}
+		if (nextPhase) {
+			phase.endDate = nextPhase.startDate;
+		}
 	}
 
-	_hasActiveLifecyclePhaseAfter(lifecycles, timestamp) {
-		const activePhase = Utilities.getLifecyclePhase(lifecycles, 'active');
-		return activePhase && activePhase.startDate >= timestamp;
+	_getNextPhaseKey(phase) {
+		switch (phase) {
+			case PLAN:
+				return PHASE_IN;
+			case PHASE_IN:
+				return ACTIVE;
+			case ACTIVE:
+				return PHASE_OUT;
+			case PHASE_OUT:
+				return END_OF_LIFE;
+			case END_OF_LIFE:
+			default:
+				return;
+		}
+	}
+
+	_isTimestampInPhase(phase, timestamp) {
+		if (!phase || timestamp === undefined || timestamp === null) {
+			return false;
+		}
+		const startDate = phase.startDate;
+		const endDate = phase.endDate;
+		if (startDate) {
+			return endDate ? (startDate <= timestamp && timestamp < endDate) : (startDate <= timestamp);
+		} else if (endDate) {
+			return timestamp < endDate;
+		}
+		return false;
+	}
+
+	_isLifecyclePhaseStartDateIn(lifecycle, from, to) {
+		return lifecycle && lifecycle.startDate >= from && lifecycle.startDate < to;
 	}
 
 	_getOptionKeyFromValue(options, value) {
