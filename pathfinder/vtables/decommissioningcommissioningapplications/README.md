@@ -1,6 +1,6 @@
 # Decommissioning & Commissioning Applications
 
-A report that analyses shows decommissioning & commissioning applications per market.
+A report that shows decommissioning & commissioning applications per market.
 
 ## Table of Contents
 

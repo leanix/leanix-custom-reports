@@ -1,7 +1,7 @@
 {
 	"name": "decommissioningcommissioningapplications",
 	"version": "1.0.0",
-	"description": "A report that analyses shows decommissioning & commissioning applications per market.",
+	"description": "A report that shows decommissioning & commissioning applications per market.",
 	"private": true,
 	"engines": {
 		"node": ">=6.11.1"
