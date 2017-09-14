@@ -59,9 +59,9 @@ class Report extends Component {
 
 	_createQuery(csmId, cimId, appMapId, tmfId, platformId, bcaId) {
 		// initial assume tagGroup.name changed or the id couldn't be determined otherwise
-		let idFilter = { csm: '', cim: '', appMap: '', tmf: '', platform: '', bca: '' };
+		const idFilter = { csm: '', cim: '', appMap: '', tmf: '', platform: '', bca: '' };
 		// initial assume to get it
-		let tagNameDef = {
+		const tagNameDef = {
 			csm: 'tags { name }',
 			cim: 'tags { name }',
 			appMap: 'tags { name }',

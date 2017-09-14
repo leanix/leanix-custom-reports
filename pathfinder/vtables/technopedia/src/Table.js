@@ -67,6 +67,7 @@ class Table extends Component {
 				<TableHeaderColumn dataSort
 					 dataField='count'
 					 width='200px'
+					 headerAlign='left'
 					 dataAlign='right'
 					 csvHeader='count-in-other-markets'
 					 filter={TableUtilities.numberFilter}

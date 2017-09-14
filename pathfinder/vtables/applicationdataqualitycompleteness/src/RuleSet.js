@@ -169,7 +169,7 @@ function _hasProductionLifecycle(application) {
 		return false;
 	}
 	const currentLifecycle = Utilities.getCurrentLifecycle(application);
-	return currentLifecycle && Utilities.isProductionPhase(currentLifecycle) && currentLifecycle.startDate >= ONE_YEAR_BEFORE;
+	return Utilities.isProductionPhase(currentLifecycle) && currentLifecycle.startDate >= ONE_YEAR_BEFORE;
 }
 
 function _isRetiring(application) {
