@@ -29,6 +29,7 @@ install_report appmap2platforms
 install_report cimmasterlist
 install_report csmoperations
 install_report csmservices
+install_report decommissioningcommissioningapplications
 install_report globalapplicationportfolio
 install_report technopedia
 cd ..

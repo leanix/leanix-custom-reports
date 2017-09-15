@@ -14,7 +14,7 @@ class Table extends Component {
 		const nextYear = currentYear + 1;
 		return (
 			<BootstrapTable data={this.props.data} keyField='id'
-				 striped hover exportCSV>
+				 striped hover exportCSV condensed>
 				<TableHeaderColumn dataSort
 					 dataField='market'
 					 width='100px'

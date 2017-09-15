@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import CommonQueries from './common/CommonGraphQLQueries';
 import DataIndex from './common/DataIndex';
 import Utilities from './common/Utilities';
+import MultiSelectField from './MultiSelectField';
 import Table from './Table';
 
 const CURRENT_DATE = new Date();
@@ -31,10 +32,15 @@ class Report extends Component {
 		this._initReport = this._initReport.bind(this);
 		this._handleData = this._handleData.bind(this);
 		this._addLifecyclePhaseEnd = this._addLifecyclePhaseEnd.bind(this);
+		this._onMultiSelectChange = this._onMultiSelectChange.bind(this);
 		this.MARKET_OPTIONS = {};
 		this.state = {
 			setup: null,
-			data: []
+			data: [],
+			multiSelectValues: [
+				'AL', 'CD', 'CZ', 'DE', 'EG', 'ES', 'GH', 'GR', 'HU', 'IE', 'IN',
+				'IT', 'LS', 'MT', 'MZ', 'PT', 'RO', 'TR', 'TZ', 'UK', 'ZA'
+			]
 		};
 	}
 
@@ -261,17 +267,49 @@ class Report extends Component {
 		return key !== undefined && key !== null ? parseInt(key, 10) : undefined;
 	}
 
+	_onMultiSelectChange(values) {
+		this.setState({
+			multiSelectValues: values
+		});
+	}
+
 	render() {
 		if (this.state.data.length === 0) {
 			return (<h4 className='text-center'>Loading data ...</h4>);
 		}
+		let data = this.state.data;
+		let marketOptions = Utilities.copyObject(this.MARKET_OPTIONS);
+		if (this.state.multiSelectValues.length > 0) {
+			// filter table data
+			data = data.filter((e) => {
+				return this.state.multiSelectValues.some((e2) => {
+					const key = Utilities.getKeyToValue(this.MARKET_OPTIONS, e2);
+					return key && e.market === parseInt(key);
+				});
+			});
+			// filter market options for table only
+			for (let key in this.MARKET_OPTIONS) {
+				const value = this.MARKET_OPTIONS[key];
+				if (!this.state.multiSelectValues.includes(value)) {
+					delete marketOptions[key];
+				}
+			}
+		}
 		return (
-			<Table data={this.state.data}
-				currentYear={CURRENT_DATE.getFullYear()}
-				options={{
-					market: this.MARKET_OPTIONS
-				}}
-				setup={this.state.setup} />
+			<div>
+				<MultiSelectField
+					label='Markets to show'
+					placeholder='Select a market'
+					items={this.MARKET_OPTIONS}
+					onChange={this._onMultiSelectChange}
+					values={this.state.multiSelectValues} />
+				<Table data={data}
+					currentYear={CURRENT_DATE.getFullYear()}
+					options={{
+						market: marketOptions
+					}}
+					setup={this.state.setup} />
+			</div>
 		);
 	}
 }
