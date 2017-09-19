@@ -160,6 +160,18 @@ const singleRules = [{
 		compute: (index, application, config) => {
 			return index.getFirstTagFromGroup(application, 'CostCentre') ? true : false;
 		}
+	}, {
+		name: 'has an owning local market',
+		appliesTo: (index, application) => {
+			return true;
+		},
+		compute: (index, application, config) => {
+			const subIndex = application.relApplicationToBusinessCapability;
+			if (!subIndex || subIndex.nodes.length < 1) {
+				return false;
+			}
+			return subIndex.nodes.length > 0;
+		}
 	}
 ];
 
