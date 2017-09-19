@@ -166,11 +166,8 @@ const singleRules = [{
 			return true;
 		},
 		compute: (index, application, config) => {
-			const subIndex = application.relApplicationToBusinessCapability;
-			if (!subIndex || subIndex.nodes.length < 1) {
-				return false;
-			}
-			return subIndex.nodes.length > 0;
+			const subIndex = application.relApplicationToOwningUserGroup;
+			return subIndex && subIndex.nodes.length === 1;
 		}
 	}
 ];

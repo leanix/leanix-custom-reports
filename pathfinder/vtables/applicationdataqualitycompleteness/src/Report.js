@@ -78,6 +78,7 @@ class Report extends Component {
 							relApplicationToProject { edges { node { projectImpact factSheet { id } } } }
 							relApplicationToBusinessCapability { edges { node { factSheet { id } } } }
 							relApplicationToITComponent { edges { node { factSheet { id } } } }
+							relApplicationToOwningUserGroup { edges { node { factSheet { id } } } }
 						}
 					}}
 				}
