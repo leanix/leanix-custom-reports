@@ -284,8 +284,7 @@ class Report extends Component {
 						active    < (this.fiscalYear+5) + "-04-01"){  // active        before current fiscal year + 5
 						// active phase is within the next 4 years
 						for (let offset=4; offset>0; offset--) {
-							let yyyymmdd = (this.fiscalYear+offset) + "-04-01";
-							if (active >= yyyymmdd) {
+							if (active >= (this.fiscalYear+offset) + "-04-01") {
 								fyOffset = offset;
 								break;
 							}
@@ -302,7 +301,7 @@ class Report extends Component {
 			if (!appl.tags) {
 				return; // no valid record
 			}
-			// if no maturity tag ==> DEPLOYED
+
 			for (let t=0; t<appl.tags.length; t++) {
 				if (appl.tags[t]) {
 					switch (appl.tags[t].name) {
