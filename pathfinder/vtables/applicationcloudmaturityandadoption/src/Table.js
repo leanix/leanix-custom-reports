@@ -9,16 +9,16 @@ class Table extends Component {
 	constructor(props) {
 		super(props);
 		this._formatNumber = this._formatNumber.bind(this);
-		this.fiscalYear = props.setup.fiscalYear;
+		this.fiscalYear = props.fiscalYear;
 	}
 
+	// csv-format methode einführen
 	_formatNumber(cell, row) {
 		if (cell === undefined || cell === null || Number.isNaN(cell)) {
 			return '';
 		}
 
 		if (row.percentage) {
-			let v = Math.round(cell * 10)/10; // auf 1 Nachkommastelle reduzieren
 			return (
 				<div>
 					<span style={{
@@ -26,7 +26,7 @@ class Table extends Component {
 						width: '4em',
 						marginLeft: '0.2em',
 						textAlign: 'right'
-					}}>{v}%</span>
+					}}>{cell} %</span>
 				</div>
 			);
 		}
@@ -36,11 +36,17 @@ class Table extends Component {
 					display: 'inline-block',
 					width: '4em',
 					marginLeft: '0.2em',
-					textAlign: 'right',
-					paddingRight: '1em'
+					textAlign: 'right'
 				}}>{cell}</span>
 			</div>
 		);
+	}
+
+	_csvFormatNumber(cell, row) {
+		if (cell === undefined || cell === null || Number.isNaN(cell)) {
+			return '';
+		}
+		return cell;
 	}
 
 	render() {
@@ -48,54 +54,67 @@ class Table extends Component {
 		return (
 			<BootstrapTable data={this.props.data} keyField='id'
 				 striped hover exportCSV
-				 pagination ignoreSinglePage
+				 pagination
 				 options={{ clearSearch: true }}>
 				<TableHeaderColumn
 					 dataField='market'
-					 dataAlign='right'
-					 csvHeader='Market'
+					 dataAlign='left'
+					 headerAlign='left'
+					 csvHeader='market'
 					 width='100px'
 					 dataFormat={TableUtilities.formatEnum}
 					 formatExtraData={this.props.options.market}
 					 filter={TableUtilities.selectFilter(this.props.options.market)}
 					>Market</TableHeaderColumn>
-				<TableHeaderColumn
+				<TableHeaderColumn columnClassName='small'
 					 dataField='rule'
 					 dataAlign='left'
-					 csvHeader='Adoption & Maturity Applications'
+					 headerAlign='left'
+					 csvHeader='rule'
+					 width='40%'
 					 dataFormat={TableUtilities.formatEnum}
 					 formatExtraData={this.props.options.rules}
 					 filter={TableUtilities.selectFilter(this.props.options.rules)}
-					>Adoption & Maturity Applications</TableHeaderColumn>
+					>Rule</TableHeaderColumn>
 				<TableHeaderColumn
 					 dataField='fy0'
-					 dataAlign='center'
+					 dataAlign='right'
+					 headerAlign='left'
 					 dataFormat={this._formatNumber}
-					 csvHeader='Current FY'
+					 csvHeader={'fy-' + this.fiscalYear + '/' + (this.fiscalYear + 1)}
+					 csfFormat={this._csvFormatNumber}
 					>FY{this.fiscalYear + 0}/{this.fiscalYear + 1}</TableHeaderColumn>
 				<TableHeaderColumn
 					 dataField='fy1'
-					 dataAlign='center'
+					 dataAlign='right'
+					 headerAlign='left'
 					 dataFormat={this._formatNumber}
-					 csvHeader='FY plus 1'
+					 csvHeader={'fy-' + (this.fiscalYear + 1) + '/' + (this.fiscalYear + 2)}
+					 csfFormat={this._csvFormatNumber}
 					>FY{this.fiscalYear + 1}/{this.fiscalYear + 2}</TableHeaderColumn>
 				<TableHeaderColumn
 					 dataField='fy2'
-					 dataAlign='center'
+					 dataAlign='right'
+					 headerAlign='left'
 					 dataFormat={this._formatNumber}
-					 csvHeader='FY plus 2'
+					 csvHeader={'fy-' + (this.fiscalYear + 2) + '/' + (this.fiscalYear + 3)}
+					 csfFormat={this._csvFormatNumber}
 					>FY{this.fiscalYear + 2}/{this.fiscalYear + 3}</TableHeaderColumn>
 				<TableHeaderColumn
 					 dataField='fy3'
-					 dataAlign='center'
+					 dataAlign='right'
+					 headerAlign='left'
 					 dataFormat={this._formatNumber}
-					 csvHeader='FY plus 3'
+					 csvHeader={'fy-' + (this.fiscalYear + 3) + '/' + (this.fiscalYear + 4)}
+					 csfFormat={this._csvFormatNumber}
 					>FY{this.fiscalYear + 3}/{this.fiscalYear + 4}</TableHeaderColumn>
 				<TableHeaderColumn
 					 dataField='fy4'
-					 dataAlign='center'
+					 dataAlign='right'
+					 headerAlign='left'
 					 dataFormat={this._formatNumber}
-					 csvHeader='FY plus 4'
+					 csvHeader={'fy-' + (this.fiscalYear + 4) + '/' + (this.fiscalYear + 5)}
+					 csfFormat={this._csvFormatNumber}
 					>FY{this.fiscalYear + 4}/{this.fiscalYear + 5}</TableHeaderColumn>
 			</BootstrapTable>
 		);

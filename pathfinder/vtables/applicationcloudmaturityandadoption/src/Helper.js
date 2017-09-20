@@ -1,10 +1,11 @@
 import Utilities from './common/Utilities';
 
-function computePercentage(cloudTBD, cloudReady, cloudNative, appsDeployed) {
-	if (appsDeployed === 0) {
+function computePercentage(tbd, ready, native, deployed) {
+	if (deployed === 0) {
 		return 0.0; // Number.NaN;
 	}
-	return (cloudTBD + cloudReady + cloudNative) * 100 / appsDeployed;
+	// auf 1 Nachkommastelle reduzieren
+	return Math.round((tbd + ready + native) * 1000 / deployed)/10;
 }
 
 function getOptionKeyFromValue(options, value) {
@@ -42,6 +43,6 @@ function logObject(name, obj, level, maxlevel) {
 
 export default {
 	getOptionKeyFromValue: getOptionKeyFromValue,
-	computePercentage: computePercentage,
+	getPercent: computePercentage,
 	logObject: logObject
 };

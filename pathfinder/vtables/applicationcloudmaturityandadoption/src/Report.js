@@ -4,65 +4,10 @@ import DataIndex from './common/DataIndex';
 import Utilities from './common/Utilities';
 import Helper from './Helper';
 import Table from './Table';
-
-const PERCENT = 0;
-const PHYSICAL = 1;
-const VIRTUALISED = 2;
-const TBD = 3;
-const READY = 4;
-const NATIVE = 5;
-const DEPLOYED = 6;
-
-const RULE_COUNT = 7;  // last + 1
-
-// the list of adoption & maturity rule ids, names and descriptions
-const ruleDefs = [
-	{
-		id: PERCENT,
-		name: "Cloud Applications",
-		description: "Percentage of cloud applications.",
-		percentage: true
-	},
-	{
-		id: PHYSICAL,
-		name: "Physical Applications",
-		description: "Total number of physical applications.",
-		percentage: false
-	},
-	{
-		id: VIRTUALISED,
-		name: "Virtualised Applications",
-		description: "Total number of virtualised applications.",
-		percentage: false
-	},
-	{
-		id: TBD,
-		name: "Cloud TBD Applications",
-		description: "Total number of applications being moved to cloud, but still having an undecided maturity state.",
-		percentage: false
-	},
-	{
-		id: READY,
-		name: "Cloud Ready Applications",
-		description: "Total number of applications being ready for cloud.",
-		percentage: false
-	},
-	{
-		id: NATIVE,
-		name: "Cloud Native Applications",
-		description: "Total number of native cloud applications.",
-		percentage: false
-	},
-	{
-		id: DEPLOYED,
-		name: "Deployed Applications",
-		description: "Total number of deployed applications (Current lifecycle phase \"Production\") according to IT Scope",
-		percentage: false
-	}
-];
+import RuleDefs from './RuleDefs';
 
 // the list of rules (for row selection in table)
-const RULE_OPTIONS = Utilities.createOptionsObj(ruleDefs);
+const RULE_OPTIONS = Utilities.createOptionsObj(RuleDefs.rules);
 
 class Report extends Component {
 
@@ -92,7 +37,6 @@ class Report extends Component {
 	_initReport(setup) {
 		lx.ready(this._createConfig());
 		lx.showSpinner('Loading data ...');
-		setup.fiscalYear = this.fiscalYear2; // 2-digits year for report table
 		this.setState({
 			setup: setup
 		});
@@ -109,7 +53,7 @@ class Report extends Component {
 					.executeGraphQL(this._createQuery(applicationTagId, itTagId))
 					.then((data) => {
 						index.put(data);
-						this._handleData(index);
+						this._handleData(index, applicationTagId, itTagId);
 					});
 			});
 	}
@@ -125,20 +69,20 @@ class Report extends Component {
 		const facetKeyFactSheetTypes = '{facetKey:"FactSheetTypes",keys:["Application"]}';
 		const facetkeyApplicationTypeTag = applicationTagId ? `,{facetKey:"Application Type",keys:["${applicationTagId}"]}` : '';
 		const facetKeyCostCentreTag = itTagId ? `,{facetKey:"CostCentre",keys:["${itTagId}"]}` : '';
-		const applElements = 'name tags{name}';
-		const lcElements   = 'lc:lifecycle{state:asString ph:phases{phase from:startDate}}';
-		const prjElements  = 'prjs:relApplicationToProject{edges{node{fs:factSheet{name}}}}';
-		let query = `{records:allFactSheets(${limitation}filter:{facetFilters:[
-			${facetKeyFactSheetTypes}
-			${facetkeyApplicationTypeTag}
-			${facetKeyCostCentreTag}
-		]})
-			{edges{node{...on Application{
-				${applElements}
-				${lcElements}
-				${prjElements}}}}
-			}
-		}`;
+		let query = `{records:allFactSheets(${limitation}
+			sort:{mode:BY_FIELD,key:"displayName",order:asc },
+			filter:{facetFilters:[
+				${facetKeyFactSheetTypes}
+				${facetkeyApplicationTypeTag}
+				${facetKeyCostCentreTag}
+			]}
+		){
+			edges{node{...on Application{
+				name tags{name}
+				lc:lifecycle{state:asString ph:phases{phase from:startDate}}
+				prjs:relApplicationToProject{edges{node{fs:factSheet{name}}}}
+			}}}
+		}}`;
 
 		console.log(`GraphQL-Query:\n${query}`);
 		return query;
@@ -161,9 +105,9 @@ class Report extends Component {
 	  * DEPLOYED
 	*/
 
-	_handleData(dataIndex) {
-		console.log("HANDLE DATA...");
-		/*
+	// TODO: Tag-Fallback einarbeiten!
+	_handleData(index, applicationTagId, itTagId) {
+	/*
 		FOR EACH Record in Recordset (GraphQL response):
 			IF   there is a project related to the current application record
 			THEN Extract market, maturity state and fiscal year from the
@@ -191,7 +135,7 @@ class Report extends Component {
 		let counter = 0; // for logging purposes only
 		let valid = 0; // for logging purposes only
 
-		dataIndex.records.nodes.forEach((appl) => {
+		index.records.nodes.forEach((appl) => {
 			counter++;
 
 			// the market's marketEntry[maturityState][fyOffset] has to be updated
@@ -224,22 +168,22 @@ class Report extends Component {
 				for (let offset=0; offset<5; offset++) {
 					let fySnippet = `FY${this.fiscalYear2+offset}/${this.fiscalYear2+offset+1}`;
 					if (prj_name.endsWith(`_Cloud TBD ${fySnippet}`)) {
-						maturityState = TBD;
+						maturityState = RuleDefs.TBD;
 						fyOffset = offset;
 						break;
 					}
 					if (prj_name.endsWith(`_Cloud Native ${fySnippet}`)) {
-						maturityState = NATIVE;
+						maturityState = RuleDefs.NATIVE;
 						fyOffset = offset;
 						break;
 					}
 					if (prj_name.endsWith(`_Cloud Ready ${fySnippet}`)) {
-						maturityState = READY;
+						maturityState = RuleDefs.READY;
 						fyOffset = offset;
 						break;
 					}
 					if (prj_name.endsWith(`_Virtualised ${fySnippet}`)) {
-						maturityState = VIRTUALISED;
+						maturityState = RuleDefs.VIRTUALISED;
 						fyOffset = offset;
 						break;
 					}
@@ -261,8 +205,8 @@ class Report extends Component {
 					return; // no valid record
 				}
 
-				if (appl.lc.state === "active") {
-					//console.log("  >>> 'active' in current fiscal year");
+				if (appl.lc.state === 'active') {
+					//console.log('  >>> active in current fiscal year');
 					fyOffset = 0; // current fiscal year
 				} else if (appl.lc.ph) {
 					// investigate the lifecycle phases
@@ -270,21 +214,23 @@ class Report extends Component {
 					let active    = '9999-99-99';
 					appl.lc.ph.forEach((lcPhase) => {
 						switch (lcPhase.phase) {
-						case "endOfLife":
+						case 'endOfLife':
 							endOfLife = lcPhase.from;
 							break;
-						case "active":
+						case 'active':
 							active = lcPhase.from;
 							break;
 						}
 					});
 
+					// TODO: keine STrings vergleiche, sondern timestamps vergleichen
+					// Decommission-report ansehen für lifecycle behandlung
 					//console.log(`  >>> active from ${active} to ${endOfLife}`);
-					if (endOfLife >  this.fiscalYear    + "-04-01" && // endOfLife not before current fiscal year
-						active    < (this.fiscalYear+5) + "-04-01"){  // active        before current fiscal year + 5
+					if (endOfLife >  this.fiscalYear    + '-04-01' && // endOfLife not before current fiscal year
+						active    < (this.fiscalYear+5) + '-04-01'){  // active        before current fiscal year + 5
 						// active phase is within the next 4 years
 						for (let offset=4; offset>0; offset--) {
-							if (active >= (this.fiscalYear+offset) + "-04-01") {
+							if (active >= (this.fiscalYear+offset) + '-04-01') {
 								fyOffset = offset;
 								break;
 							}
@@ -293,7 +239,7 @@ class Report extends Component {
 				}
 			} // if (!market || !maturityState || !fyOffset)
 
-			if (fyOffset == null) {
+			if (fyOffset === null || fyOffset === undefined) {
 				return; // no valid record
 			}
 
@@ -305,17 +251,17 @@ class Report extends Component {
 			for (let t=0; t<appl.tags.length; t++) {
 				if (appl.tags[t]) {
 					switch (appl.tags[t].name) {
-					case "Physical/Legacy":
-						maturityState = PHYSICAL;
+					case 'Physical/Legacy':
+						maturityState = RuleDefs.PHYSICAL;
 						break;
-					case "Virtualised":
-						maturityState = VIRTUALISED;
+					case 'Virtualised':
+						maturityState = RuleDefs.VIRTUALISED;
 						break;
-					case "Cloud Native":
-						maturityState = NATIVE;
+					case 'Cloud Native':
+						maturityState = RuleDefs.NATIVE;
 						break;
-					case "Cloud Ready":
-						maturityState = READY;
+					case 'Cloud Ready':
+						maturityState = RuleDefs.READY;
 						break;
 					}
 					if (maturityState) {
@@ -326,7 +272,7 @@ class Report extends Component {
 
 			if (!maturityState) {
 				// if no 'Cloud Maturity' tag, then DEPLOYED
-				maturityState = DEPLOYED;
+				maturityState = RuleDefs.DEPLOYED;
 			}
 
 			// OK, got all - update counter
@@ -360,30 +306,33 @@ class Report extends Component {
 			let m = groupedByMarket[marketKey]; // a 7-by-5 array of numbers
 
 			// computated cloud percentage = (cloud_tdb + cloud_ready + cloud_native) / deployed
+			let rule = RuleDefs.rules[RuleDefs.PERCENT];
 			tableData.push({
-				id: marketKey + '_' + ruleDefs[PERCENT].id,
+				id: marketKey + '_' + rule.id,
 				market: Helper.getOptionKeyFromValue(this.MARKET_OPTIONS, marketKey),
-				rule:   Helper.getOptionKeyFromValue(RULE_OPTIONS, ruleDefs[PERCENT].name),
-				percentage: ruleDefs[PERCENT].percentage,
-				fy0: Helper.computePercentage(       0 , m[READY][0], m[NATIVE][0], m[DEPLOYED][0]), // no TBD in current FY
-				fy1: Helper.computePercentage(m[TBD][1], m[READY][1], m[NATIVE][1], m[DEPLOYED][1]),
-				fy2: Helper.computePercentage(m[TBD][2], m[READY][2], m[NATIVE][2], m[DEPLOYED][2]),
-				fy3: Helper.computePercentage(m[TBD][3], m[READY][3], m[NATIVE][3], m[DEPLOYED][3]),
-				fy4: Helper.computePercentage(m[TBD][4], m[READY][4], m[NATIVE][4], m[DEPLOYED][4]),
+				rule:   Helper.getOptionKeyFromValue(RULE_OPTIONS, rule.name),
+				percentage: rule.percentage,
+				 // no TBD in current FY0
+				fy0: Helper.getPercent(                0 , m[RuleDefs.READY][0], m[RuleDefs.NATIVE][0], m[RuleDefs.DEPLOYED][0]),
+				fy1: Helper.getPercent(m[RuleDefs.TBD][1], m[RuleDefs.READY][1], m[RuleDefs.NATIVE][1], m[RuleDefs.DEPLOYED][1]),
+				fy2: Helper.getPercent(m[RuleDefs.TBD][2], m[RuleDefs.READY][2], m[RuleDefs.NATIVE][2], m[RuleDefs.DEPLOYED][2]),
+				fy3: Helper.getPercent(m[RuleDefs.TBD][3], m[RuleDefs.READY][3], m[RuleDefs.NATIVE][3], m[RuleDefs.DEPLOYED][3]),
+				fy4: Helper.getPercent(m[RuleDefs.TBD][4], m[RuleDefs.READY][4], m[RuleDefs.NATIVE][4], m[RuleDefs.DEPLOYED][4]),
 			});
 
 			// the 6 other rules
-			for (let rule = PHYSICAL; rule<RULE_COUNT; rule++) {
+			for (let r = RuleDefs.PHYSICAL; r<RuleDefs.RULE_COUNT; r++) {
+				let rule = RuleDefs.rules[r];
 				tableData.push({
-					id: marketKey + '_' + ruleDefs[rule].id,
+					id: marketKey + '_' + rule.id,
 					market: Helper.getOptionKeyFromValue(this.MARKET_OPTIONS, marketKey),
-					rule:   Helper.getOptionKeyFromValue(RULE_OPTIONS, ruleDefs[rule].name),
-					percentage: ruleDefs[rule].percentage,
-					fy0: m[rule][0],
-					fy1: m[rule][1],
-					fy2: m[rule][2],
-					fy3: m[rule][3],
-					fy4: m[rule][4]
+					rule:   Helper.getOptionKeyFromValue(RULE_OPTIONS, rule.name),
+					percentage: rule.percentage,
+					fy0: m[r][0],
+					fy1: m[r][1],
+					fy2: m[r][2],
+					fy3: m[r][3],
+					fy4: m[r][4]
 				});
 			}
 		}
@@ -405,6 +354,7 @@ class Report extends Component {
 					market: this.MARKET_OPTIONS,
 					rules: RULE_OPTIONS
 				}}
+				fiscalYear={this.fiscalYear2}
 				setup={this.state.setup} />
 		);
 	}
