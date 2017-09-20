@@ -1,0 +1,54 @@
+// translations via ReportSetup object
+
+{
+	allowEditing: false,
+	menuActions: {
+		customDropdowns: [{
+				id: 'FACTSHEET_TYPE_DROPDOWN',
+				name: 'Factsheet Type',
+				entries: [{
+						id: DataProvider.DONT_STACK_BEFORE_PRODUCTION,
+						name: 'count last occurrence',
+						callback: (currentEntry) => {
+							// build new config (merge must be done by report, update === set operation)
+							lx.updateConfiguration(newConfig);
+						}
+					}
+				]
+			}
+		]
+	},
+	// facets must be generated
+	facets: [{
+			key: '',
+			label: '',
+			fixedFactSheetType: 'Application', // must be set for specific attributes
+			attributes: ['name', 'tags {name}', 'lifecycle { phases {phase startDate} }'],
+			defaultFilters: [{
+					facetKey: 'Application Type',
+					keys: ['${applicationTagId}']
+				}
+			],
+			sorting: [{
+					key: 'displayName',
+					mode: 'BY_FIELD',
+					order: 'asc'
+				}
+			],
+			callback: (data) => {}
+		}
+	],
+	tableConfigCallback: () => {
+		return {
+			attributes: ['name', 'tags', 'lifecycle']
+		}
+	},
+	export: {
+		autoScale: true,
+		beforeExport: (exportElement) => {},
+		exportElementSelector: '#chart',
+		format: 'A4',
+		inputType: 'SVG',
+		orientation: 'landscape'
+	}
+}
