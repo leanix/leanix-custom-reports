@@ -53,7 +53,7 @@ class Table extends Component {
 				<TableHeaderColumn
 					 dataField='market'
 					 dataAlign='right'
-					 csvHeader='market'
+					 csvHeader='Market'
 					 width='100px'
 					 dataFormat={TableUtilities.formatEnum}
 					 formatExtraData={this.props.options.market}
@@ -62,7 +62,7 @@ class Table extends Component {
 				<TableHeaderColumn
 					 dataField='rule'
 					 dataAlign='left'
-					 csvHeader='rules'
+					 csvHeader='Adoption & Maturity Applications'
 					 dataFormat={TableUtilities.formatEnum}
 					 formatExtraData={this.props.options.rules}
 					 filter={TableUtilities.selectFilter(this.props.options.rules)}
@@ -71,30 +71,31 @@ class Table extends Component {
 					 dataField='fy0'
 					 dataAlign='center'
 					 dataFormat={this._formatNumber}
-					 csvHeader='fiscalYear'
+					 csvHeader='Current FY'
 					>FY{this.fiscalYear + 0}/{this.fiscalYear + 1}</TableHeaderColumn>
 				<TableHeaderColumn
 					 dataField='fy1'
 					 dataAlign='center'
 					 dataFormat={this._formatNumber}
-					 csvHeader='fiscalYear1'
+					 csvHeader='FY plus 1'
 					>FY{this.fiscalYear + 1}/{this.fiscalYear + 2}</TableHeaderColumn>
 				<TableHeaderColumn
 					 dataField='fy2'
 					 dataAlign='center'
 					 dataFormat={this._formatNumber}
-					 csvHeader='fiscalYear2'
+					 csvHeader='FY plus 2'
 					>FY{this.fiscalYear + 2}/{this.fiscalYear + 3}</TableHeaderColumn>
 				<TableHeaderColumn
 					 dataField='fy3'
 					 dataAlign='center'
 					 dataFormat={this._formatNumber}
+					 csvHeader='FY plus 3'
 					>FY{this.fiscalYear + 3}/{this.fiscalYear + 4}</TableHeaderColumn>
 				<TableHeaderColumn
 					 dataField='fy4'
 					 dataAlign='center'
 					 dataFormat={this._formatNumber}
-					 csvHeader='fiscalYear4'
+					 csvHeader='FY plus 4'
 					>FY{this.fiscalYear + 4}/{this.fiscalYear + 5}</TableHeaderColumn>
 			</BootstrapTable>
 		);
