@@ -12,7 +12,7 @@ class Table extends Component {
 	render() {
 		return (
 			<BootstrapTable data={this.props.data} keyField='id'
-				 striped hover search exportCSV
+				 striped hover search exportCSV condensed
 				 options={{ clearSearch: true }}>
 				<TableHeaderColumn dataSort
 					 dataField='domainName'

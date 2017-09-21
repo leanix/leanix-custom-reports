@@ -13,7 +13,7 @@ class Table extends Component {
 		return (
 			<BootstrapTable data={this.props.data} keyField='itemId'
 				 striped hover search exportCSV
-				 pagination ignoreSinglePage
+				 pagination
 				 options={{ clearSearch: true }}>
 				<TableHeaderColumn dataSort
 					 dataField='name'

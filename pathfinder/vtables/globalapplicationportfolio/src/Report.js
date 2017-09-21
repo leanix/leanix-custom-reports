@@ -46,7 +46,7 @@ class Report extends Component {
 
 	_initReport(setup) {
 		lx.ready(this._createConfig());
-		lx.showSpinner('Loading data ...');
+		lx.showSpinner('Loading data...');
 		this.setState({
 			setup: setup
 		});
@@ -125,7 +125,7 @@ class Report extends Component {
 							applicationComplexity businessCriticality applicationUsage
 							deployment alias externalId { externalId } leanixV3IdApplication { externalId }
 							soxPci accessType lifecycle { asString phases { phase startDate } }
-							networkTechnicalProductFamily lastMajorUpgrade { phases { startDate } }
+							networkTechnicalProductFamily lastMajorUpgradeDate
 							relApplicationToBusinessCapability { edges { node { factSheet { id } } } }
 							relApplicationToITComponent { edges { node { factSheet { id } } } }
 							relApplicationToUserGroup { edges { node { factSheet { id } } } }
@@ -438,17 +438,11 @@ class Report extends Component {
 	}
 
 	_getLastMajorUpgrade(application) {
-		const phases = Utilities.getFrom(application, 'lastMajorUpgrade.phases', []);
-		if (phases.length === 0) {
-			return;
-		}
-		// v workspace note: its always the first one
-		const startDate = phases[0].startDate;
-		if (!startDate) {
+		if (!application.lastMajorUpgradeDate) {
 			return;
 		}
 		// that's a timestamp as number
-		return Date.parse(startDate + ' 00:00:00');
+		return Date.parse(application.lastMajorUpgradeDate + ' 00:00:00');
 	}
 
 	_getProvider(index, itc) {
@@ -511,7 +505,7 @@ class Report extends Component {
 
 	render() {
 		if (this.state.data.length === 0) {
-			return (<h4 className='text-center'>Loading data ...</h4>);
+			return (<h4 className='text-center'>Loading data...</h4>);
 		}
 		return (
 			<Table data={this.state.data}

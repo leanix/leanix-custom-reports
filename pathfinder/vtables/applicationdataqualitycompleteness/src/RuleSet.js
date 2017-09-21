@@ -206,11 +206,11 @@ const singleRules = [{
 			+ '\'End Of Life\' and \'Recommendation\' TagGroup assignment defined.',
 		appliesTo: (index, application) => {
 			const recommendationTag = index.getFirstTagFromGroup(application, 'Recommendation');
-			return recommendationTag !== undefined && recommendationTag !== null && _hasEndOfLife(application);
+			return recommendationTag && _hasEndOfLife(application);
 		},
 		compute: (index, application, config) => {
 			const recommendationTag = index.getFirstTagFromGroup(application, 'Recommendation');
-			switch (recommendationTag) {
+			switch (recommendationTag.name) {
 				case 'Decommission':
 				case 'Replace':
 				case 'Consolidate':
@@ -225,11 +225,11 @@ const singleRules = [{
 			+ '\'End Of Life\' and \'Recommendation\' TagGroup assignment defined.',
 		appliesTo: (index, application) => {
 			const recommendationTag = index.getFirstTagFromGroup(application, 'Recommendation');
-			return recommendationTag !== undefined && recommendationTag !== null && !_hasEndOfLife(application);
+			return recommendationTag && !_hasEndOfLife(application);
 		},
 		compute: (index, application, config) => {
 			const recommendationTag = index.getFirstTagFromGroup(application, 'Recommendation');
-			switch (recommendationTag) {
+			switch (recommendationTag.name) {
 				case 'Sustain':
 				case 'Enhance':
 				case 'Remediate':

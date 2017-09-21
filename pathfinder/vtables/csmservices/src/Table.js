@@ -12,8 +12,8 @@ class Table extends Component {
 	render() {
 		return (
 			<BootstrapTable data={this.props.data} keyField='csmL2Id'
-				 striped hover search exportCSV
-				 pagination ignoreSinglePage
+				 striped hover search exportCSV condensed
+				 pagination
 				 options={
 					 { clearSearch: true },
 					 { sizePerPageList: [
@@ -55,7 +55,7 @@ class Table extends Component {
 					 csvHeader='service-name'
 					 filter={TableUtilities.textFilter}
 					>Service name</TableHeaderColumn>
-				<TableHeaderColumn dataSort
+				<TableHeaderColumn
 					 dataField='serviceOriginUGsNames'
 					 width='300px'
 					 dataAlign='left'
@@ -87,7 +87,7 @@ class Table extends Component {
 					 csvFormatExtraData={this.props.options.serviceStatus}
 					 filter={TableUtilities.selectFilter(this.props.options.serviceStatus)}
 					>Service status</TableHeaderColumn>
-				<TableHeaderColumn dataSort
+				<TableHeaderColumn
 					 dataField='bcaL1BCsNames'
 					 width='300px'
 					 dataAlign='left'
@@ -98,7 +98,7 @@ class Table extends Component {
 					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
 					>BCAs L1</TableHeaderColumn>
-				<TableHeaderColumn dataSort
+				<TableHeaderColumn
 					 dataField='bcaL4BCsNames'
 					 width='300px'
 					 dataAlign='left'
@@ -109,7 +109,7 @@ class Table extends Component {
 					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
 					>BCAs L4</TableHeaderColumn>
-				<TableHeaderColumn dataSort
+				<TableHeaderColumn
 					 dataField='cimDOsNames'
 					 width='300px'
 					 dataAlign='left'
@@ -120,7 +120,7 @@ class Table extends Component {
 					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
 					>CIMs</TableHeaderColumn>
-				<TableHeaderColumn dataSort
+				<TableHeaderColumn
 					 dataField='appMapBCsNames'
 					 width='300px'
 					 dataAlign='left'
@@ -131,7 +131,7 @@ class Table extends Component {
 					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
 					>AppMaps</TableHeaderColumn>
-				<TableHeaderColumn dataSort
+				<TableHeaderColumn
 					 dataField='platformBCsNames'
 					 width='300px'
 					 dataAlign='left'
@@ -142,7 +142,7 @@ class Table extends Component {
 					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
 					>Platforms (provided)</TableHeaderColumn>
-				<TableHeaderColumn dataSort
+				<TableHeaderColumn
 					 dataField='platfConsBCsNames'
 					 width='300px'
 					 dataAlign='left'
@@ -153,7 +153,7 @@ class Table extends Component {
 					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
 					>Platforms (consumed)</TableHeaderColumn>
-				<TableHeaderColumn dataSort
+				<TableHeaderColumn
 					 dataField='tmfAppNames'
 					 width='300px'
 					 dataAlign='left'
