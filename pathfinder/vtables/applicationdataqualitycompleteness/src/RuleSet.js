@@ -193,6 +193,14 @@ const singleRules = [{
 		compute: (index, application, config) => {
 			return index.getFirstTagFromGroup(application, 'Recommendation') === 'Decommission' || 'Replace' || 'Consolidate' ? true : false;
 		}
+	}, {
+		name: 'Non-retiring application has a recommendation of \'Sustain\', \'Enhance\', \'Remediate\' or \'Re-Platform\'',
+		appliesTo: (index, application) => {
+			return !_isRetiring(application);
+		},
+		compute: (index, application, config) => {
+			return index.getFirstTagFromGroup(application, 'Recommendation') === 'Sustain' || 'Enhance' || 'Remediate' || 'Re-Platform' ? true : false;
+		}
 	}
 ];
 
