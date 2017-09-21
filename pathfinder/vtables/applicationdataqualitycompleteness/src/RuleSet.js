@@ -169,6 +169,14 @@ const singleRules = [{
 			const subIndex = application.relApplicationToOwningUserGroup;
 			return subIndex && subIndex.nodes.length === 1;
 		}
+	}, {
+		name: 'has Recommendation',
+		appliesTo: (index, application) => {
+			return true;
+		},
+		compute: (index, application, config) => {
+			return index.getFirstTagFromGroup(application, 'Recommendation') ? true : false;
+		}
 	}
 ];
 
