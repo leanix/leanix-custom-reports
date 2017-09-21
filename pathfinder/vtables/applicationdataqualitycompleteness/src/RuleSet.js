@@ -177,6 +177,14 @@ const singleRules = [{
 		compute: (index, application, config) => {
 			return index.getFirstTagFromGroup(application, 'Recommendation') ? true : false;
 		}
+	}, {
+		name: 'has Cloud Maturity',
+		appliesTo: (index, application) => {
+			return true;
+		},
+		compute: (index, application, config) => {
+			return index.getFirstTagFromGroup(application, 'Cloud Maturity') ? true : false;
+		}
 	}
 ];
 
