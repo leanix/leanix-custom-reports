@@ -7,7 +7,7 @@
 		"node": ">=6.11.1"
 	},
 	"leanixReport": {
-		"id": "net.leanix.vtables.csmoperations",
+		"id": "com.vodafone.vtables.csmoperations",
 		"title": "CSM Operations",
 		"defaultConfig": {}
 	},
