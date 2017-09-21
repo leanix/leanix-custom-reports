@@ -185,6 +185,14 @@ const singleRules = [{
 		compute: (index, application, config) => {
 			return index.getFirstTagFromGroup(application, 'Cloud Maturity') ? true : false;
 		}
+	}, {
+		name: 'Retiring application has a recommendation of \'Decommission\', \'Replace\' or \'Consolidate\'',
+		appliesTo: (index, application) => {
+			return _isRetiring(application);
+		},
+		compute: (index, application, config) => {
+			return index.getFirstTagFromGroup(application, 'Recommendation') === 'Decommission' || 'Replace' || 'Consolidate' ? true : false;
+		}
 	}
 ];
 
