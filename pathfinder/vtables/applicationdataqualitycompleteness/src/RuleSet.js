@@ -191,7 +191,12 @@ const singleRules = [{
 			return _isRetiring(application);
 		},
 		compute: (index, application, config) => {
-			return index.getFirstTagFromGroup(application, 'Recommendation') === 'Decommission' || 'Replace' || 'Consolidate' ? true : false;
+			switch (index.getFirstTagFromGroup(application, 'Recommendation')) {
+				case 'Decommission': break; return true;
+				case 'Replace': break; return true;
+				case 'Consolidate': break; return true;
+				default: return false;
+			}
 		}
 	}, {
 		name: 'Non-retiring application has a recommendation of \'Sustain\', \'Enhance\', \'Remediate\' or \'Re-Platform\'',
@@ -200,6 +205,29 @@ const singleRules = [{
 		},
 		compute: (index, application, config) => {
 			return index.getFirstTagFromGroup(application, 'Recommendation') === 'Sustain' || 'Enhance' || 'Remediate' || 'Re-Platform' ? true : false;
+		}
+	}, {
+		name: 'An application is compliant if it\'s name start with it\'s owning user group.',
+		additionalNote: 'Exceptions:' +
+		'- Applications starting with "UK" or "CW" are allowed to have the owning user group "UK".' +
+		'- Applications starting with "VGS" are allowed to have the owning user group "Vodafone Service Companies / VGS".',
+		appliesTo: (index, application) => {
+			return true;
+		},
+		compute: (index, application, config) => {
+			const subIndex = application.relApplicationToOwningUserGroup;
+			if (!subIndex || subIndex.nodes.length < 1) {
+				return false;
+			}
+			/**
+			const compliant = subIndex.nodes.find((e) => {
+				// access itComponents
+				return e.name;
+			});
+			console.log(compliant);
+			console.log(application.name);
+			 */
+			return true;
 		}
 	}
 ];
