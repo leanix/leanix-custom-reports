@@ -171,7 +171,7 @@ class Report extends Component {
 				// 'endOfLife' phase start date must be between 1st apr <CURRENT_YEAR> and 31th mar <CURRENT_YEAR + 1> (both inclusive)
 				if (this._isLifecyclePhaseStartDateIn(endOfLifePhase, APR, MAR, false, false)) {
 					// planned (decommissioning) or actuals (decommissioned)?
-					if (endOfLifePhase.startDate < CURRENT) {
+					if (endOfLifePhase.startDate > CURRENT) {
 						decommissionsPlanned++;
 					} else {
 						decommissionsActuals++;
@@ -181,7 +181,7 @@ class Report extends Component {
 				// 'active' phase start date must be between 1st apr <CURRENT_YEAR> and 31th mar <CURRENT_YEAR + 1> (both inclusive)
 				if (this._isLifecyclePhaseStartDateIn(activePhase, APR, MAR, false, false)) {
 					// planned (commissioning) or actuals (commissioned)?
-					if (activePhase.startDate < CURRENT) {
+					if (activePhase.startDate > CURRENT) {
 						commissionsPlanned++;
 					} else {
 						commissionsActuals++;

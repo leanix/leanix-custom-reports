@@ -30,7 +30,7 @@ class Table extends Component {
 					 headerAlign='left'
 					 dataAlign='right'
 					 csvHeader={'application-baseline-apr-' + currentYear}
-					>Application Baseline Apr {currentYear}</TableHeaderColumn>
+					>Baseline Apr {currentYear}</TableHeaderColumn>
 				<TableHeaderColumn
 					 dataField='decommissionsPlanned'
 					 headerAlign='left'
@@ -60,13 +60,13 @@ class Table extends Component {
 					 headerAlign='left'
 					 dataAlign='right'
 					 csvHeader={'application-baseline-mar-' + nextYear}
-					>Application Baseline Mar {nextYear}</TableHeaderColumn>
+					>Baseline Mar {nextYear}</TableHeaderColumn>
 				<TableHeaderColumn
 					 dataField='baselineToday'
 					 headerAlign='left'
 					 dataAlign='right'
 					 csvHeader='application-baseline-today'
-					>Application Baseline as of today</TableHeaderColumn>
+					>Baseline as of today</TableHeaderColumn>
 			</BootstrapTable>
 		);
 	}
