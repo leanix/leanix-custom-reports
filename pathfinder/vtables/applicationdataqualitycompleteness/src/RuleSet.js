@@ -220,26 +220,6 @@ const singleRules = [{
 			}
 		}
 	}, {
-		name: 'Non-retiring application has a recommendation of \'Sustain\', \'Enhance\', \'Remediate\' or \'Re-Platform\'',
-		additionalNote: 'Rule includes applications which don\'t have a life cycle phase of '
-			+ '\'End Of Life\' and \'Recommendation\' TagGroup assignment defined.',
-		appliesTo: (index, application) => {
-			const recommendationTag = index.getFirstTagFromGroup(application, 'Recommendation');
-			return recommendationTag && !_hasEndOfLife(application);
-		},
-		compute: (index, application, config) => {
-			const recommendationTag = index.getFirstTagFromGroup(application, 'Recommendation');
-			switch (recommendationTag.name) {
-				case 'Sustain':
-				case 'Enhance':
-				case 'Remediate':
-				case 'Re-Platform':
-					return true;
-				default:
-					return false;
-			}
-		}
-	}, {
 		name: 'has \'Cloud Maturity\' TagGroup assigned',
 		appliesTo: (index, application) => {
 			return true;
