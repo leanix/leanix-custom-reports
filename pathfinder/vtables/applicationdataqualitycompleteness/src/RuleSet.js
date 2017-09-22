@@ -296,6 +296,16 @@ function _hasSubscriptionRole(application, subscriptionRole) {
 	});
 }
 
+const appTypeRule = {
+	name: 'has \'Application Type\' TagGroup assigned',
+	compute: (index, applications, config) => {
+		return {
+			compliant: undefined,
+			nonCompliant: applications
+		};
+	}
+};
+
 const overallRule = {
 	name: 'Overall Quality',
 	compute: (compliants, nonCompliants, config) => {
@@ -312,7 +322,8 @@ const overallRule = {
 };
 
 export default {
-	ruleCount: singleRules.length + 1,
+	ruleCount: singleRules.length + 2,
 	singleRules: singleRules,
+	appTypeRule: appTypeRule,
 	overallRule: overallRule
 };
