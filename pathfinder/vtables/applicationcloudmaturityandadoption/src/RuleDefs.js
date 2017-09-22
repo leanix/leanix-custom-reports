@@ -1,11 +1,6 @@
-/*
 import Utilities from './common/Utilities';
-const ONE_YEAR_BEFORE_DATE = new Date();
-ONE_YEAR_BEFORE_DATE.setHours(0, 0, 0, 0);
-ONE_YEAR_BEFORE_DATE.setFullYear(ONE_YEAR_BEFORE_DATE.getFullYear() - 1);
-const ONE_YEAR_BEFORE = ONE_YEAR_BEFORE_DATE.getTime();
-*/
-// the list of adoption & maturity rule ids, names
+
+// the index of the rules within the list of adoption & maturity rules
 const PERCENT = 0;
 const PHYSICAL = 1;
 const VIRTUALISED = 2;
@@ -15,6 +10,7 @@ const NATIVE = 5;
 const DEPLOYED = 6;
 const RULE_COUNT = 7;  // last + 1
 
+// the list of adoption & maturity rule ids, names
 const ruleDefs = [
 	{
 		id: PERCENT,
@@ -53,7 +49,31 @@ const ruleDefs = [
 	}
 ];
 
+// the list of rules (for row selection in table)
+const RULE_OPTIONS = Utilities.createOptionsObj(ruleDefs);
+
+// the expected Cloud Maturity States
+const MS_CLOUD_NATIVE = 'Cloud Native';
+const MS_CLOUD_READY = 'Cloud Ready';
+const MS_CLOUD_TBD = 'Cloud TBD';
+//const MS_LEGACY = 'Legacy Containment';
+const MS_PHYSICAL = 'Physical/Legacy';
+const MS_VIRTUALISED = 'Virtualised';
+
+function getMaturityStateFromTag(tag) {
+	switch (tag) {
+	case MS_CLOUD_NATIVE: return NATIVE;
+	case MS_CLOUD_READY:  return READY;
+	case MS_CLOUD_TBD:    return TBD;
+	case MS_PHYSICAL:     return PHYSICAL;
+	case MS_VIRTUALISED:  return VIRTUALISED;
+	}
+	return undefined;
+}
+
 export default {
+	rules: ruleDefs,
+	RULE_OPTIONS: RULE_OPTIONS,
 	PERCENT: PERCENT,
 	PHYSICAL: PHYSICAL,
 	VIRTUALISED: VIRTUALISED,
@@ -62,5 +82,5 @@ export default {
 	NATIVE: NATIVE,
 	DEPLOYED: DEPLOYED,
 	RULE_COUNT: RULE_COUNT,
-	rules: ruleDefs
+	getMaturityStateFromTag: getMaturityStateFromTag
 };

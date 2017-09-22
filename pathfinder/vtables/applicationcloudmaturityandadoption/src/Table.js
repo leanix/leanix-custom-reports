@@ -12,12 +12,10 @@ class Table extends Component {
 		this.fiscalYear = props.fiscalYear;
 	}
 
-	// csv-format methode einführen
 	_formatNumber(cell, row) {
 		if (cell === undefined || cell === null || Number.isNaN(cell)) {
 			return '';
 		}
-
 		if (row.percentage) {
 			return (
 				<div>
@@ -30,6 +28,7 @@ class Table extends Component {
 				</div>
 			);
 		}
+
 		return (
 			<div>
 				<span style={{
