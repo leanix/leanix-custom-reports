@@ -50,7 +50,7 @@ class Report extends Component {
 
 	_initReport(setup) {
 		lx.ready(this._createConfig());
-		lx.showSpinner('Loading data ...');
+		lx.showSpinner('Loading data...');
 		this.setState({
 			setup: setup
 		});
@@ -168,8 +168,8 @@ class Report extends Component {
 					baselineToday++;
 				}
 				// application decommissioning or decommissioned this FY?
-				// 'endOfLife' phase start date must be between 1st apr <CURRENT_YEAR> and 31th mar <CURRENT_YEAR + 1>
-				if (this._isLifecyclePhaseStartDateIn(endOfLifePhase, APR, MAR)) {
+				// 'endOfLife' phase start date must be between 1st apr <CURRENT_YEAR> and 31th mar <CURRENT_YEAR + 1> (both inclusive)
+				if (this._isLifecyclePhaseStartDateIn(endOfLifePhase, APR, MAR, false, false)) {
 					// planned (decommissioning) or actuals (decommissioned)?
 					if (endOfLifePhase.startDate < CURRENT) {
 						decommissionsPlanned++;
@@ -178,8 +178,8 @@ class Report extends Component {
 					}
 				}
 				// application commissioning or commissioned this FY?
-				// 'active' phase start date must be between 1st apr <CURRENT_YEAR> and 31th mar <CURRENT_YEAR + 1>
-				if (this._isLifecyclePhaseStartDateIn(activePhase, APR, MAR)) {
+				// 'active' phase start date must be between 1st apr <CURRENT_YEAR> and 31th mar <CURRENT_YEAR + 1> (both inclusive)
+				if (this._isLifecyclePhaseStartDateIn(activePhase, APR, MAR, false, false)) {
 					// planned (commissioning) or actuals (commissioned)?
 					if (activePhase.startDate < CURRENT) {
 						commissionsPlanned++;
@@ -255,8 +255,10 @@ class Report extends Component {
 		return false;
 	}
 
-	_isLifecyclePhaseStartDateIn(lifecycle, from, to) {
-		return lifecycle && lifecycle.startDate >= from && lifecycle.startDate < to;
+	_isLifecyclePhaseStartDateIn(lifecycle, from, to, fromExclusive, toExclusive) {
+		return lifecycle
+			&& (fromExclusive ? lifecycle.startDate > from : lifecycle.startDate >= from)
+			&& (toExclusive ? lifecycle.startDate < to : lifecycle.startDate <= to);
 	}
 
 	_getOptionKeyFromValue(options, value) {
@@ -275,7 +277,7 @@ class Report extends Component {
 
 	render() {
 		if (this.state.data.length === 0) {
-			return (<h4 className='text-center'>Loading data ...</h4>);
+			return (<h4 className='text-center'>Loading data...</h4>);
 		}
 		let data = this.state.data;
 		let marketOptions = Utilities.copyObject(this.MARKET_OPTIONS);

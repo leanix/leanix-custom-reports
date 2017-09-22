@@ -12,17 +12,17 @@ class Table extends Component {
 	render() {
 		return (
 			<BootstrapTable data={this.props.data} keyField='id'
-				 striped hover search exportCSV
-				 pagination ignoreSinglePage
+				 striped hover search exportCSV condensed
+				 pagination
 				 options={
 					 { clearSearch: true },
 					 { sizePerPageList: [
-						{ text: '5', value: 5 },
+						{ text: '10', value: 10 },
 						{ text: '25', value: 25 },
 						{ text: '50', value: 50 },
 						{ text: 'All', value: this.props.data.length }
 						],
-						sizePerPage: 5
+						sizePerPage: 10
 					 }
 				 }
 				>

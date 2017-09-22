@@ -1,0 +1,34 @@
+body {
+	margin: 0px;
+	padding: 0px 5px;
+	overflow-x: hidden;
+}
+
+#report {
+	margin: 0 auto;
+	padding: 0px;
+}
+
+/*
+ * from 'react-bootstrap-table/css/react-bootstrap-table.css'
+ */
+.react-bs-table table td,
+.react-bs-table table th {
+	white-space: normal !important;
+}
+
+.react-bs-container-header > table > thead > tr > th {
+    vertical-align: bottom !important;
+}
+
+.react-bs-table,
+.react-bs-table-tool-bar,
+.react-bs-table-pagination {
+	margin: 0px;
+}
+
+.react-bs-table-tool-bar {
+	margin-bottom: 10px;
+}
+
+@import "chart.css";

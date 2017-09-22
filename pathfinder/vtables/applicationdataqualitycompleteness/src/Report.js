@@ -6,7 +6,7 @@ import RuleSet from './RuleSet';
 import Table from './Table';
 
 const RULE_OPTIONS = Utilities.createOptionsObj(
-	RuleSet.singleRules.concat(RuleSet.overallRule));
+	RuleSet.singleRules.concat(RuleSet.appTypeRule, RuleSet.overallRule));
 
 class Report extends Component {
 
@@ -28,7 +28,7 @@ class Report extends Component {
 
 	_initReport(setup) {
 		lx.ready(this._createConfig());
-		lx.showSpinner('Loading data ...');
+		lx.showSpinner('Loading data...');
 		this.setState({
 			setup: setup
 		});
@@ -97,6 +97,15 @@ class Report extends Component {
 					]}
 				) {
 					edges { node { id tags { name } } }
+				}
+				noAppType: allFactSheets(
+					sort: { mode: BY_FIELD, key: "displayName", order: asc },
+					filter: {facetFilters: [
+						{facetKey: "FactSheetTypes", keys: ["Application"]}
+						, {facetKey: "Application Type", keys: ["__missing__"]}
+					]}
+				) {
+					edges { node { id name } }
 				}}`;
 	}
 
@@ -112,26 +121,15 @@ class Report extends Component {
 			}
 			return obj;
 		}, {});
-		let marketCount = 0;
 		// group applications by market
-		const groupedByMarket = {};
-		index.applications.nodes.forEach((e) => {
-			if (!applicationTagId && !index.includesTag(e, 'Application')) {
-				return;
-			}
-			if (!itTagId && !index.includesTag(e, 'IT')) {
-				return;
-			}
-			const market = Utilities.getMarket(e);
-			if (!market) {
-				return;
-			}
-			if (!groupedByMarket[market]) {
-				groupedByMarket[market] = [];
-				this.MARKET_OPTIONS[marketCount++] = market;
-			}
-			groupedByMarket[market].push(e);
+		const groupResult = this._groupByMarket(index.applications.nodes, (application) => {
+			return (!applicationTagId && !index.includesTag(application, 'Application'))
+				|| (!itTagId && !index.includesTag(application, 'IT'));
 		});
+		const groupedByMarket = groupResult.groups;
+		this.MARKET_OPTIONS = groupResult.options;
+		// get 'noAppType' groups
+		const noAppTypeGroupResult = this._groupByMarket(index.noAppType.nodes);
 		const ruleConfig = {
 			appMapId: appMapId
 		};
@@ -140,49 +138,86 @@ class Report extends Component {
 			// process single rules
 			const compliants = {};
 			const nonCompliants = {};
-			allApplications.forEach((e2) => {
-				RuleSet.singleRules.forEach((e3) => {
-					if (!compliants[e3.name]) {
-						compliants[e3.name] = [];
-						nonCompliants[e3.name] = [];
+			allApplications.forEach((e) => {
+				RuleSet.singleRules.forEach((e2) => {
+					if (!compliants[e2.name]) {
+						compliants[e2.name] = [];
+						nonCompliants[e2.name] = [];
 					}
-					if (!e3.appliesTo(index, e2)) {
+					if (!e2.appliesTo(index, e)) {
 						return;
 					}
-					const ruleResult = e3.compute(index, e2, ruleConfig);
+					const ruleResult = e2.compute(index, e, ruleConfig);
 					if (ruleResult) {
-						compliants[e3.name].push(e2);
+						compliants[e2.name].push(e);
 					} else {
-						nonCompliants[e3.name].push(e2);
+						nonCompliants[e2.name].push(e);
 					}
 				});
 			});
 			// add results to tableData
-			RuleSet.singleRules.forEach((e2) => {
-				const compliant = compliants[e2.name].length;
-				const nonCompliant = nonCompliants[e2.name].length;
+			RuleSet.singleRules.forEach((e) => {
+				const compliant = compliants[e.name].length;
+				const nonCompliant = nonCompliants[e.name].length;
 				tableData.push({
-					id: market + '-' + e2.name,
+					id: market + '-' + e.name,
 					market: this._getOptionKeyFromValue(this.MARKET_OPTIONS, market),
-					rule: this._getOptionKeyFromValue(RULE_OPTIONS, e2.name),
+					rule: this._getOptionKeyFromValue(RULE_OPTIONS, e.name),
 					overallRule: false,
 					compliant: compliant,
-					compliantApps: compliants[e2.name].map((e3) => {
-						return e3.name;
+					compliantApps: compliants[e.name].map((e2) => {
+						return e2.name;
 					}),
-					compliantAppIds: compliants[e2.name].map((e3) => {
-						return e3.id;
+					compliantAppIds: compliants[e.name].map((e2) => {
+						return e2.id;
 					}),
 					nonCompliant: nonCompliant,
-					nonCompliantApps: nonCompliants[e2.name].map((e3) => {
-						return e3.name;
+					nonCompliantApps: nonCompliants[e.name].map((e2) => {
+						return e2.name;
 					}),
-					nonCompliantAppIds: nonCompliants[e2.name].map((e3) => {
-						return e3.id;
+					nonCompliantAppIds: nonCompliants[e.name].map((e2) => {
+						return e2.id;
 					}),
 					percentage: this._computePercentage(compliant, nonCompliant)
 				});
 			});
+			// process 'noAppType' rule
+			const noAppTypeApps = noAppTypeGroupResult.groups[market];
+			if (noAppTypeApps) {
+				const noAppTypeRuleResult = RuleSet.appTypeRule.compute(index, noAppTypeApps, ruleConfig);
+				tableData.push({
+					id: market + '-' + RuleSet.appTypeRule.name,
+					market: this._getOptionKeyFromValue(this.MARKET_OPTIONS, market),
+					rule: this._getOptionKeyFromValue(RULE_OPTIONS, RuleSet.appTypeRule.name),
+					overallRule: true,
+					compliant: 0,
+					compliantApps: [],
+					compliantAppIds: [],
+					nonCompliant: noAppTypeRuleResult.nonCompliant.length,
+					nonCompliantApps: noAppTypeRuleResult.nonCompliant.map((e) => {
+						return e.name;
+					}),
+					nonCompliantAppIds: noAppTypeRuleResult.nonCompliant.map((e) => {
+						return e.id;
+					}),
+					percentage: (noAppTypeRuleResult.nonCompliant.length > 0 ? 0 : 100)
+				});
+			} else {
+				// add empty entry
+				tableData.push({
+					id: market + '-' + RuleSet.appTypeRule.name,
+					market: this._getOptionKeyFromValue(this.MARKET_OPTIONS, market),
+					rule: this._getOptionKeyFromValue(RULE_OPTIONS, RuleSet.appTypeRule.name),
+					overallRule: true,
+					compliant: 0,
+					compliantApps: [],
+					compliantAppIds: [],
+					nonCompliant: 0,
+					nonCompliantApps: [],
+					nonCompliantAppIds: [],
+					percentage: Number.NaN
+				});
+			}
 			// process overall rule
 			const overallRuleResult = RuleSet.overallRule.compute(compliants, nonCompliants, ruleConfig);
 			tableData.push({
@@ -204,6 +239,30 @@ class Report extends Component {
 			data: tableData,
 			additionalNotes: additionalNotes
 		});
+	}
+
+	_groupByMarket(nodes, additionalFilter) {
+		let marketCount = 0;
+		const groupedByMarket = {};
+		const marketOptions = {};
+		nodes.forEach((e) => {
+			if (additionalFilter && additionalFilter(e)) {
+				return;
+			}
+			const market = Utilities.getMarket(e);
+			if (!market) {
+				return;
+			}
+			if (!groupedByMarket[market]) {
+				groupedByMarket[market] = [];
+				marketOptions[marketCount++] = market;
+			}
+			groupedByMarket[market].push(e);
+		});
+		return {
+			groups: groupedByMarket,
+			options: marketOptions
+		};
 	}
 
 	_computePercentage(compliant, nonCompliant) {
@@ -232,7 +291,7 @@ class Report extends Component {
 
 	render() {
 		if (this.state.data.length === 0) {
-			return (<h4 className='text-center'>Loading data ...</h4>);
+			return (<h4 className='text-center'>Loading data...</h4>);
 		}
 		return (
 			<div>

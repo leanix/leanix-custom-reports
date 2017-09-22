@@ -8,7 +8,7 @@ const ONE_YEAR_BEFORE = ONE_YEAR_BEFORE_DATE.getTime();
 const singleRules = [{
 		name: 'Adding application has project (w/ impact \'Adds\')',
 		additionalNote: 'Rule includes applications which have a current life cycle phase of either '
-			+ '"Phase In", "Active" or "Phase Out" and the start date of this phase must be greater than or equal to '
+			+ '\'Phase In\', \'Active\' or \'Phase Out\' and the start date of this phase must be greater than or equal to '
 			+ ONE_YEAR_BEFORE_DATE.toLocaleDateString() + '.',
 		appliesTo: (index, application) => {
 			return _hasProductionLifecycle(application);
@@ -18,12 +18,12 @@ const singleRules = [{
 			if (!subIndex) {
 				return false;
 			}
-			return subIndex.nodes.length > 0 && _hasProjectWithImpact(subIndex, 'adds');
+			return _hasProjectWithImpact(subIndex, 'Adds');
 		}
 	}, {
 		name: 'Retiring application has project (w/ impact \'Sunsets\')',
 		additionalNote: 'Rule includes applications which have a life cycle phase of '
-			+ '"End Of Life" and the start date of this phase must be greater than or equal to '
+			+ '\'End Of Life\' and the start date of this phase must be greater than or equal to '
 			+ ONE_YEAR_BEFORE_DATE.toLocaleDateString() + '.',
 		appliesTo: (index, application) => {
 			return _isRetiring(application);
@@ -33,7 +33,7 @@ const singleRules = [{
 			if (!subIndex) {
 				return false;
 			}
-			return subIndex.nodes.length > 0 && _hasProjectWithImpact(subIndex, 'sunsets');
+			return _hasProjectWithImpact(subIndex, 'Sunsets');
 		}
 	}, {
 		name: 'has COBRA (only active, exactly one)',
@@ -43,7 +43,7 @@ const singleRules = [{
 		},
 		compute: (index, application, config) => {
 			const subIndex = application.relApplicationToBusinessCapability;
-			if (!subIndex || subIndex.nodes.length < 1) {
+			if (!subIndex) {
 				return false;
 			}
 			const compliantBCs = subIndex.nodes.filter((e) => {
@@ -54,7 +54,7 @@ const singleRules = [{
 			return compliantBCs.length === 1;
 		}
 	}, {
-		name: 'has COTS Package TagGroup assigned (only active)',
+		name: 'has \'COTS Package\' TagGroup assigned (only active)',
 		appliesTo: (index, application) => {
 			const currentLifecycle = Utilities.getCurrentLifecycle(application);
 			return currentLifecycle && currentLifecycle.phase === 'active';
@@ -71,7 +71,7 @@ const singleRules = [{
 		},
 		compute: (index, application, config) => {
 			const subIndex = application.relApplicationToITComponent;
-			if (!subIndex || subIndex.nodes.length < 1) {
+			if (!subIndex) {
 				return false;
 			}
 			const compliantITComp = subIndex.nodes.find((e) => {
@@ -86,8 +86,7 @@ const singleRules = [{
 			const currentLifecycle = Utilities.getCurrentLifecycle(application);
 			return currentLifecycle && currentLifecycle.phase === 'active'
 			 && index.includesTag(application, 'COTS Package')
-			 && application.relApplicationToITComponent
-			 && application.relApplicationToITComponent.nodes.length > 0;
+			 && application.relApplicationToITComponent;
 		},
 		compute: (index, application, config) => {
 			const subIndex = application.relApplicationToITComponent;
@@ -113,6 +112,7 @@ const singleRules = [{
 			return true;
 		},
 		compute: (index, application, config) => {
+			// getCurrentLifecycle has always a return value if there is at least one phase defined
 			return Utilities.getCurrentLifecycle(application) ? true : false;
 		}
 	}, {
@@ -152,7 +152,7 @@ const singleRules = [{
 			return application.technicalSuitability ? true : false;
 		}
 	}, {
-		name: 'has Cost Centre (only active)',
+		name: 'has \'Cost Centre\' TagGroup assigned (only active)',
 		appliesTo: (index, application) => {
 			const currentLifecycle = Utilities.getCurrentLifecycle(application);
 			return currentLifecycle && currentLifecycle.phase === 'active';
@@ -169,16 +169,81 @@ const singleRules = [{
 			const subIndex = application.relApplicationToOwningUserGroup;
 			return subIndex && subIndex.nodes.length === 1;
 		}
+	},
+	/* {
+		name: 'An application is compliant if it\'s name start with it\'s owning user group.',
+		additionalNote: 'Exceptions:' +
+		'- Applications starting with \'UK\' or \'CW\' are allowed to have the owning user group \'UK\'.' +
+		'- Applications starting with \'VGS\' are allowed to have the owning user group \'Vodafone Service Companies / VGS\'.',
+		appliesTo: (index, application) => {
+			return true;
+		},
+		compute: (index, application, config) => {
+			const subIndex = application.relApplicationToOwningUserGroup;
+			if (!subIndex || subIndex.nodes.length < 1) {
+				return false;
+			}
+			const compliant = subIndex.nodes.find((e) => {
+				// access itComponents
+				return e.name;
+			});
+			console.log(compliant);
+			console.log(application.name);
+			return true;
+		}
+	}, */
+	{
+		name: 'has \'Recommendation\' TagGroup assigned',
+		appliesTo: (index, application) => {
+			return true;
+		},
+		compute: (index, application, config) => {
+			return index.getFirstTagFromGroup(application, 'Recommendation') ? true : false;
+		}
+	}, {
+		name: 'Retiring application has a recommendation of \'Decommission\', \'Replace\' or \'Consolidate\'',
+		additionalNote: 'Rule includes applications which have a life cycle phase of '
+			+ '\'End Of Life\' and \'Recommendation\' TagGroup assignment defined.',
+		appliesTo: (index, application) => {
+			const recommendationTag = index.getFirstTagFromGroup(application, 'Recommendation');
+			return recommendationTag && _hasEndOfLife(application);
+		},
+		compute: (index, application, config) => {
+			const recommendationTag = index.getFirstTagFromGroup(application, 'Recommendation');
+			switch (recommendationTag.name) {
+				case 'Decommission':
+				case 'Replace':
+				case 'Consolidate':
+					return true;
+				default:
+					return false;
+			}
+		}
+	}, {
+		name: 'has \'Cloud Maturity\' TagGroup assigned',
+		appliesTo: (index, application) => {
+			return true;
+		},
+		compute: (index, application, config) => {
+			return index.getFirstTagFromGroup(application, 'Cloud Maturity') ? true : false;
+		}
 	}
 ];
 
 function _hasProductionLifecycle(application) {
+	const currentLifecycle = Utilities.getCurrentLifecycle(application);
+	return Utilities.isProductionPhase(currentLifecycle) && currentLifecycle.startDate >= ONE_YEAR_BEFORE;
+}
+
+function _hasEndOfLife(application) {
 	if (!application || !application.lifecycle || !application.lifecycle.phases
 		 || !Array.isArray(application.lifecycle.phases)) {
 		return false;
 	}
-	const currentLifecycle = Utilities.getCurrentLifecycle(application);
-	return Utilities.isProductionPhase(currentLifecycle) && currentLifecycle.startDate >= ONE_YEAR_BEFORE;
+	const phase = application.lifecycle.phases.find((e) => {
+			return e.phase === 'endOfLife';
+		});
+	return phase !== undefined && phase !== null;
 }
 
 function _isRetiring(application) {
@@ -200,7 +265,7 @@ function _hasProjectWithImpact(subIndex, impact) {
 
 function _hasSubscriptionRole(application, subscriptionRole) {
 	const subIndex = application.subscriptions;
-	if (!subIndex || subIndex.nodes.length < 1) {
+	if (!subIndex) {
 		return false;
 	}
 	return subIndex.nodes.find((e) => {
@@ -210,6 +275,16 @@ function _hasSubscriptionRole(application, subscriptionRole) {
 		});
 	});
 }
+
+const appTypeRule = {
+	name: 'has \'Application Type\' TagGroup assigned',
+	compute: (index, applications, config) => {
+		return {
+			compliant: undefined,
+			nonCompliant: applications
+		};
+	}
+};
 
 const overallRule = {
 	name: 'Overall Quality',
@@ -227,7 +302,8 @@ const overallRule = {
 };
 
 export default {
-	ruleCount: singleRules.length + 1,
+	ruleCount: singleRules.length + 2,
 	singleRules: singleRules,
+	appTypeRule: appTypeRule,
 	overallRule: overallRule
 };

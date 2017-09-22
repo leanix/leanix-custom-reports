@@ -1,14 +1,14 @@
 {
-	"name": "csmservices",
+	"name": "vburndown",
 	"version": "1.0.0",
-	"description": "Shows a table outlining all CSM related services.",
+	"description": "A report that shows lifecyle information of applications in a burndown chart.",
 	"private": true,
 	"engines": {
 		"node": ">=6.11.1"
 	},
 	"leanixReport": {
-		"id": "com.vodafone.vtables.csmservices",
-		"title": "CSM Services",
+		"id": "com.vodafone.vburndown",
+		"title": "Application Burndown Chart",
 		"defaultConfig": {}
 	},
 	"scripts": {
@@ -18,7 +18,9 @@
 	},
 	"keywords": [
 		"leanix",
-		"custom-report"
+		"custom-report",
+		"burndown",
+		"chart"
 	],
 	"author": "LeanIX GmbH",
 	"license": "MIT",
@@ -46,6 +48,9 @@
 		"prop-types": "15.5.10",
 		"react": "15.6.1",
 		"react-bootstrap-table": "4.0.3",
-		"react-dom": "15.6.1"
+		"react-dom": "15.6.1",
+		"c3": "0.4.18",
+		"moment": "2.18.1",
+		"moment-range": "3.0.3"
 	}
 }

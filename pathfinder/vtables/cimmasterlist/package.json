@@ -7,7 +7,7 @@
 		"node": ">=6.11.1"
 	},
 	"leanixReport": {
-		"id": "net.leanix.vtables.cimmasterlist",
+		"id": "com.vodafone.vtables.cimmasterlist",
 		"title": "CIM MasterList",
 		"defaultConfig": {}
 	},

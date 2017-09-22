@@ -91,7 +91,7 @@ class Table extends Component {
 	render() {
 		return (
 			<BootstrapTable data={this.props.data} keyField='id'
-				 striped hover exportCSV
+				 striped hover exportCSV condensed
 				 pagination
 				 options={{
 					sizePerPage: this.props.pageSize,
@@ -110,7 +110,7 @@ class Table extends Component {
 					>Market</TableHeaderColumn>
 				<TableHeaderColumn dataSort columnClassName='small'
 					 dataField='rule'
-					 width='450px'
+					 width='500px'
 					 dataAlign='left'
 					 dataFormat={this._formatRule}
 					 formatExtraData={this.props.options.rule}
@@ -118,9 +118,9 @@ class Table extends Component {
 					 csvFormatExtraData={this.props.options.rule}
 					 filter={TableUtilities.selectFilter(this.props.options.rule)}
 					>Rule</TableHeaderColumn>
-				<TableHeaderColumn dataSort
+				<TableHeaderColumn
 					 dataField='compliant'
-					 width='200px'
+					 width='180px'
 					 dataAlign='left'
 					 dataFormat={this._formatCompliant}
 					 csvFormat={this._formatCompliant}
@@ -132,9 +132,9 @@ class Table extends Component {
 					 csvFormat={TableUtilities.formatArray}
 					 csvFormatExtraData=';'
 					>Compliant Applications</TableHeaderColumn>
-				<TableHeaderColumn dataSort
+				<TableHeaderColumn
 					 dataField='nonCompliant'
-					 width='200px'
+					 width='180px'
 					 dataAlign='left'
 					 csvHeader='non-compliant'
 					 filter={TableUtilities.numberFilter}
@@ -152,7 +152,7 @@ class Table extends Component {
 					>Non-Compliant Applications</TableHeaderColumn>
 				<TableHeaderColumn dataSort sortFunc={this._sortPercentage}
 					 dataField='percentage'
-					 width='200px'
+					 width='180px'
 					 dataAlign='left'
 					 dataFormat={this._formatPercentage}
 					 csvHeader='compliant-percentage'

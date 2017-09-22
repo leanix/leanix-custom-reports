@@ -20,8 +20,8 @@ class Table extends Component {
 	render() {
 		return (
 			<BootstrapTable data={this.props.data} keyField='id'
-				 striped hover search exportCSV
-				 pagination ignoreSinglePage
+				 striped hover search exportCSV condensed
+				 pagination
 				 options={{ clearSearch: true }}>
 				<TableHeaderColumn dataSort
 					 dataField='name'
@@ -42,7 +42,7 @@ class Table extends Component {
 					 csvFormatExtraData={true}
 					 filter={TableUtilities.textFilter}
 					>Description</TableHeaderColumn>
-				<TableHeaderColumn dataSort
+				<TableHeaderColumn
 					 dataField='cobraNames'
 					 width='300px'
 					 dataAlign='left'
@@ -149,7 +149,7 @@ class Table extends Component {
 					 csvFormatExtraData={this.props.options.cotsPackage}
 					 filter={TableUtilities.selectFilter(this.props.options.cotsPackage)}
 					>COTS package</TableHeaderColumn>
-				<TableHeaderColumn dataSort
+				<TableHeaderColumn
 					 dataField='cotsSoftware'
 					 width='300px'
 					 dataAlign='left'
@@ -160,7 +160,7 @@ class Table extends Component {
 					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
 					>COTS software</TableHeaderColumn>
-				<TableHeaderColumn dataSort
+				<TableHeaderColumn
 					 dataField='cotsVendors'
 					 width='300px'
 					 dataAlign='left'
@@ -181,7 +181,7 @@ class Table extends Component {
 					 csvFormat={TableUtilities.csvFormatDate}
 					 filter={TableUtilities.dateFilter}
 					>Last major upgrade</TableHeaderColumn>
-				<TableHeaderColumn dataSort
+				<TableHeaderColumn
 					 dataField='remedyNames'
 					 width='300px'
 					 dataAlign='left'
@@ -192,7 +192,7 @@ class Table extends Component {
 					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
 					>Remedy business services</TableHeaderColumn>
-				<TableHeaderColumn dataSort
+				<TableHeaderColumn
 				   dataField='supportNames'
 				   width='300px'
 				   dataAlign='left'
@@ -203,7 +203,7 @@ class Table extends Component {
 				   csvFormatExtraData=';'
 				   filter={TableUtilities.textFilter}
 				>Supported by</TableHeaderColumn>
-				<TableHeaderColumn dataSort
+				<TableHeaderColumn
 					 dataField='siProviderNames'
 					 width='300px'
 					 dataAlign='left'
@@ -280,7 +280,7 @@ class Table extends Component {
 				   csvFormatExtraData={this.props.options.applicationUsage}
 				   filter={TableUtilities.selectFilter(this.props.options.applicationUsage)}
 				>Application usage</TableHeaderColumn>
-				<TableHeaderColumn dataSort columnClassName='small'
+				<TableHeaderColumn columnClassName='small'
 				   dataField='alias'
 				   width='250px'
 				   dataAlign='left'
@@ -311,7 +311,7 @@ class Table extends Component {
 				   csvFormatExtraData={this.props.options.soxPci}
 				   filter={TableUtilities.selectFilter(this.props.options.soxPci)}
 				>SOX / PCI</TableHeaderColumn>
-				<TableHeaderColumn dataSort columnClassName='small'
+				<TableHeaderColumn columnClassName='small'
 					 dataField='itOwners'
 					 width='280px'
 					 dataAlign='left'
@@ -322,7 +322,7 @@ class Table extends Component {
 					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
 					>IT owners</TableHeaderColumn>
-				<TableHeaderColumn dataSort columnClassName='small'
+				<TableHeaderColumn columnClassName='small'
 				   dataField='businessOwners'
 				   width='280px'
 				   dataAlign='left'
@@ -333,7 +333,7 @@ class Table extends Component {
 				   csvFormatExtraData=';'
 				   filter={TableUtilities.textFilter}
 				>Business owners</TableHeaderColumn>
-				<TableHeaderColumn dataSort columnClassName='small'
+				<TableHeaderColumn columnClassName='small'
 					 dataField='spocs'
 					 width='280px'
 					 dataAlign='left'
@@ -344,7 +344,7 @@ class Table extends Component {
 					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
 					>SPOCs</TableHeaderColumn>
-				<TableHeaderColumn dataSort columnClassName='small'
+				<TableHeaderColumn columnClassName='small'
 				   dataField='operationsOwners'
 				   width='280px'
 				   dataAlign='left'
@@ -355,7 +355,7 @@ class Table extends Component {
 				   csvFormatExtraData=';'
 				   filter={TableUtilities.textFilter}
 				>Operations owners</TableHeaderColumn>
-				<TableHeaderColumn dataSort
+				<TableHeaderColumn
 					 dataField='usedByMarkets'
 					 width='250px'
 					 dataAlign='left'
@@ -366,7 +366,7 @@ class Table extends Component {
 					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
 					>Used by markets</TableHeaderColumn>
-				<TableHeaderColumn dataSort
+				<TableHeaderColumn
 					 dataField='usedBySegments'
 					 width='250px'
 					 dataAlign='left'
@@ -377,7 +377,7 @@ class Table extends Component {
 					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
 					>Used by segments</TableHeaderColumn>
-				<TableHeaderColumn dataSort
+				<TableHeaderColumn
 				   dataField='networkProductFamilies'
 				   width='220px'
 				   dataAlign='left'
@@ -400,7 +400,7 @@ class Table extends Component {
 				   }}
 				   filter={TableUtilities.textFilter}
 				>Network product families</TableHeaderColumn>
-				<TableHeaderColumn dataSort columnClassName='small'
+				<TableHeaderColumn columnClassName='small'
 				   dataField='backends'
 				   width='250px'
 				   dataAlign='left'
@@ -411,7 +411,7 @@ class Table extends Component {
 				   csvFormatExtraData=';'
 				   filter={TableUtilities.textFilter}
 				>Backend technologies</TableHeaderColumn>
-				<TableHeaderColumn dataSort columnClassName='small'
+				<TableHeaderColumn columnClassName='small'
 				   dataField='frontends'
 				   width='250px'
 				   dataAlign='left'

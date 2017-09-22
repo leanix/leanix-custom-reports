@@ -25,7 +25,7 @@ class Report extends Component {
 
 	_initReport(setup) {
 		lx.ready(this._createConfig());
-		lx.showSpinner('Loading data ...');
+		lx.showSpinner('Loading data...');
 		this.setState({
 			setup: setup
 		});
@@ -231,7 +231,7 @@ class Report extends Component {
 
 	render() {
 		if (this.state.data.length === 0) {
-			return (<h4 className='text-center'>Loading data ...</h4>);
+			return (<h4 className='text-center'>Loading data...</h4>);
 		}
 		return (
 			<Table data={this.state.data}

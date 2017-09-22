@@ -7,7 +7,7 @@
 		"node": ">=6.11.1"
 	},
 	"leanixReport": {
-		"id": "net.leanix.vtables.dataqualitycompleteness",
+		"id": "com.vodafone.vtables.dataqualitycompleteness",
 		"title": "Application Data Quality Completeness",
 		"defaultConfig": {}
 	},

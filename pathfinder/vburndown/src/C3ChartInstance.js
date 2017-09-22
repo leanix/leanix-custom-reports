@@ -1,10 +1,11 @@
 import c3 from 'c3';
 
-class ChartInstance {
+class C3ChartInstance {
 
-	constructor(categories) {
+	constructor(node, categories) {
+		this.node = node;
 		this.chart = c3.generate({
-				bindto: '#chart',
+				bindto: node,
 				data: {
 					columns: [categories],
 					x: 'time',
@@ -33,7 +34,7 @@ class ChartInstance {
 					},
 					empty: {
 						label: {
-							text: 'Loading data...'
+							text: 'Loading data ...'
 						}
 					}
 				},
@@ -109,7 +110,7 @@ class ChartInstance {
 			// dirty hack for c3: legend rect is still shown if no data
 			// will be regenerated from c3, if needed -> safe to remove svg element
 			// do not use jquery, it can't deal with svg elements
-			const legendBackground = document.getElementById('chart').getElementsByClassName('c3-legend-background')[0];
+			const legendBackground = this.node.getElementsByClassName('c3-legend-background')[0];
 			if (legendBackground) {
 				const parentLegendBackground = legendBackground.parentElement;
 				parentLegendBackground.removeChild(legendBackground);
@@ -122,4 +123,4 @@ class ChartInstance {
 	}
 }
 
-export default ChartInstance;
+export default C3ChartInstance;

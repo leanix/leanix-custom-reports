@@ -7,7 +7,7 @@
 		"node": ">=6.11.1"
 	},
 	"leanixReport": {
-		"id": "net.leanix.vtables.appmap2cim",
+		"id": "com.vodafone.vtables.appmap2cim",
 		"title": "AppMap 2 CIM",
 		"defaultConfig": {}
 	},

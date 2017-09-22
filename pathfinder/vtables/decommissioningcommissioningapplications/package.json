@@ -7,7 +7,7 @@
 		"node": ">=6.11.1"
 	},
 	"leanixReport": {
-		"id": "net.leanix.vtables.decommissioningcommissioning",
+		"id": "com.vodafone.vtables.decommissioningcommissioning",
 		"title": "Decommissioning & Commissioning Applications",
 		"defaultConfig": {}
 	},
