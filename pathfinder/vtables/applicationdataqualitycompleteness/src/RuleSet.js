@@ -1,8 +1,12 @@
 import Utilities from './common/Utilities';
 
+const CURRENT_DATE = new Date();
+CURRENT_DATE.setHours(0, 0, 0, 0);
 const ONE_YEAR_BEFORE_DATE = new Date();
 ONE_YEAR_BEFORE_DATE.setHours(0, 0, 0, 0);
 ONE_YEAR_BEFORE_DATE.setFullYear(ONE_YEAR_BEFORE_DATE.getFullYear() - 1);
+
+const CURRENT = CURRENT_DATE.getTime();
 const ONE_YEAR_BEFORE = ONE_YEAR_BEFORE_DATE.getTime();
 
 const singleRules = [{
@@ -201,12 +205,12 @@ const singleRules = [{
 			return index.getFirstTagFromGroup(application, 'Recommendation') ? true : false;
 		}
 	}, {
-		name: 'Retiring application has a recommendation of \'Decommission\', \'Replace\' or \'Consolidate\'',
+		name: 'Retiring application should have a recommendation of \'Decommission\', \'Replace\' or \'Consolidate\'',
 		additionalNote: 'Rule includes applications which have a life cycle phase of '
-			+ '\'End Of Life\' and \'Recommendation\' TagGroup assignment defined.',
+			+ '\'End Of Life\', but not approached yet and \'Recommendation\' TagGroup assignment defined.',
 		appliesTo: (index, application) => {
 			const recommendationTag = index.getFirstTagFromGroup(application, 'Recommendation');
-			return recommendationTag && _hasEndOfLife(application);
+			return recommendationTag && _hasEndOfLife(application) && _isNotInEndOfLifePhase(application);
 		},
 		compute: (index, application, config) => {
 			const recommendationTag = index.getFirstTagFromGroup(application, 'Recommendation');
@@ -221,8 +225,10 @@ const singleRules = [{
 		}
 	}, {
 		name: 'has \'Cloud Maturity\' TagGroup assigned',
+		additionalNote: 'Rule includes applications which have either a life cycle phase of '
+			+ '\'End Of Life\', but not approached yet or no \'End Of Life\' phase defined.',
 		appliesTo: (index, application) => {
-			return true;
+			return _isNotInEndOfLifePhase(application);
 		},
 		compute: (index, application, config) => {
 			return index.getFirstTagFromGroup(application, 'Cloud Maturity') ? true : false;
@@ -244,6 +250,12 @@ function _hasEndOfLife(application) {
 			return e.phase === 'endOfLife';
 		});
 	return phase !== undefined && phase !== null;
+}
+
+function _isNotInEndOfLifePhase(application) {
+	const lifecycles = Utilities.getLifecycles(application);
+	const endOfLife = Utilities.getLifecyclePhase(lifecycles, 'endOfLife');
+	return endOfLife ? (endOfLife.startDate > CURRENT) : true;
 }
 
 function _isRetiring(application) {

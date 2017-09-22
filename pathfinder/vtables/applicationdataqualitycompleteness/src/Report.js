@@ -185,6 +185,8 @@ class Report extends Component {
 			const noAppTypeApps = noAppTypeGroupResult.groups[market];
 			if (noAppTypeApps) {
 				const noAppTypeRuleResult = RuleSet.appTypeRule.compute(index, noAppTypeApps, ruleConfig);
+				compliants[RuleSet.appTypeRule.name] = [];
+				nonCompliants[RuleSet.appTypeRule.name] = noAppTypeRuleResult.nonCompliant;
 				tableData.push({
 					id: market + '-' + RuleSet.appTypeRule.name,
 					market: this._getOptionKeyFromValue(this.MARKET_OPTIONS, market),
@@ -204,6 +206,8 @@ class Report extends Component {
 				});
 			} else {
 				// add empty entry
+				compliants[RuleSet.appTypeRule.name] = [];
+				nonCompliants[RuleSet.appTypeRule.name] = [];
 				tableData.push({
 					id: market + '-' + RuleSet.appTypeRule.name,
 					market: this._getOptionKeyFromValue(this.MARKET_OPTIONS, market),
