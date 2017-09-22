@@ -18,7 +18,7 @@ const singleRules = [{
 			if (!subIndex) {
 				return false;
 			}
-			return subIndex.nodes.length > 0 && _hasProjectWithImpact(subIndex, 'adds');
+			return _hasProjectWithImpact(subIndex, 'Adds');
 		}
 	}, {
 		name: 'Retiring application has project (w/ impact \'Sunsets\')',
@@ -33,7 +33,7 @@ const singleRules = [{
 			if (!subIndex) {
 				return false;
 			}
-			return subIndex.nodes.length > 0 && _hasProjectWithImpact(subIndex, 'sunsets');
+			return _hasProjectWithImpact(subIndex, 'Sunsets');
 		}
 	}, {
 		name: 'has COBRA (only active, exactly one)',
@@ -43,7 +43,7 @@ const singleRules = [{
 		},
 		compute: (index, application, config) => {
 			const subIndex = application.relApplicationToBusinessCapability;
-			if (!subIndex || subIndex.nodes.length < 1) {
+			if (!subIndex) {
 				return false;
 			}
 			const compliantBCs = subIndex.nodes.filter((e) => {
@@ -71,7 +71,7 @@ const singleRules = [{
 		},
 		compute: (index, application, config) => {
 			const subIndex = application.relApplicationToITComponent;
-			if (!subIndex || subIndex.nodes.length < 1) {
+			if (!subIndex) {
 				return false;
 			}
 			const compliantITComp = subIndex.nodes.find((e) => {
@@ -86,8 +86,7 @@ const singleRules = [{
 			const currentLifecycle = Utilities.getCurrentLifecycle(application);
 			return currentLifecycle && currentLifecycle.phase === 'active'
 			 && index.includesTag(application, 'COTS Package')
-			 && application.relApplicationToITComponent
-			 && application.relApplicationToITComponent.nodes.length > 0;
+			 && application.relApplicationToITComponent;
 		},
 		compute: (index, application, config) => {
 			const subIndex = application.relApplicationToITComponent;
@@ -113,6 +112,7 @@ const singleRules = [{
 			return true;
 		},
 		compute: (index, application, config) => {
+			// getCurrentLifecycle has always a return value if there is at least one phase defined
 			return Utilities.getCurrentLifecycle(application) ? true : false;
 		}
 	}, {
@@ -251,10 +251,6 @@ const singleRules = [{
 ];
 
 function _hasProductionLifecycle(application) {
-	if (!application || !application.lifecycle || !application.lifecycle.phases
-		 || !Array.isArray(application.lifecycle.phases)) {
-		return false;
-	}
 	const currentLifecycle = Utilities.getCurrentLifecycle(application);
 	return Utilities.isProductionPhase(currentLifecycle) && currentLifecycle.startDate >= ONE_YEAR_BEFORE;
 }
@@ -289,7 +285,7 @@ function _hasProjectWithImpact(subIndex, impact) {
 
 function _hasSubscriptionRole(application, subscriptionRole) {
 	const subIndex = application.subscriptions;
-	if (!subIndex || subIndex.nodes.length < 1) {
+	if (!subIndex) {
 		return false;
 	}
 	return subIndex.nodes.find((e) => {
