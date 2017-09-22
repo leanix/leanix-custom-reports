@@ -131,6 +131,7 @@ class Report extends Component {
 							relApplicationToUserGroup { edges { node { factSheet { id } } } }
 							relApplicationToSegment { edges { node { factSheet { id } } } }
 							relApplicationToProvider { edges { node { factSheet { id } } } }
+							relApplicationToApplicationSupport { edges { node { factSheet { id } } } }
 						}
 					}}
 				}
@@ -216,7 +217,6 @@ class Report extends Component {
 			}
 			const cotsSoftware = [];
 			const remedies = [];
-			const supports = [];
 			const backends = [];
 			const frontends = [];
 			const subIndexITCs = e.relApplicationToITComponent;
@@ -251,11 +251,6 @@ class Report extends Component {
 								} else if (itc.name.endsWith('(Front End)')) {
 									frontends.push(itc.name.replace(' (Front End)' , ''));
 								}
-							} else {
-								const provider = this._getProvider(index, itc);
-								if (provider) {
-									supports.push(provider);
-								}
 							}
 							break;
 						case 'developmentTechnology':
@@ -267,6 +262,17 @@ class Report extends Component {
 								frontends.push(itc.name.replace(' (Front End)' , ''));
 							}
 							break;
+					}
+				});
+			}
+			const supports = [];
+			const subIndexSupport = e.relApplicationToApplicationSupport;
+			if (subIndexSupport) {
+				subIndexSupport.nodes.forEach((e2) => {
+					// access providers
+					const provider = index.byID[e2.id];
+					if (provider) {
+						supports.push(provider);
 					}
 				});
 			}
