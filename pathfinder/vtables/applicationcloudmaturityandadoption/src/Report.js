@@ -6,8 +6,34 @@ import Helper from './Helper';
 import Table from './Table';
 import RuleDefs from './RuleDefs';
 
-// the list of rules (for row selection in table)
-const RULE_OPTIONS = Utilities.createOptionsObj(RuleDefs.rules);
+// dates and timestamps
+const TODAY = new Date();
+const THIS_YEAR = TODAY.getFullYear();
+
+// Fiscal Year is from April 1st to March 31st
+const FISCAL_YEAR = (TODAY.getMonth() < 3 ? THIS_YEAR-1 : THIS_YEAR);
+const FISCAL_YEARS = [
+	{
+		startDate: new Date(FISCAL_YEAR,   3,  1, 0, 0, 0, 0).getTime(),
+		endDate:   new Date(FISCAL_YEAR+1, 2, 31, 0, 0, 0, 0).getTime()
+	},
+	{
+		startDate: new Date(FISCAL_YEAR+1, 3,  1, 0, 0, 0, 0).getTime(),
+		endDate:   new Date(FISCAL_YEAR+2, 2, 31, 0, 0, 0, 0).getTime()
+	},
+	{
+		startDate: new Date(FISCAL_YEAR+2, 3,  1, 0, 0, 0, 0).getTime(),
+		endDate:   new Date(FISCAL_YEAR+3, 2, 31, 0, 0, 0, 0).getTime()
+	},
+	{
+		startDate: new Date(FISCAL_YEAR+3, 3,  1, 0, 0, 0, 0).getTime(),
+		endDate:   new Date(FISCAL_YEAR+4, 2, 31, 0, 0, 0, 0).getTime()
+	},
+	{
+		startDate: new Date(FISCAL_YEAR+4, 3,  1, 0, 0, 0, 0).getTime(),
+		endDate:   new Date(FISCAL_YEAR+5, 2, 31, 0, 0, 0, 0).getTime()
+	}
+];
 
 class Report extends Component {
 
@@ -16,13 +42,7 @@ class Report extends Component {
 		this._initReport = this._initReport.bind(this);
 		this._handleData = this._handleData.bind(this);
 
-		// get current two-digit fiscal year (Fiscal Year is from April 1st to March 31st)
-		let today = new Date();
-		this.fiscalYear = (today.getMonth < 3 ? today.getFullYear()-1 : today.getFullYear());
-		this.fiscalYear2 = this.fiscalYear % 100; // 2-digits year
-
-		// the list of markets (for row selection in table)
-		this.MARKET_OPTIONS = {};
+		this.MARKET_OPTIONS = {}; // the list of markets
 
 		this.state = {
 			setup: null,
@@ -65,217 +85,90 @@ class Report extends Component {
 	}
 
 	_createQuery(applicationTagId, itTagId) {
-		const limitation = ''; //'first:100,';
-		const facetKeyFactSheetTypes = '{facetKey:"FactSheetTypes",keys:["Application"]}';
 		const facetkeyApplicationTypeTag = applicationTagId ? `,{facetKey:"Application Type",keys:["${applicationTagId}"]}` : '';
 		const facetKeyCostCentreTag = itTagId ? `,{facetKey:"CostCentre",keys:["${itTagId}"]}` : '';
-		let query = `{records:allFactSheets(${limitation}
+		let query = `{records:allFactSheets(
 			sort:{mode:BY_FIELD,key:"displayName",order:asc },
 			filter:{facetFilters:[
-				${facetKeyFactSheetTypes}
+				{facetKey:"FactSheetTypes",keys:["Application"]}
 				${facetkeyApplicationTypeTag}
 				${facetKeyCostCentreTag}
 			]}
 		){
 			edges{node{...on Application{
-				name tags{name}
-				lc:lifecycle{state:asString ph:phases{phase from:startDate}}
-				prjs:relApplicationToProject{edges{node{fs:factSheet{name}}}}
+				name tags{name tagGroup{name}}
+				lifecycle{state:asString phases{phase startDate}}
+				relApplicationToProject{edges{node{factSheet{name}}}}
 			}}}
 		}}`;
 
-		console.log(`GraphQL-Query:\n${query}`);
 		return query;
 	}
 
-	/*
-	Collect the regarding countings for each single market
-	* 1 value for current fiscal year (fy0) and
-	  4 values for the 4 upcoming fiscal years (fy1 ... fy4)
-	* 7 data fields (columns in table): market|rule|fy0|fy1|fy2|fy3|fy4
-	* 7 rows per market:
-	  * PERCENT (calculated)
-		* ==> (        0 + CLOUD_READY + CLOUD_NATIVE) / DEPLOYED (fy0)
-		* ==> (CLOUD_TBD + CLOUD_READY + CLOUD_NATIVE) / DEPLOYED (fy1|fy2|fy3|fy4)
-	  * PHYSICAL
-	  * VIRTUALISED
-	  * CLOUD_TBD
-	  * CLOUD_READY
-	  * CLOUD_NATIVE
-	  * DEPLOYED
-	*/
-
-	// TODO: Tag-Fallback einarbeiten!
 	_handleData(index, applicationTagId, itTagId) {
-	/*
-		FOR EACH Record in Recordset (GraphQL response):
-			IF   there is a project related to the current application record
-			THEN Extract market, maturity state and fiscal year from the
-				 project's name '<MARKET>_<MATURITYSTATE> FY<XX>/<YY>'
-			IF   either market or maturity state or fiscal year is not yet defined
-			THEN Extract market from the application's name
-				 Extract maturity state from the 'Cloud Maturity' tag (if any)
-				 IF   there is no 'Cloud Maturity' tag
-				 THEN cloud maturity is set to DEPLOYED
-				 Extract fiscal year from lifecycle state
-				 IF   lifecycle.state= 'active'
-				 THEN fiscal year is current year
-				 ELSE Extract fiscal year from the application's lifecycle phases
-					  Get the 'active' phase and check its StartDate
-					  When looking backwards in time the fiscal year is that year,
-					  where for the first time
-					  startDate is greater than or equal to '<FiscalYear>-04-01'
-			IF   market and maturity state and fiscal year are defined
-			THEN increment counter of <MARKET>[<MATURITYSTATE>][<FISCALYEAR].
-		*/
 
 		// group applications by market
 		let marketCount = 0;
 		const groupedByMarket = {};
-		let counter = 0; // for logging purposes only
-		let valid = 0; // for logging purposes only
 
 		index.records.nodes.forEach((appl) => {
-			counter++;
 
-			// the market's marketEntry[maturityState][fyOffset] has to be updated
+			if (!applicationTagId && !index.includesTag(e, 'Application')) {
+				return; // no valid record
+			}
+			if (!itTagId && !index.includesTag(e, 'IT')) {
+				return; // no valid record
+			}
+
 			let market;
 			let maturityState;
 			let fyOffset;
 
-			// search related projects
-			let project;
-			if (appl.prjs && appl.prjs.nodes && appl.prjs.nodes.length>0) {
-				for (let p=0; p<appl.prjs.nodes.length; p++) {
-					project = appl.prjs.nodes[p].fs;
-					market = Utilities.getMarket(project);
-					if (market) {
-						break; // first one wins
-					}
-				}
-			}
-
-			if (market) {
-				/* got market, check if project's name ends with
-				   * '_Cloud TBD FYNN/MM',
-				   * '_Virtualised FYNN/MM',
-				   * '_Cloud Native FYNN/MM',
-				   * '_Cloud Ready FYNN/MM',
-				*/
-				let prj_name = project.name;
-				//console.log(`got market '${market}' from project '${prj_name}' of application '${appl.name}'`);
-
-				for (let offset=0; offset<5; offset++) {
-					let fySnippet = `FY${this.fiscalYear2+offset}/${this.fiscalYear2+offset+1}`;
-					if (prj_name.endsWith(`_Cloud TBD ${fySnippet}`)) {
-						maturityState = RuleDefs.TBD;
-						fyOffset = offset;
-						break;
-					}
-					if (prj_name.endsWith(`_Cloud Native ${fySnippet}`)) {
-						maturityState = RuleDefs.NATIVE;
-						fyOffset = offset;
-						break;
-					}
-					if (prj_name.endsWith(`_Cloud Ready ${fySnippet}`)) {
-						maturityState = RuleDefs.READY;
-						fyOffset = offset;
-						break;
-					}
-					if (prj_name.endsWith(`_Virtualised ${fySnippet}`)) {
-						maturityState = RuleDefs.VIRTUALISED;
-						fyOffset = offset;
-						break;
-					}
-				}
-			}
-
-			if (!market || !maturityState || !fyOffset) {
-				// analyze application's data
-				//console.log(`need to get info from application '${appl.name}'`);
-
-				// get market (from application's name)
-				market = Utilities.getMarket(appl);
-				if (!market) {
-					return; // no valid record
-				}
-
-				// get fiscal year (from application's lifecycle)
-				if (!appl.lc) {
-					return; // no valid record
-				}
-
-				if (appl.lc.state === 'active') {
-					//console.log('  >>> active in current fiscal year');
-					fyOffset = 0; // current fiscal year
-				} else if (appl.lc.ph) {
-					// investigate the lifecycle phases
-					let endOfLife = '9999-99-99';
-					let active    = '9999-99-99';
-					appl.lc.ph.forEach((lcPhase) => {
-						switch (lcPhase.phase) {
-						case 'endOfLife':
-							endOfLife = lcPhase.from;
-							break;
-						case 'active':
-							active = lcPhase.from;
-							break;
-						}
-					});
-
-					// TODO: keine STrings vergleiche, sondern timestamps vergleichen
-					// Decommission-report ansehen für lifecycle behandlung
-					//console.log(`  >>> active from ${active} to ${endOfLife}`);
-					if (endOfLife >  this.fiscalYear    + '-04-01' && // endOfLife not before current fiscal year
-						active    < (this.fiscalYear+5) + '-04-01'){  // active        before current fiscal year + 5
-						// active phase is within the next 4 years
-						for (let offset=4; offset>0; offset--) {
-							if (active >= (this.fiscalYear+offset) + '-04-01') {
-								fyOffset = offset;
-								break;
-							}
-						}
-					}
-				}
-			} // if (!market || !maturityState || !fyOffset)
-
-			if (fyOffset === null || fyOffset === undefined) {
+			// get market (from application's name)
+			market = Utilities.getMarket(appl);
+			if (!market) {
 				return; // no valid record
 			}
 
-			// get maturity state (from application's tags)
-			if (!appl.tags) {
-				return; // no valid record
-			}
-
-			for (let t=0; t<appl.tags.length; t++) {
-				if (appl.tags[t]) {
-					switch (appl.tags[t].name) {
-					case 'Physical/Legacy':
-						maturityState = RuleDefs.PHYSICAL;
-						break;
-					case 'Virtualised':
-						maturityState = RuleDefs.VIRTUALISED;
-						break;
-					case 'Cloud Native':
-						maturityState = RuleDefs.NATIVE;
-						break;
-					case 'Cloud Ready':
-						maturityState = RuleDefs.READY;
-						break;
-					}
-					if (maturityState) {
-						break; // for
-					}
-				}
-			} // for
-
-			if (!maturityState) {
-				// if no 'Cloud Maturity' tag, then DEPLOYED
+			// get maturity state tags
+			const msTags = index.getTagsFromGroup(appl, 'Cloud Maturity');
+			switch (msTags.length) {
+			case 0: // applications with not maturity state are regarded as DEPLOYED
 				maturityState = RuleDefs.DEPLOYED;
+				break;
+			case 1:
+				maturityState = RuleDefs.getMaturityStateFromTag(msTags[0].name);
+				break;
+			default:
+				return; // no valid maturity state
 			}
 
-			// OK, got all - update counter
+			// get application's lifecycle information
+			const lifecycles = Utilities.getLifecycles(appl);
+			if (lifecycles.length === 0) {
+				return;
+			}
+
+			// get start and end date of application's 'active' phase
+			const activePhase = Utilities.getLifecyclePhase(lifecycles, Helper.ACTIVE);
+			Helper.addLifecyclePhaseEnd(lifecycles, activePhase);
+			let startDate;
+			let endDate;
+			if (activePhase) {
+				startDate = activePhase.startDate;
+				endDate = activePhase.endDate;
+			}
+
+			if (startDate === undefined ||                    // invalid
+				startDate > FISCAL_YEARS[4].endDate ||        // out of fiscal years scope
+				(endDate !== undefined &&
+					(endDate <= FISCAL_YEARS[0].startDate ||  // out of fiscal years scope
+					 endDate <= startDate))                   // invalid
+			) {
+				return; // application has no valid or fitting 'active' phase
+			}
+
+			//console.log(`${counter}. ${appl.name}: 'active' from ${startDate} to ${endDate} | ${msTag} (${maturityState})`);
 
 			let marketentry = groupedByMarket[market];
 			if (!marketentry) {
@@ -293,26 +186,65 @@ class Report extends Component {
 				this.MARKET_OPTIONS[marketCount++] = market;
 			}
 
-			//console.log(`${counter}. ${appl.name}: Market ${market} - MatState ${maturityState} - Fiscal Year Offset ${fyOffset}`);
-			valid++;
-			marketentry[maturityState][fyOffset]++;
+			// increment the regarding fiscal year counters (AS-IS rule)
+			FISCAL_YEARS.forEach((fy, index) => {
+				// startDate before fiscal year endDate
+				// endDate - if defined - after fiscal year startDate
+				if (startDate <= fy.endDate && (endDate === undefined || endDate > fy.startDate)) {
+					if (index === 0) {
+						marketentry[maturityState][index]++; // current fiscal year
+					} else {
+						marketentry[RuleDefs.DEPLOYED][index]++; // future fiscal year (DEPLOYED only)
+					}
+				}
+			});
+
+			// Project name pattern: <MARKET>_<MATSTATE_NAME> FY<YY>/<YY>
+			//                       G1       G2                G3   G4
+			const PRJNAME_RE = /^([A-Z]+)_(Cloud Ready|Cloud Native|Cloud TBD)\s+FY(\d{2})\/(\d{2})$/;
+			if (appl.relApplicationToProject) {
+				appl.relApplicationToProject.nodes.forEach((prj) => {
+					let prj_name = prj.name;
+					const MATCH = PRJNAME_RE.exec(prj_name);
+					if (!MATCH) {
+						return; // no valid project name
+					}
+
+					const matState = MATCH[2];
+					const fyStart  = 1 * MATCH[3] + 2000; // 4-digit year
+					const fyEnd    = 1 * MATCH[4] + 2000; // 4-digit-year
+					if (fyStart + 1 != fyEnd) {
+						return; // no valid project name (fyEnd must be fyStart + 1)
+					}
+
+					// check only the future fiscal years
+					if (fyStart < FISCAL_YEAR+1 || fyStart > FISCAL_YEAR + 4){
+						return; // project has no valid fiscal year
+					}
+
+					let prjMaturityState = RuleDefs.getMaturityStateFromTag(matState);
+					if (!prjMaturityState) {
+						return; // project has no valid 'Cloud Maturity' state
+					}
+
+					marketentry[prjMaturityState][fyStart-FISCAL_YEAR]++;
+				});
+			}
 		}); // records
 
 		// add fiscal year results to tableData (7 rows per market)
-		console.log(`FILL TABLE... (${valid} valid out of ${counter} application records)`);
-
 		const tableData = [];
 		for (let marketKey in groupedByMarket) {
 			let m = groupedByMarket[marketKey]; // a 7-by-5 array of numbers
 
-			// computated cloud percentage = (cloud_tdb + cloud_ready + cloud_native) / deployed
+			// the PERCENT rule
 			let rule = RuleDefs.rules[RuleDefs.PERCENT];
 			tableData.push({
 				id: marketKey + '_' + rule.id,
 				market: Helper.getOptionKeyFromValue(this.MARKET_OPTIONS, marketKey),
-				rule:   Helper.getOptionKeyFromValue(RULE_OPTIONS, rule.name),
+				rule:   Helper.getOptionKeyFromValue(RuleDefs.RULE_OPTIONS, rule.name),
 				percentage: rule.percentage,
-				 // no TBD in current FY0
+				// no Cloud TBD in current fiscal year
 				fy0: Helper.getPercent(                0 , m[RuleDefs.READY][0], m[RuleDefs.NATIVE][0], m[RuleDefs.DEPLOYED][0]),
 				fy1: Helper.getPercent(m[RuleDefs.TBD][1], m[RuleDefs.READY][1], m[RuleDefs.NATIVE][1], m[RuleDefs.DEPLOYED][1]),
 				fy2: Helper.getPercent(m[RuleDefs.TBD][2], m[RuleDefs.READY][2], m[RuleDefs.NATIVE][2], m[RuleDefs.DEPLOYED][2]),
@@ -326,7 +258,7 @@ class Report extends Component {
 				tableData.push({
 					id: marketKey + '_' + rule.id,
 					market: Helper.getOptionKeyFromValue(this.MARKET_OPTIONS, marketKey),
-					rule:   Helper.getOptionKeyFromValue(RULE_OPTIONS, rule.name),
+					rule:   Helper.getOptionKeyFromValue(RuleDefs.RULE_OPTIONS, rule.name),
 					percentage: rule.percentage,
 					fy0: m[r][0],
 					fy1: m[r][1],
@@ -352,9 +284,9 @@ class Report extends Component {
 				data={this.state.data}
 				options={{
 					market: this.MARKET_OPTIONS,
-					rules: RULE_OPTIONS
+					rules: RuleDefs.RULE_OPTIONS
 				}}
-				fiscalYear={this.fiscalYear2}
+				fiscalYear={FISCAL_YEAR % 100}
 				setup={this.state.setup} />
 		);
 	}
