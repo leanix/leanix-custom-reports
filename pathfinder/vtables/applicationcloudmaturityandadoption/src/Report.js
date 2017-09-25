@@ -35,18 +35,6 @@ const FISCAL_YEARS = [
 	}
 ];
 
-/* dev-only
-let statistics = [
-	[0,0,0,0,0], // PERCENT (calculated)
-	[0,0,0,0,0], // PHYSICAL
-	[0,0,0,0,0], // VIRTUALISED
-	[0,0,0,0,0], // TBD
-	[0,0,0,0,0], // READY
-	[0,0,0,0,0], // NATIVE
-	[0,0,0,0,0]  // DEPLOYED
-];
-*/
-
 class Report extends Component {
 
 	constructor(props) {
@@ -114,28 +102,16 @@ class Report extends Component {
 			}}}
 		}}`;
 
-		/* dev-only
-		console.log(`GraphQL-Query:\n${query}`);
-		*/
 		return query;
 	}
 
 	_handleData(index, applicationTagId, itTagId) {
-		// dev-only
-		let counter = 0;
-		let valid = 0;
-		//
 
 		// group applications by market
 		let marketCount = 0;
 		const groupedByMarket = {};
 
 		index.records.nodes.forEach((appl) => {
-			/* dev-only
-			counter++;
-			// each counter must be incremented not more than once
-			let counted = [[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]];
-			*/
 
 			// FALLBACK-Checks for applicationTagId and itTagId
 			if (!applicationTagId && !index.includesTag(e, 'Application')) {
@@ -195,10 +171,6 @@ class Report extends Component {
 				return; // application has no valid or fitting 'active' phase
 			}
 
-			/* dev-only
-			console.log(`${counter}. ${appl.name}: 'active' from ${startDate} to ${endDate} | ${msTag} (${maturityState})`);
-			*/
-
 			let marketentry = groupedByMarket[market];
 			if (!marketentry) {
 				// a new market - init an empty 7-by-5 array of empty arrays
@@ -224,14 +196,8 @@ class Report extends Component {
 				// endDate - if defined - after fiscal year startDate
 				if (startDate <= fy.endDate && (endDate === undefined || endDate > fy.startDate)) {
 					if (index === 0) {
-						/* dev-only
-						this._incCounter(counter, counted, marketentry, maturityState, index);
-						*/
 						marketentry[maturityState][index].push(appl.name); // application name
 					} else {
-						/* dev-only
-						this._incCounter(counter, counted, marketentry, RuleDefs.DEPLOYED, index);
-						*/
 						marketentry[RuleDefs.DEPLOYED][index].push(appl.name); // application name
 					}
 				}
@@ -257,9 +223,6 @@ class Report extends Component {
 					if (fyStart + 1 != fyEnd) {
 						return; // no valid project name (fyEnd must by fyStart + 1)
 					}
-					/* dev-only
-					console.log(`  > ${counter}. ${appl.name} - Project: ${prj_name} > ${matState} - from ${fyStart} to ${fyEnd}`);
-					*/
 
 					// TO-BE-Rule: check only the future fiscal years
 					if (fyStart < FISCAL_YEAR+1 || fyStart > FISCAL_YEAR + 4){
@@ -272,45 +235,17 @@ class Report extends Component {
 					}
 
 					// increment the regarding future fiscal year counter (TO-BE rule)
-					/* dev-only
-					this._incCounter(counter, counted, marketentry, prjMaturityState, fyStart-FISCAL_YEAR);
-					*/
 					marketentry[prjMaturityState][fyStart-FISCAL_YEAR].push(appl.name);
 				});
 			}
 
-			/* dev-only
-			valid++;
-			*/
 		}); // records
-
-		/* dev-only
-		console.log(`Some Statistics: ${valid} valid out of ${counter} application records`);
-		statistics.forEach((a, i) => {
-			if (i>0) {
-				console.log(`${RuleDefs.rules[i].name}: ${a}`);
-			}
-		});
-		*/
 
 		// add fiscal year results to tableData (7 rows per market)
 
 		const tableData = [];
 		for (let marketKey in groupedByMarket) {
 			let m = groupedByMarket[marketKey]; // a 7-elements array of objects
-
-			/* dev-only
-			console.log(`${marketKey}:`);
-			for (let rule=1; rule<RuleDefs.RULE_COUNT; rule++) {
-				console.log(`- ${RuleDefs.rules[rule].name}:`);
-				for (let fyOffset=0; fyOffset<5; fyOffset++) {
-					if (m[rule][fyOffset].length > 0) {
-						console.log(`  - ${FISCAL_YEAR+fyOffset}/${FISCAL_YEAR+fyOffset+1}: ${m[rule][fyOffset].length} application(s)`);
-						//console.log(`    - [${m[rule][fyOffset]}]`);
-					}
-				}
-			}
-			*/
 
 			// the PERCENT rule
 			let rule = RuleDefs.rules[RuleDefs.PERCENT];
@@ -379,18 +314,6 @@ class Report extends Component {
 			data: tableData
 		});
 	}
-
-	/* dev-only
-	_incCounter(counter, counted, entryArray, matState, fyOffset) {
-		if (counted[matState][fyOffset] == 0) { // count only once
-			counted[matState][fyOffset]++;
-			statistics[matState][fyOffset]++;
-			//entryArray[matState][fyOffset]++;
-		} else {
-			console.error(`ERROR: ${counter}: ${matState} - ${FISCAL_YEAR + fyOffset} already counted!`);
-		}
-	}
-	*/
 
 	render() {
 		if (this.state.data.length === 0) {
