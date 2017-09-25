@@ -44,7 +44,7 @@ const ruleDefs = [
 	},
 	{
 		id: DEPLOYED,
-		name: 'Total Number of Deployed Applications (Current Lifecycle Phase "Active") according to IT Scope',
+		name: 'Total Number of Deployed Applications (Current Lifecycle Phase \'Active\') according to IT Scope',
 		percentage: false
 	}
 ];

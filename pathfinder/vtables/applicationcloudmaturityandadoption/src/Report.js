@@ -35,6 +35,18 @@ const FISCAL_YEARS = [
 	}
 ];
 
+/* dev-only
+let statistics = [
+	[0,0,0,0,0], // PERCENT (calculated)
+	[0,0,0,0,0], // PHYSICAL
+	[0,0,0,0,0], // VIRTUALISED
+	[0,0,0,0,0], // TBD
+	[0,0,0,0,0], // READY
+	[0,0,0,0,0], // NATIVE
+	[0,0,0,0,0]  // DEPLOYED
+];
+*/
+
 class Report extends Component {
 
 	constructor(props) {
@@ -56,7 +68,7 @@ class Report extends Component {
 
 	_initReport(setup) {
 		lx.ready(this._createConfig());
-		lx.showSpinner('Loading data...');
+		lx.showSpinner('Loading data ...');
 		this.setState({
 			setup: setup
 		});
@@ -102,17 +114,30 @@ class Report extends Component {
 			}}}
 		}}`;
 
+		/* dev-only
+		console.log(`GraphQL-Query:\n${query}`);
+		*/
 		return query;
 	}
 
 	_handleData(index, applicationTagId, itTagId) {
+		// dev-only
+		let counter = 0;
+		let valid = 0;
+		//
 
 		// group applications by market
 		let marketCount = 0;
 		const groupedByMarket = {};
 
 		index.records.nodes.forEach((appl) => {
+			/* dev-only
+			counter++;
+			// each counter must be incremented not more than once
+			let counted = [[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0],[0,0,0,0,0]];
+			*/
 
+			// FALLBACK-Checks for applicationTagId and itTagId
 			if (!applicationTagId && !index.includesTag(e, 'Application')) {
 				return; // no valid record
 			}
@@ -120,6 +145,8 @@ class Report extends Component {
 				return; // no valid record
 			}
 
+			// the counters for each market's marketEntry[maturityState].counters[fyOffset] have to be updated
+			// the application names for each market's have to be stored in marketEntry[maturityState].aplications[fyOffset]
 			let market;
 			let maturityState;
 			let fyOffset;
@@ -133,7 +160,7 @@ class Report extends Component {
 			// get maturity state tags
 			const msTags = index.getTagsFromGroup(appl, 'Cloud Maturity');
 			switch (msTags.length) {
-			case 0: // applications with not maturity state are regarded as DEPLOYED
+			case 0: // applications with no maturity state are regarded as DEPLOYED
 				maturityState = RuleDefs.DEPLOYED;
 				break;
 			case 1:
@@ -168,37 +195,49 @@ class Report extends Component {
 				return; // application has no valid or fitting 'active' phase
 			}
 
-			//console.log(`${counter}. ${appl.name}: 'active' from ${startDate} to ${endDate} | ${msTag} (${maturityState})`);
+			/* dev-only
+			console.log(`${counter}. ${appl.name}: 'active' from ${startDate} to ${endDate} | ${msTag} (${maturityState})`);
+			*/
 
 			let marketentry = groupedByMarket[market];
 			if (!marketentry) {
-				// a new market - init an empty 7-by-5 array
+				// a new market - init an empty 7-by-5 array of empty arrays
+				// the array will store the applications' names
 				marketentry = [
-					[0,0,0,0,0], // PERCENT (calculated)
-					[0,0,0,0,0], // PHYSICAL
-					[0,0,0,0,0], // VIRTUALISED
-					[0,0,0,0,0], // TBD
-					[0,0,0,0,0], // READY
-					[0,0,0,0,0], // NATIVE
-					[0,0,0,0,0]  // DEPLOYED
+					[[],[],[],[],[]], // PERCENT (calculated)
+					[[],[],[],[],[]], // PHYSICAL
+					[[],[],[],[],[]], // VIRTUALISED
+					[[],[],[],[],[]], // TBD
+					[[],[],[],[],[]], // READY
+					[[],[],[],[],[]], // NATIVE
+					[[],[],[],[],[]]  // DEPLOYED
 				];
 				groupedByMarket[market] = marketentry;
 				this.MARKET_OPTIONS[marketCount++] = market;
 			}
 
 			// increment the regarding fiscal year counters (AS-IS rule)
+			// DEPLOYED: increment fitting current and future fiscal year
+			// OTHERS:   increment fitting current fiscal year only
 			FISCAL_YEARS.forEach((fy, index) => {
 				// startDate before fiscal year endDate
 				// endDate - if defined - after fiscal year startDate
 				if (startDate <= fy.endDate && (endDate === undefined || endDate > fy.startDate)) {
 					if (index === 0) {
-						marketentry[maturityState][index]++; // current fiscal year
+						/* dev-only
+						this._incCounter(counter, counted, marketentry, maturityState, index);
+						*/
+						marketentry[maturityState][index].push(appl.name); // application name
 					} else {
-						marketentry[RuleDefs.DEPLOYED][index]++; // future fiscal year (DEPLOYED only)
+						/* dev-only
+						this._incCounter(counter, counted, marketentry, RuleDefs.DEPLOYED, index);
+						*/
+						marketentry[RuleDefs.DEPLOYED][index].push(appl.name); // application name
 					}
 				}
 			});
 
+			// TO-BE-Rule: investigate related projects
 			// Project name pattern: <MARKET>_<MATSTATE_NAME> FY<YY>/<YY>
 			//                       G1       G2                G3   G4
 			const PRJNAME_RE = /^([A-Z]+)_(Cloud Ready|Cloud Native|Cloud TBD)\s+FY(\d{2})\/(\d{2})$/;
@@ -210,14 +249,19 @@ class Report extends Component {
 						return; // no valid project name
 					}
 
-					const matState = MATCH[2];
-					const fyStart  = 1 * MATCH[3] + 2000; // 4-digit year
-					const fyEnd    = 1 * MATCH[4] + 2000; // 4-digit-year
+					// first one (0) is full match, followed by n group matches
+					//const market   = MATCH[1]; // market currently out-of-interest
+					const matState = MATCH[2]; // maturity state name
+					const fyStart  = 1 * MATCH[3] + 2000; // beginning of fiscal year (as 4-digit number)
+					const fyEnd    = 1 * MATCH[4] + 2000; // end of fiscal year (as 4-digit-number)
 					if (fyStart + 1 != fyEnd) {
-						return; // no valid project name (fyEnd must be fyStart + 1)
+						return; // no valid project name (fyEnd must by fyStart + 1)
 					}
+					/* dev-only
+					console.log(`  > ${counter}. ${appl.name} - Project: ${prj_name} > ${matState} - from ${fyStart} to ${fyEnd}`);
+					*/
 
-					// check only the future fiscal years
+					// TO-BE-Rule: check only the future fiscal years
 					if (fyStart < FISCAL_YEAR+1 || fyStart > FISCAL_YEAR + 4){
 						return; // project has no valid fiscal year
 					}
@@ -227,15 +271,46 @@ class Report extends Component {
 						return; // project has no valid 'Cloud Maturity' state
 					}
 
-					marketentry[prjMaturityState][fyStart-FISCAL_YEAR]++;
+					// increment the regarding future fiscal year counter (TO-BE rule)
+					/* dev-only
+					this._incCounter(counter, counted, marketentry, prjMaturityState, fyStart-FISCAL_YEAR);
+					*/
+					marketentry[prjMaturityState][fyStart-FISCAL_YEAR].push(appl.name);
 				});
 			}
+
+			/* dev-only
+			valid++;
+			*/
 		}); // records
 
+		/* dev-only
+		console.log(`Some Statistics: ${valid} valid out of ${counter} application records`);
+		statistics.forEach((a, i) => {
+			if (i>0) {
+				console.log(`${RuleDefs.rules[i].name}: ${a}`);
+			}
+		});
+		*/
+
 		// add fiscal year results to tableData (7 rows per market)
+
 		const tableData = [];
 		for (let marketKey in groupedByMarket) {
-			let m = groupedByMarket[marketKey]; // a 7-by-5 array of numbers
+			let m = groupedByMarket[marketKey]; // a 7-elements array of objects
+
+			/* dev-only
+			console.log(`${marketKey}:`);
+			for (let rule=1; rule<RuleDefs.RULE_COUNT; rule++) {
+				console.log(`- ${RuleDefs.rules[rule].name}:`);
+				for (let fyOffset=0; fyOffset<5; fyOffset++) {
+					if (m[rule][fyOffset].length > 0) {
+						console.log(`  - ${FISCAL_YEAR+fyOffset}/${FISCAL_YEAR+fyOffset+1}: ${m[rule][fyOffset].length} application(s)`);
+						//console.log(`    - [${m[rule][fyOffset]}]`);
+					}
+				}
+			}
+			*/
 
 			// the PERCENT rule
 			let rule = RuleDefs.rules[RuleDefs.PERCENT];
@@ -245,11 +320,36 @@ class Report extends Component {
 				rule:   Helper.getOptionKeyFromValue(RuleDefs.RULE_OPTIONS, rule.name),
 				percentage: rule.percentage,
 				// no Cloud TBD in current fiscal year
-				fy0: Helper.getPercent(                0 , m[RuleDefs.READY][0], m[RuleDefs.NATIVE][0], m[RuleDefs.DEPLOYED][0]),
-				fy1: Helper.getPercent(m[RuleDefs.TBD][1], m[RuleDefs.READY][1], m[RuleDefs.NATIVE][1], m[RuleDefs.DEPLOYED][1]),
-				fy2: Helper.getPercent(m[RuleDefs.TBD][2], m[RuleDefs.READY][2], m[RuleDefs.NATIVE][2], m[RuleDefs.DEPLOYED][2]),
-				fy3: Helper.getPercent(m[RuleDefs.TBD][3], m[RuleDefs.READY][3], m[RuleDefs.NATIVE][3], m[RuleDefs.DEPLOYED][3]),
-				fy4: Helper.getPercent(m[RuleDefs.TBD][4], m[RuleDefs.READY][4], m[RuleDefs.NATIVE][4], m[RuleDefs.DEPLOYED][4]),
+				fy0: Helper.getPercent(
+						0,
+						m[RuleDefs.READY][0].length,
+						m[RuleDefs.NATIVE][0].length,
+						m[RuleDefs.DEPLOYED][0].length),
+				fy0Apps: m[0][0],
+				fy1: Helper.getPercent(
+						m[RuleDefs.TBD][1].length,
+						m[RuleDefs.READY][1].length,
+						m[RuleDefs.NATIVE][1].length,
+						m[RuleDefs.DEPLOYED][1].length),
+				fy1Apps: m[0][1],
+				fy2: Helper.getPercent(
+						m[RuleDefs.TBD][2].length,
+						m[RuleDefs.READY][2].length,
+						m[RuleDefs.NATIVE][2].length,
+						m[RuleDefs.DEPLOYED][2].length),
+				fy2Apps: m[0][2],
+				fy3: Helper.getPercent(
+						m[RuleDefs.TBD][3].length,
+						m[RuleDefs.READY][3].length,
+						m[RuleDefs.NATIVE][3].length,
+						m[RuleDefs.DEPLOYED][3].length),
+				fy3Apps: m[0][3],
+				fy4: Helper.getPercent(
+						m[RuleDefs.TBD][4].length,
+						m[RuleDefs.READY][4].length,
+						m[RuleDefs.NATIVE][4].length,
+						m[RuleDefs.DEPLOYED][4].length),
+				fy4Apps: m[0][4]
 			});
 
 			// the 6 other rules
@@ -260,11 +360,16 @@ class Report extends Component {
 					market: Helper.getOptionKeyFromValue(this.MARKET_OPTIONS, marketKey),
 					rule:   Helper.getOptionKeyFromValue(RuleDefs.RULE_OPTIONS, rule.name),
 					percentage: rule.percentage,
-					fy0: m[r][0],
-					fy1: m[r][1],
-					fy2: m[r][2],
-					fy3: m[r][3],
-					fy4: m[r][4]
+					fy0:     m[r][0].length,
+					fy0Apps: m[r][0],
+					fy1:     m[r][1].length,
+					fy1Apps: m[r][1],
+					fy2:     m[r][2].length,
+					fy2Apps: m[r][2],
+					fy3:     m[r][3].length,
+					fy3Apps: m[r][3],
+					fy4:     m[r][4].length,
+					fy4Apps: m[r][4]
 				});
 			}
 		}
@@ -275,9 +380,21 @@ class Report extends Component {
 		});
 	}
 
+	/* dev-only
+	_incCounter(counter, counted, entryArray, matState, fyOffset) {
+		if (counted[matState][fyOffset] == 0) { // count only once
+			counted[matState][fyOffset]++;
+			statistics[matState][fyOffset]++;
+			//entryArray[matState][fyOffset]++;
+		} else {
+			console.error(`ERROR: ${counter}: ${matState} - ${FISCAL_YEAR + fyOffset} already counted!`);
+		}
+	}
+	*/
+
 	render() {
 		if (this.state.data.length === 0) {
-			return (<h4 className='text-center'>Loading data...</h4>);
+			return (<h4 className='text-center'>Loading data ...</h4>);
 		}
 		return (
 			<Table
