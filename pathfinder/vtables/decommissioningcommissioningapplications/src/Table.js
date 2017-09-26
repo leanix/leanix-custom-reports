@@ -32,23 +32,11 @@ class Table extends Component {
 					 csvHeader={'application-baseline-apr-' + currentYear}
 					>Baseline Apr {currentYear}</TableHeaderColumn>
 				<TableHeaderColumn
-					 dataField='decommissionsPlanned'
-					 headerAlign='left'
-					 dataAlign='right'
-					 csvHeader='decommissions-planned'
-					>Decommissions (Planned)</TableHeaderColumn>
-				<TableHeaderColumn
 					 dataField='decommissionsActuals'
 					 headerAlign='left'
 					 dataAlign='right'
 					 csvHeader='decommissions-actuals'
 					>Decommissions (Actuals)</TableHeaderColumn>
-				<TableHeaderColumn
-					 dataField='commissionsPlanned'
-					 headerAlign='left'
-					 dataAlign='right'
-					 csvHeader='commissions-planned'
-					>Commissions (Planned)</TableHeaderColumn>
 				<TableHeaderColumn
 					 dataField='commissionsActuals'
 					 headerAlign='left'
@@ -56,17 +44,29 @@ class Table extends Component {
 					 csvHeader='commissions-actuals'
 					>Commissions (Actuals)</TableHeaderColumn>
 				<TableHeaderColumn
-					 dataField='baselineMar'
-					 headerAlign='left'
-					 dataAlign='right'
-					 csvHeader={'application-baseline-mar-' + nextYear}
-					>Baseline Mar {nextYear}</TableHeaderColumn>
-				<TableHeaderColumn
 					 dataField='baselineToday'
 					 headerAlign='left'
 					 dataAlign='right'
 					 csvHeader='application-baseline-today'
 					>Baseline as of today</TableHeaderColumn>
+				<TableHeaderColumn
+					 dataField='decommissionsPlanned'
+					 headerAlign='left'
+					 dataAlign='right'
+					 csvHeader='decommissions-planned'
+					>Decommissions (Planned)</TableHeaderColumn>
+				<TableHeaderColumn
+					 dataField='commissionsPlanned'
+					 headerAlign='left'
+					 dataAlign='right'
+					 csvHeader='commissions-planned'
+					>Commissions (Planned)</TableHeaderColumn>
+				<TableHeaderColumn
+					 dataField='baselineMar'
+					 headerAlign='left'
+					 dataAlign='right'
+					 csvHeader={'application-baseline-mar-' + nextYear}
+					>Baseline Mar {nextYear}</TableHeaderColumn>
 			</BootstrapTable>
 		);
 	}

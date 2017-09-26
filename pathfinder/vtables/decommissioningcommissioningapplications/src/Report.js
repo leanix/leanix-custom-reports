@@ -32,6 +32,7 @@ class Report extends Component {
 		this._initReport = this._initReport.bind(this);
 		this._handleData = this._handleData.bind(this);
 		this._addLifecyclePhaseEnd = this._addLifecyclePhaseEnd.bind(this);
+		this._isTimestampInOnePhase = this._isTimestampInOnePhase.bind(this);
 		this._onMultiSelectChange = this._onMultiSelectChange.bind(this);
 		this.MARKET_OPTIONS = {};
 		this.state = {
@@ -152,20 +153,31 @@ class Report extends Component {
 				if (lifecycles.length === 0) {
 					return;
 				}
-				const activePhase = Utilities.getLifecyclePhase(lifecycles, ACTIVE);
-				this._addLifecyclePhaseEnd(lifecycles, activePhase);
+				let activePhase = Utilities.getLifecyclePhase(lifecycles, ACTIVE);
+				const phaseInPhase = Utilities.getLifecyclePhase(lifecycles, PHASE_IN);
+				const phaseOutPhase = Utilities.getLifecyclePhase(lifecycles, PHASE_OUT);
 				const endOfLifePhase = Utilities.getLifecyclePhase(lifecycles, END_OF_LIFE);
-				if (this._isTimestampInPhase(activePhase, APR)) {
-					// count if 1st apr <CURRENT_YEAR> is a timepoint in the 'active' lifecycle phase
+				// add impicit phase before 'endOfLife' if production phases are missing
+				if (!activePhase && !phaseInPhase && !phaseOutPhase && endOfLifePhase) {
+					activePhase = {
+						phase: ACTIVE
+					};
+				}
+				const productionPhases = [activePhase, phaseInPhase, phaseOutPhase];
+				this._addLifecyclePhaseEnd(lifecycles, activePhase);
+				this._addLifecyclePhaseEnd(lifecycles, phaseInPhase);
+				this._addLifecyclePhaseEnd(lifecycles, phaseOutPhase);
+				if (this._isTimestampInOnePhase(APR, productionPhases)) {
+					// count if 1st apr <CURRENT_YEAR> is a timepoint in the 'active', 'phaseIn' or 'phaseOut' lifecycle phase
 					baselineApr++;
 				}
-				if (this._isTimestampInPhase(activePhase, MAR)) {
-					// count if 31th mar <CURRENT_YEAR + 1> is a timepoint in the 'active' lifecycle phase
-					baselineMar++;
-				}
-				if (this._isTimestampInPhase(activePhase, CURRENT)) {
-					// count if <CURRENT_DATE> is a timepoint in the 'active' lifecycle phase
+				if (this._isTimestampInOnePhase(CURRENT, productionPhases)) {
+					// count if <CURRENT_DATE> is a timepoint in the 'active', 'phaseIn' or 'phaseOut' lifecycle phase
 					baselineToday++;
+				}
+				if (this._isTimestampInOnePhase(MAR, productionPhases)) {
+					// count if 31th mar <CURRENT_YEAR + 1> is a timepoint in the 'active', 'phaseIn' or 'phaseOut' lifecycle phase
+					baselineMar++;
 				}
 				// application decommissioning or decommissioned this FY?
 				// 'endOfLife' phase start date must be between 1st apr <CURRENT_YEAR> and 31th mar <CURRENT_YEAR + 1> (both inclusive)
@@ -208,7 +220,7 @@ class Report extends Component {
 	}
 
 	_addLifecyclePhaseEnd(lifecycles, phase) {
-		if (!lifecycles || !phase || !phase.phase || !phase.startDate) {
+		if (!lifecycles || !phase || !phase.phase) {
 			return;
 		}
 		let nextPhaseKey = this._getNextPhaseKey(phase.phase);
@@ -241,15 +253,26 @@ class Report extends Component {
 		}
 	}
 
+	_isTimestampInOnePhase(timestamp, phases) {
+		if (timestamp === undefined || timestamp === null || !phases) {
+			return false;
+		}
+		return phases.some((e) => {
+			return this._isTimestampInPhase(e, timestamp);
+		});
+	}
+
 	_isTimestampInPhase(phase, timestamp) {
 		if (!phase || timestamp === undefined || timestamp === null) {
 			return false;
 		}
 		const startDate = phase.startDate;
 		const endDate = phase.endDate;
-		if (startDate) {
-			return endDate ? (startDate <= timestamp && timestamp < endDate) : (startDate <= timestamp);
-		} else if (endDate) {
+		if (startDate !== undefined && startDate !== null) {
+			return (endDate !== undefined && endDate !== null)
+				? (startDate <= timestamp && timestamp < endDate)
+				: (startDate <= timestamp);
+		} else if (endDate !== undefined && endDate !== null) {
 			return timestamp < endDate;
 		}
 		return false;
