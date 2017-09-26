@@ -98,6 +98,13 @@ class Report extends Component {
 				) {
 					edges { node { id tags { name } } }
 				}
+				userGroups: allFactSheets(
+					filter: {facetFilters: [
+						{facetKey: "FactSheetTypes", keys: ["UserGroup"]}
+					]}
+				) {
+					edges { node { id name } }
+				}
 				noAppType: allFactSheets(
 					sort: { mode: BY_FIELD, key: "displayName", order: asc },
 					filter: {facetFilters: [
@@ -134,6 +141,7 @@ class Report extends Component {
 			appMapId: appMapId
 		};
 		for (let market in groupedByMarket) {
+			ruleConfig.market = market;
 			const allApplications = groupedByMarket[market];
 			// process single rules
 			const compliants = {};

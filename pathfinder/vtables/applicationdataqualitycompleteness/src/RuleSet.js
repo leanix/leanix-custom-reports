@@ -173,30 +173,32 @@ const singleRules = [{
 			const subIndex = application.relApplicationToOwningUserGroup;
 			return subIndex && subIndex.nodes.length === 1;
 		}
-	},
-	/* {
-		name: 'An application is compliant if it\'s name start with it\'s owning user group.',
-		additionalNote: 'Exceptions:' +
-		'- Applications starting with \'UK\' or \'CW\' are allowed to have the owning user group \'UK\'.' +
-		'- Applications starting with \'VGS\' are allowed to have the owning user group \'Vodafone Service Companies / VGS\'.',
+	}, {
+		name: 'name prefix matches it\'s owning user group',
+		additionalNote: 'Applications starting with \'CW\' or \'UK\' are allowed to have the owning user group \'CW\' or \'UK\'.',
 		appliesTo: (index, application) => {
-			return true;
+			const subIndex = application.relApplicationToOwningUserGroup;
+			if (!subIndex) {
+				return false;
+			}
+			// access userGroups
+			const owningUG = index.byID[subIndex.nodes[0].id];
+			return owningUG ? true : false;
 		},
 		compute: (index, application, config) => {
 			const subIndex = application.relApplicationToOwningUserGroup;
-			if (!subIndex || subIndex.nodes.length < 1) {
-				return false;
+			// access userGroups
+			const owningUG = index.byID[subIndex.nodes[0].id];
+			// exceptions by v
+			if (config.market === 'CW') {
+				return owningUG.name === 'CW' || owningUG.name === 'UK';
 			}
-			const compliant = subIndex.nodes.find((e) => {
-				// access itComponents
-				return e.name;
-			});
-			console.log(compliant);
-			console.log(application.name);
-			return true;
+			if (config.market === 'UK') {
+				return owningUG.name === 'CW' || owningUG.name === 'UK';
+			}
+			return owningUG.name === config.market;
 		}
-	}, */
-	{
+	}, {
 		name: 'has \'Recommendation\' TagGroup assigned',
 		appliesTo: (index, application) => {
 			return true;
