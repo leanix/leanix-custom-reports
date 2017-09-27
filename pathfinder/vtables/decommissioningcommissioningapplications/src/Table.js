@@ -9,12 +9,20 @@ class Table extends Component {
 		super(props);
 	}
 
+	_trClassname(row, fieldValue, rowIdx, colIdx) {
+		if (row.id === 'total') {
+			return 'info';
+		}
+		return '';
+	}
+
 	render() {
 		const currentYear = this.props.currentYear;
 		const nextYear = currentYear + 1;
 		return (
 			<BootstrapTable data={this.props.data} keyField='id'
-				 striped hover exportCSV condensed>
+				 striped hover exportCSV condensed
+				 trClassName={this._trClassname}>
 				<TableHeaderColumn dataSort
 					 dataField='market'
 					 width='100px'

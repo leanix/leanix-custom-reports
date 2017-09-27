@@ -320,6 +320,30 @@ class Report extends Component {
 				}
 			}
 		}
+		// add & compute the 'total' row
+		const totalOptionKey = Object.keys(this.MARKET_OPTIONS).length + 1;
+		marketOptions[totalOptionKey] = 'total';
+		const total = {
+			id: 'total',
+			market: totalOptionKey,
+			baselineApr: 0,
+			decommissionsPlanned: 0,
+			decommissionsActuals: 0,
+			commissionsPlanned: 0,
+			commissionsActuals: 0,
+			baselineMar: 0,
+			baselineToday: 0
+		};
+		data.forEach((e) => {
+			total.baselineApr += e.baselineApr;
+			total.decommissionsPlanned += e.decommissionsPlanned;
+			total.decommissionsActuals += e.decommissionsActuals;
+			total.commissionsPlanned += e.commissionsPlanned;
+			total.commissionsActuals += e.commissionsActuals;
+			total.baselineMar += e.baselineMar;
+			total.baselineToday += e.baselineToday;
+		});
+		data.push(total);
 		return (
 			<div>
 				<MultiSelectField
