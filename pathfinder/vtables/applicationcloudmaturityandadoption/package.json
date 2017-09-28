@@ -1,14 +1,14 @@
 {
 	"name": "applicationcloudmaturityandadoption",
 	"version": "1.0.0",
-	"description": "Shows a table outlining the applications' overall cloud adoption & maturity states grouped by their respective market memberships.",
+	"description": "Shows a table outlining the applications overall cloud adoption & maturity states grouped by their respective market memberships.",
 	"private": true,
 	"engines": {
 		"node": ">=6.11.1"
 	},
 	"leanixReport": {
 		"id": "com.vodafone.vtables.applicationcloudmaturityandadoption",
-		"title": "Application Cloud Maturity & Adoption Report",
+		"title": "Cloud Maturity & Adoption",
 		"defaultConfig": {}
 	},
 	"scripts": {

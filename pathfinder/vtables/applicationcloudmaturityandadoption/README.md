@@ -1,6 +1,6 @@
-# Application Cloud Maturity & Adoption Report
+# Cloud Maturity & Adoption
 
-Shows a table outlining the applications' overall cloud adoption & maturity state grouped by their respective market memberships.
+Shows a table outlining the applications overall cloud adoption & maturity state grouped by their respective market memberships.
 
 ## Table of Contents
 

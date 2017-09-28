@@ -20,6 +20,7 @@ echo -e "           \`-----'  "
 # List of custom reports to be uploaded
 upload_report burndown
 cd vtables
+upload_report applicationcloudmaturityandadoption
 upload_report applicationdataqualitycompleteness
 upload_report applicationlifecycleprojects
 upload_report appmap2bca
