@@ -12,7 +12,7 @@ const ONE_YEAR_BEFORE = ONE_YEAR_BEFORE_DATE.getTime();
 const singleRules = [{
 		name: 'Adding application has project (w/ impact \'Adds\')',
 		additionalNote: 'Rule includes applications which have a current life cycle phase of either '
-			+ '\'Plan\', \'Active\' or \'Phase In\' and the start date of this phase must be greater than or equal to '
+			+ '\'Plan\', \'Phase In\' or \'Active\' and the start date of this phase must be greater than or equal to '
 			+ ONE_YEAR_BEFORE_DATE.toLocaleDateString() + '. ' + 'The date is computed dynamically.',
 		appliesTo: (index, application) => {
 			return _hasProductionLifecycle(application);
