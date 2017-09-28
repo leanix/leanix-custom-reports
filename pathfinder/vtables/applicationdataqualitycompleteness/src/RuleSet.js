@@ -12,8 +12,8 @@ const ONE_YEAR_BEFORE = ONE_YEAR_BEFORE_DATE.getTime();
 const singleRules = [{
 		name: 'Adding application has project (w/ impact \'Adds\')',
 		additionalNote: 'Rule includes applications which have a current life cycle phase of either '
-			+ '\'Phase In\', \'Active\' or \'Phase Out\' and the start date of this phase must be greater than or equal to '
-			+ ONE_YEAR_BEFORE_DATE.toLocaleDateString() + '.',
+			+ '\'Phase In\', \'Active\' or \'Plan\' and the start date of this phase must be greater than or equal to '
+			+ ONE_YEAR_BEFORE_DATE.toLocaleDateString() + '. ' + 'The date is computed dynamically.',
 		appliesTo: (index, application) => {
 			return _hasProductionLifecycle(application);
 		},
@@ -28,7 +28,7 @@ const singleRules = [{
 		name: 'Retiring application has project (w/ impact \'Sunsets\')',
 		additionalNote: 'Rule includes applications which have a life cycle phase of '
 			+ '\'End Of Life\' and the start date of this phase must be greater than or equal to '
-			+ ONE_YEAR_BEFORE_DATE.toLocaleDateString() + '.',
+			+ ONE_YEAR_BEFORE_DATE.toLocaleDateString() + '. ' + 'The date is computed dynamically.',
 		appliesTo: (index, application) => {
 			return _isRetiring(application);
 		},
@@ -208,8 +208,8 @@ const singleRules = [{
 		}
 	}, {
 		name: 'Retiring application should have a recommendation of \'Decommission\', \'Replace\' or \'Consolidate\'',
-		additionalNote: 'Rule includes applications which have a life cycle phase of '
-			+ '\'End Of Life\', but not approached yet and \'Recommendation\' TagGroup assignment defined.',
+		additionalNote:  'Rule includes applications which have a future life cycle phase of \'End Of Life\', and \'Recommendation\'. '
+		+  ' TagGroup assignment defined.',
 		appliesTo: (index, application) => {
 			const recommendationTag = index.getFirstTagFromGroup(application, 'Recommendation');
 			return recommendationTag && _hasEndOfLife(application) && _isNotInEndOfLifePhase(application);
@@ -227,8 +227,7 @@ const singleRules = [{
 		}
 	}, {
 		name: 'has \'Cloud Maturity\' TagGroup assigned',
-		additionalNote: 'Rule includes applications which have either a life cycle phase of '
-			+ '\'End Of Life\', but not approached yet or no \'End Of Life\' phase defined.',
+		additionalNote: 'Rule includes applications which currently are not in \'End Of Life\' phase.',
 		appliesTo: (index, application) => {
 			return _isNotInEndOfLifePhase(application);
 		},
@@ -240,7 +239,7 @@ const singleRules = [{
 
 function _hasProductionLifecycle(application) {
 	const currentLifecycle = Utilities.getCurrentLifecycle(application);
-	return Utilities.isProductionPhase(currentLifecycle) && currentLifecycle.startDate >= ONE_YEAR_BEFORE;
+	return isProductionPhase(currentLifecycle) && currentLifecycle.startDate >= ONE_YEAR_BEFORE;
 }
 
 function _hasEndOfLife(application) {
@@ -288,6 +287,22 @@ function _hasSubscriptionRole(application, subscriptionRole) {
 			return e2.name === subscriptionRole;
 		});
 	});
+}
+
+function isProductionPhase(lifecycle) {
+	if (!lifecycle || !lifecycle.phase) {
+		return false;
+	}
+	switch (lifecycle.phase) {
+		case 'phaseIn':
+		case 'active':
+		case 'plan':
+			return true;
+		case 'phaseOut':
+		case 'endOfLife':
+		default:
+			return false;
+	}
 }
 
 const appTypeRule = {
