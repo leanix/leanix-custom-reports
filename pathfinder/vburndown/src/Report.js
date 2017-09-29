@@ -1,7 +1,68 @@
 import React, { Component } from 'react';
 import CommonQueries from './common/CommonGraphQLQueries';
 import DataIndex from './common/DataIndex';
+import DateUtil from './DateUtil';
 import Chart, { getChartNodeID } from './Chart';
+
+const PLAN = 'plan';
+const PHASE_IN = 'phaseIn';
+const ACTIVE = 'active';
+const PHASE_OUT = 'phaseOut';
+const END_OF_LIFE = 'endOfLife';
+// DO NOT CHANGE THE ORDER IN THIS ARRAY (code depends on this)!
+const LIFECYCLE_PHASES = [PLAN, PHASE_IN, ACTIVE, PHASE_OUT, END_OF_LIFE];
+const CATEGORIES = _createCategories();
+const CATEGORY_NAMES = CATEGORIES.map((e) => {
+	return e.name;
+});
+
+console.log(CATEGORY_NAMES);
+
+function _createCategories() {
+	// create categories in an interval from now - 6 month to now + 6 months
+	const currentMonthStart = DateUtil.setFirstDayOfMonth(DateUtil.getInitDate(), false);
+	const currentMonthEnd = DateUtil.setLastDayOfMonth(DateUtil.getInitDate(), true);
+	const currentMonth = currentMonthStart.month();
+	const result = [{
+			name: 'time'
+		}
+	];
+	// get previous months
+	let lastStart = currentMonthStart.clone();
+	let lastEnd = currentMonthEnd.clone();
+	for (let i = 6; i > 0; i--) {
+		const monthStart = DateUtil.setPreviousMonth(lastStart);
+		const monthEnd = DateUtil.setPreviousMonth(lastEnd);
+		result[i] = {
+			name: monthStart.format('MMMM Y'),
+			start: DateUtil.setFirstDayOfMonth(monthStart, false),
+			end: DateUtil.setLastDayOfMonth(monthEnd, true)
+		};
+		lastStart = monthStart.clone();
+		lastEnd = monthEnd.clone();
+	}
+	// add current
+	result.push({
+		name: currentMonthStart.format('MMMM Y'),
+		start: currentMonthStart,
+		end: currentMonthEnd
+	});
+	lastStart = currentMonthStart.clone();
+	lastEnd = currentMonthEnd.clone();
+	// get next months
+	for (let i = 0; i < 6; i++) {
+		const monthStart = DateUtil.setNextMonth(lastStart);
+		const monthEnd = DateUtil.setNextMonth(lastEnd);
+		result.push({
+			name: monthStart.format('MMMM Y'),
+			start: DateUtil.setFirstDayOfMonth(monthStart, false),
+			end: DateUtil.setLastDayOfMonth(monthEnd, true)
+		});
+		lastStart = monthStart.clone();
+		lastEnd = monthEnd.clone();
+	}
+	return result;
+}
 
 class Report extends Component {
 
@@ -22,7 +83,7 @@ class Report extends Component {
 	_initReport(setup) {
 		// TODO create categories
 		lx.ready(this._createConfig(setup));
-		lx.showSpinner('Loading data ...');
+		lx.showSpinner('Loading data...');
 		this.setState({
 			setup: setup
 		});
@@ -97,7 +158,7 @@ class Report extends Component {
 
 	render() {
 		if (this.state.data.length === 0) {
-			return (<h4 className='text-center'>Loading data ...</h4>);
+			return (<h4 className='text-center'>Loading data...</h4>);
 		}
 		return (
 			<div>
