@@ -22,7 +22,7 @@ class Chart extends Component {
 		if (!chartDiv || !this.props.categories) {
 			return;
 		}
-		this.chartInstance = new C3ChartInstance(node, this.props.categories);
+		this.chartInstance = new C3ChartInstance(chartDiv, this.props.categories);
 	}
 
 	componentWillUnmount() {
@@ -43,12 +43,8 @@ class Chart extends Component {
 }
 
 Chart.propTypes = {
-	categories: PropTypes.arrayOf(
-		PropTypes.shape({
-			name: PropTypes.string.isRequired
-		}).isRequired
-	).isRequired,
-	data: PropTypes.string.isRequired
+	categories: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
+	data: PropTypes.arrayOf(PropTypes.array.isRequired).isRequired
 };
 
 export default Chart;

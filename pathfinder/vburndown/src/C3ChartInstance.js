@@ -34,7 +34,7 @@ class C3ChartInstance {
 					},
 					empty: {
 						label: {
-							text: 'Loading data ...'
+							text: 'Loading data...'
 						}
 					}
 				},
@@ -48,7 +48,7 @@ class C3ChartInstance {
 						},
 						height: 100,
 						label: {
-							text: 'Quarters (YYYY-mm-dd)',
+							text: 'Months',
 							position: 'outer-center'
 						}
 					},

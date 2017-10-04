@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import CommonQueries from './common/CommonGraphQLQueries';
 import DataIndex from './common/DataIndex';
+import Utilities from './common/Utilities';
 import DateUtil from './DateUtil';
+import LifecycleUtil from './LifecycleUtil';
 import Chart, { getChartNodeID } from './Chart';
 
 const PLAN = 'plan';
@@ -15,8 +17,6 @@ const CATEGORIES = _createCategories();
 const CATEGORY_NAMES = CATEGORIES.map((e) => {
 	return e.name;
 });
-
-console.log(CATEGORY_NAMES);
 
 function _createCategories() {
 	// create categories in an interval from now - 6 month to now + 6 months
@@ -38,6 +38,7 @@ function _createCategories() {
 			start: DateUtil.setFirstDayOfMonth(monthStart, false),
 			end: DateUtil.setLastDayOfMonth(monthEnd, true)
 		};
+		result[i].range = DateUtil.createRange(result[i].start, result[i].end);
 		lastStart = monthStart.clone();
 		lastEnd = monthEnd.clone();
 	}
@@ -45,7 +46,8 @@ function _createCategories() {
 	result.push({
 		name: currentMonthStart.format('MMMM Y'),
 		start: currentMonthStart,
-		end: currentMonthEnd
+		end: currentMonthEnd,
+		range: DateUtil.createRange(currentMonthStart, currentMonthEnd)
 	});
 	lastStart = currentMonthStart.clone();
 	lastEnd = currentMonthEnd.clone();
@@ -58,6 +60,8 @@ function _createCategories() {
 			start: DateUtil.setFirstDayOfMonth(monthStart, false),
 			end: DateUtil.setLastDayOfMonth(monthEnd, true)
 		});
+		const j = result.length - 1;
+		result[j].range = DateUtil.createRange(result[j].start, result[j].end);
 		lastStart = monthStart.clone();
 		lastEnd = monthEnd.clone();
 	}
@@ -72,7 +76,8 @@ class Report extends Component {
 		this._handleData = this._handleData.bind(this);
 		this.state = {
 			setup: null,
-			data: []
+			chartData: [],
+			dataRecords: {}
 		};
 	}
 
@@ -81,7 +86,6 @@ class Report extends Component {
 	}
 
 	_initReport(setup) {
-		// TODO create categories
 		lx.ready(this._createConfig(setup));
 		lx.showSpinner('Loading data...');
 		this.setState({
@@ -139,35 +143,99 @@ class Report extends Component {
 				}}`;
 	}
 
+	_lifecycleModel(phase) {
+		// TODO for VUtil
+		switch (phase) {
+			case PLAN:
+				return PHASE_IN;
+			case PHASE_IN:
+				return ACTIVE;
+			case ACTIVE:
+				return PHASE_OUT;
+			case PHASE_OUT:
+				return END_OF_LIFE;
+			case END_OF_LIFE:
+			default:
+				return;
+		}
+	}
+
+	_createObj(array, keyProperty) {
+		if (!Array.isArray(array) || keyProperty === undefined || keyProperty === null) {
+			return {};
+		}
+		const result = {};
+		array.forEach((e) => {
+			result[e[keyProperty]] = e;
+		});
+		return result;
+	}
+
 	_handleData(index, applicationTagId, itTagId) {
-		const tableData = [];
-		console.log(index);
-		/*
-		if (!applicationTagId && !index.includesTag(e, 'Application')) {
-			return;
+		const chartData = [
+			CATEGORY_NAMES
+		];
+		LIFECYCLE_PHASES.forEach((e) => {
+			chartData.push([e]);
+		});
+		const dataRecords = {};
+		for (let i = 1; i < CATEGORIES.length; i++) {
+			const category = CATEGORIES[i];
+			const dataRecord = LIFECYCLE_PHASES.reduce((acc, e, j) => {
+				acc[e] = {
+					idx: j + 1,
+					applications: []
+				};
+				return acc;
+			}, {});
+			dataRecords[category.name] = dataRecord;
+			index.applications.nodes.forEach((e) => {
+				if (!applicationTagId && !index.includesTag(e, 'Application')) {
+					return;
+				}
+				if (!itTagId && !index.includesTag(e, 'IT')) {
+					return;
+				}
+				// get lifecycle information, if not present
+				if (!e.lifecycles) {
+					e.lifecycles = this._createObj(LifecycleUtil.getLifecycles(e, this._lifecycleModel), 'name');
+				}
+				// add application if lifecycle phase is in category
+				for (let key in e.lifecycles) {
+					const lifecycle = e.lifecycles[key];
+					// end of life is just a moment, not an interval
+					if (lifecycle.name === END_OF_LIFE && DateUtil.contains(category, lifecycle.start)) {
+						dataRecord[key].applications.push(e);
+					} else if (DateUtil.overlapsWith(category, lifecycle)) {
+						dataRecord[key].applications.push(e);
+					}
+				}
+			});
+			// push values to chart data
+			for (let key in dataRecord) {
+				const v = dataRecord[key];
+				chartData[v.idx].push(v.applications.length);
+			}
 		}
-		if (!itTagId && !index.includesTag(e, 'IT')) {
-			return;
-		}
-		*/
 		lx.hideSpinner();
 		this.setState({
-			data: tableData
+			chartData: chartData,
+			dataRecords: dataRecords
 		});
 	}
 
 	render() {
-		if (this.state.data.length === 0) {
+		if (this.state.chartData.length === 0) {
 			return (<h4 className='text-center'>Loading data...</h4>);
 		}
+		console.log(this.state.chartData);
+		console.log(this.state.dataRecords);
 		return (
 			<div>
 				<h3 id='title'>Application Burndown Chart</h3>
 				<Chart
-					categories={[{
-						name: 'lala'
-					}]}
-					data={this.state.data} />
+					categories={CATEGORY_NAMES}
+					data={this.state.chartData} />
 			</div>
 		);
 	}
