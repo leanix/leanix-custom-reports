@@ -7,12 +7,29 @@ import Table from './Table';
 
 const CURRENT_DATE = new Date();
 CURRENT_DATE.setHours(0, 0, 0, 0);
-const APR_DATE = new Date();
-APR_DATE.setFullYear(CURRENT_DATE.getFullYear(), 3, 1); // 1st apr
-APR_DATE.setHours(0, 0, 0, 0);
-const MAR_DATE = new Date();
-MAR_DATE.setFullYear(CURRENT_DATE.getFullYear() + 1, 2, 31); // 31th mar
-MAR_DATE.setHours(0, 0, 0, 0);
+const FINANCIAL_YEAR = getFinancialYear(CURRENT_DATE);
+const APR_DATE = FINANCIAL_YEAR.start;
+const MAR_DATE = FINANCIAL_YEAR.end;
+
+function getFinancialYear(date) {
+	if (!date || !(date instanceof Date)) {
+		date = new Date();
+		date.setHours(0, 0, 0, 0);
+	}
+	// get start point
+	const startYear = date.getMonth() >= 3 ? date.getFullYear() : date.getFullYear() - 1;
+	const startDate = new Date();
+	startDate.setFullYear(startYear, 3, 1); // 1st apr
+	startDate.setHours(0, 0, 0, 0);
+	// get end point
+	const endDate = new Date();
+	endDate.setFullYear(startYear + 1, 2, 31); // 31th mar
+	endDate.setHours(23, 59, 59, 999);
+	return {
+		start: startDate,
+		end: endDate
+	};
+}
 
 // timestamps
 const CURRENT = CURRENT_DATE.getTime();
@@ -353,7 +370,7 @@ class Report extends Component {
 					onChange={this._onMultiSelectChange}
 					values={this.state.multiSelectValues} />
 				<Table data={data}
-					currentYear={CURRENT_DATE.getFullYear()}
+					currentYear={APR_DATE.getFullYear()}
 					options={{
 						market: marketOptions
 					}}
