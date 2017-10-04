@@ -124,7 +124,7 @@ function getChartData(requestData, factsheetType, stackPlanPhase) {
 		let retired = 0;
 		let added = 0;
 		extractedData.forEach((e) => {
-			const phaseDef = _getPhaseDefinition(e., category, stackPlanPhase);
+			const phaseDef = _getPhaseDefinition(e.lifecycles, category, stackPlanPhase);
 			if (phaseDef.total) {
 				total++;
 			}
