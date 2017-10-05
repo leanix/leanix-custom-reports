@@ -127,7 +127,7 @@ class Report extends Component {
 							soxPci accessType lifecycle { asString phases { phase startDate } }
 							networkTechnicalProductFamily lastMajorUpgradeDate
 							relApplicationToBusinessCapability { edges { node { factSheet { id } } } }
-							relApplicationToITComponent { edges { node { factSheet { id } } } }
+							relApplicationToITComponent { edges { node { resourceType factSheet { id } } } }
 							relApplicationToUserGroup { edges { node { factSheet { id } } } }
 							relApplicationToSegment { edges { node { factSheet { id } } } }
 							relApplicationToProvider { edges { node { factSheet { id } } } }
@@ -229,7 +229,7 @@ class Report extends Component {
 					}
 					switch (itc.category) {
 						case 'software':
-							if (itc.name.endsWith('Software Product')) {
+							if (itc.name.endsWith('Software Product') || e2.relationAttr.resourceType !== 'Primary') {
 								break;
 							}
 							const provider = this._getProvider(index, itc);
