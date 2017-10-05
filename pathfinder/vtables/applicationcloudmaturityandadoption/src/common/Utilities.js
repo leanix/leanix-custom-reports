@@ -1,18 +1,28 @@
-function getCurrentLifecycle(application) {
-	if (!application.lifecycle || !application.lifecycle.asString
-		 || !application.lifecycle.phases || !Array.isArray(application.lifecycle.phases)) {
+function getCurrentLifecycle(node) {
+	if (!hasLifecycle(node)) {
 		return;
 	}
-	const currentPhase = application.lifecycle.asString;
+	const currentPhase = node.lifecycle.asString;
 	let result = undefined;
-	if (currentPhase) {
-		result = application.lifecycle.phases.find((e) => {
+	if (currentPhase && currentPhase !== '-') {
+		result = node.lifecycle.phases.find((e) => {
 			return e.phase === currentPhase;
 		});
 	} else {
-		// TODO analyse startDate
+		const now = Date.now();
+		node.lifecycle.phases.forEach((e) => {
+			const lcDate = Date.parse(e.startDate + ' 00:00:00');
+			if (lcDate <= now) {
+				result = e;
+			}
+		});
 	}
 	return createLifecycleObj(result);
+}
+
+function hasLifecycle(node) {
+	return node && node.lifecycle && node.lifecycle.phases
+		&& Array.isArray(node.lifecycle.phases) && node.lifecycle.phases.length > 0;
 }
 
 function createLifecycleObj(lifecyclePhase) {
@@ -47,8 +57,7 @@ function getLifecycleModel(setup, factsheetName) {
 }
 
 function getLifecycles(node) {
-	if (!node || !node.lifecycle || !node.lifecycle.phases
-		 || !Array.isArray(node.lifecycle.phases)) {
+	if (!hasLifecycle(node)) {
 		return [];
 	}
 	return node.lifecycle.phases.map((e) => {
@@ -150,6 +159,7 @@ function copyObject(obj) {
 
 export default {
 	getCurrentLifecycle: getCurrentLifecycle,
+	hasLifecycle: hasLifecycle,
 	getLifecycleModel: getLifecycleModel,
 	getLifecycles: getLifecycles,
 	getLifecyclePhase: getLifecyclePhase,

@@ -85,7 +85,7 @@ const singleRules = [{
 			return compliantITComp ? true : false;
 		}
 	}, {
-		name: 'has Software Product, but no Placeholder (only active, w/ Tag \'COTS Package\')',
+		name: 'has Vendor but is missing a Software Product (only active, w/ Tag \'COTS Package\')',
 		appliesTo: (index, application) => {
 			const currentLifecycle = Utilities.getCurrentLifecycle(application);
 			return currentLifecycle && currentLifecycle.phase === 'active'
@@ -116,8 +116,7 @@ const singleRules = [{
 			return true;
 		},
 		compute: (index, application, config) => {
-			// getCurrentLifecycle has always a return value if there is at least one phase defined
-			return Utilities.getCurrentLifecycle(application) ? true : false;
+			return Utilities.hasLifecycle(application);
 		}
 	}, {
 		name: 'has IT Owner (only active)',
@@ -189,14 +188,28 @@ const singleRules = [{
 			const subIndex = application.relApplicationToOwningUserGroup;
 			// access userGroups
 			const owningUG = index.byID[subIndex.nodes[0].id];
-			// exceptions by v
-			if (config.market === 'CW') {
-				return owningUG.name === 'CW' || owningUG.name === 'UK';
+			let currentUG = owningUG;
+			while (currentUG) {
+				let checkResult = false;
+				// exceptions by v
+				if (config.market === 'CW') {
+					checkResult = currentUG.name === 'CW' || currentUG.name === 'UK';
+				} else if (config.market === 'UK') {
+					checkResult = currentUG.name === 'CW' || currentUG.name === 'UK';
+				} else {
+					checkResult = owningUG.name === config.market;
+				}
+				if (checkResult) {
+					return true;
+				}
+				// check the parent next
+				const parent = index.getParent('userGroups', currentUG.id);
+				if (!parent) {
+					break;
+				}
+				currentUG = parent;
 			}
-			if (config.market === 'UK') {
-				return owningUG.name === 'CW' || owningUG.name === 'UK';
-			}
-			return owningUG.name === config.market;
+			return false;
 		}
 	}, {
 		name: 'has \'Recommendation\' TagGroup assigned',

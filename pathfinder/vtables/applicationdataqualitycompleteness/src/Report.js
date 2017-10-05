@@ -103,7 +103,10 @@ class Report extends Component {
 						{facetKey: "FactSheetTypes", keys: ["UserGroup"]}
 					]}
 				) {
-					edges { node { id name } }
+					edges { node {
+						id name
+						... on UserGroup { relToParent { edges { node { factSheet { id } } } } }
+					}}
 				}
 				noAppType: allFactSheets(
 					sort: { mode: BY_FIELD, key: "displayName", order: asc },

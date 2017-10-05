@@ -1,4 +1,4 @@
-# Report Data Quality Completeness
+# Project Data Quality Completeness
 
 A report that analyses projects based on a set of rules.
 
