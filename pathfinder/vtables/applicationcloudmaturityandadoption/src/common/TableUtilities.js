@@ -97,9 +97,19 @@ function formatDate(cell, row) {
 	}
 	return (
 		<span style={{ paddingRight: '10%' }}>
-			{cell.toLocaleDateString()}
+			{_formatDate(cell)}
 		</span>
 	);
+}
+
+function _formatDate(date) {
+	return _formatDateNumber(date.getDate()) + '-'
+		+ _formatDateNumber(date.getMonth() + 1) + '-'
+		+ date.getFullYear();
+}
+
+function _formatDateNumber(n) {
+	return n < 10 ? '0' + n : n;
 }
 
 function formatArray(cell, row, delimiter) {
@@ -128,7 +138,7 @@ function csvFormatDate(cell, row) {
 	if (!cell) {
 		return '';
 	}
-	return cell.toLocaleDateString();
+	return _formatDate(cell);
 }
 
 /* pre-defined filter objects */
