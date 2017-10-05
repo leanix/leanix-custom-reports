@@ -1,14 +1,14 @@
 {
-	"name": "applicationdataqualitycompleteness",
+	"name": "projectdataqualitycompleteness",
 	"version": "1.0.0",
-	"description": "A report that analyses applications based on a set of rules.",
+	"description": "A report that analyses projects based on a set of rules.",
 	"private": true,
 	"engines": {
 		"node": ">=6.11.1"
 	},
 	"leanixReport": {
-		"id": "com.vodafone.vtables.dataqualitycompleteness",
-		"title": "Application Data Quality Completeness",
+		"id": "com.vodafone.vtables.projectqualitycompleteness",
+		"title": "Project Data Quality Completeness",
 		"defaultConfig": {}
 	},
 	"scripts": {

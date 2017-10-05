@@ -1,6 +1,6 @@
-# Application Data Quality Completeness
+# Report Data Quality Completeness
 
-A report that analyses applications based on a set of rules.
+A report that analyses projects based on a set of rules.
 
 ## Table of Contents
 
