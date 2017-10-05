@@ -152,13 +152,13 @@ class Report extends Component {
 					case 'phaseIn':
 						nothingAdded = addSubNodes(subIndex, outputItem, e2.phase, (name, impact) => {
 							// project doesn't contain decommissioning in name and impact is 'adds'
-							return impact === 'adds' && !decommissioningRE.test(name);
+							return impact === 'Adds' && !decommissioningRE.test(name);
 						});
 						break;
 					case 'active':
 						nothingAdded = addSubNodes(subIndex, outputItem, e2.phase, (name, impact) => {
 							// project doesn't contain decommissioning in name and impact is 'adds', 'modifies' or no impact
-							return (!impact || impact === 'adds' || impact === 'modifies')
+							return (!impact || impact === 'Adds' || impact === 'Modifies')
 								&& !decommissioningRE.test(name);
 						});
 						break;
@@ -166,7 +166,7 @@ class Report extends Component {
 					case 'endOfLife':
 						nothingAdded = addSubNodes(subIndex, outputItem, e2.phase, (name, impact) => {
 							// project does contain decommissioning in name or impact is 'sunsets'
-							return impact === 'sunsets' || decommissioningRE.test(name);
+							return impact === 'Sunsets' || decommissioningRE.test(name);
 						});
 						break;
 					default:
