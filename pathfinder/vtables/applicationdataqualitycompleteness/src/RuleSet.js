@@ -12,8 +12,8 @@ const ONE_YEAR_BEFORE = ONE_YEAR_BEFORE_DATE.getTime();
 const singleRules = [{
 		name: 'Adding application has project (w/ impact \'Adds\')',
 		additionalNote: 'Rule includes applications which have a current life cycle phase of either'
-			+ ' \'Plan\', \'Phase In\' or \'Active\' and the start date of this phase must be greater than or equal to '
-			+ ONE_YEAR_BEFORE_DATE.toLocaleDateString() + '. ' + 'The date is computed dynamically.',
+			+ ' \'Plan\', \'Phase In\' or \'Active\' and the start date of this phase must be greater than or equal to'
+			+ ' todays date minus 1 year. The date is computed dynamically.',
 		appliesTo: (index, application) => {
 			return _hasProductionLifecycle(application);
 		},
@@ -27,8 +27,8 @@ const singleRules = [{
 	}, {
 		name: 'Retiring application has project (w/ impact \'Sunsets\')',
 		additionalNote: 'Rule includes applications which have a life cycle phase of'
-			+ ' \'End Of Life\' and the start date of this phase must be greater than or equal to '
-			+ ONE_YEAR_BEFORE_DATE.toLocaleDateString() + '. ' + 'The date is computed dynamically.',
+			+ ' \'End Of Life\' and the start date of this phase must be greater than or equal to'
+			+ ' todays date minus 1 year. The date is computed dynamically.',
 		appliesTo: (index, application) => {
 			return _isRetiring(application);
 		},
