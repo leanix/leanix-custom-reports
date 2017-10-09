@@ -10,12 +10,18 @@ const CURRENT = CURRENT_DATE.getTime();
 const ONE_YEAR_BEFORE = ONE_YEAR_BEFORE_DATE.getTime();
 
 const singleRules = [{
-		name: 'Adding application has project (w/ impact \'Adds\')',
+		name: 'Adding application has project (w/ impact \'Adds\', must have an active phase defined)',
 		additionalNote: 'Rule includes applications which have a current life cycle phase of either'
 			+ ' \'Plan\', \'Phase In\' or \'Active\' and the start date of this phase must be greater than or equal to'
 			+ ' todays date minus 1 year. The date is computed dynamically.',
 		appliesTo: (index, application) => {
-			return _hasProductionLifecycle(application);
+			const lifecycles = Utilities.getLifecycles(application);
+			const activePhase = Utilities.getLifecyclePhase(lifecycles, 'active');
+			if (!activePhase) {
+				return false;
+			}
+			const currentLifecycle = Utilities.getCurrentLifecycle(application);
+			return _isAddingPhase(currentLifecycle) && currentLifecycle.startDate >= ONE_YEAR_BEFORE;
 		},
 		compute: (index, application, config) => {
 			const subIndex = application.relApplicationToProject;
@@ -250,11 +256,6 @@ const singleRules = [{
 	}
 ];
 
-function _hasProductionLifecycle(application) {
-	const currentLifecycle = Utilities.getCurrentLifecycle(application);
-	return _isAddingPhase(currentLifecycle) && currentLifecycle.startDate >= ONE_YEAR_BEFORE;
-}
-
 function _hasEndOfLife(application) {
 	if (!application || !application.lifecycle || !application.lifecycle.phases
 		 || !Array.isArray(application.lifecycle.phases)) {
@@ -307,9 +308,9 @@ function _isAddingPhase(lifecycle) {
 		return false;
 	}
 	switch (lifecycle.phase) {
+		case 'plan':
 		case 'phaseIn':
 		case 'active':
-		case 'plan':
 			return true;
 		case 'phaseOut':
 		case 'endOfLife':

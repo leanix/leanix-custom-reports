@@ -187,6 +187,10 @@ class Report extends Component {
 				if (this._isTimestampInOnePhase(APR, productionPhases)) {
 					// count if 1st apr <CURRENT_YEAR> is a timepoint in the 'active', 'phaseIn' or 'phaseOut' lifecycle phase
 					baselineApr++;
+				} else if (endOfLifePhase && endOfLifePhase.startDate === APR) {
+					// application is in time frame, but it's decommissioned on the first date, still count to baseline
+					// NOTE: that is unique for this baseline!
+					baselineApr++;
 				}
 				if (this._isTimestampInOnePhase(CURRENT, productionPhases)) {
 					// count if <CURRENT_DATE> is a timepoint in the 'active', 'phaseIn' or 'phaseOut' lifecycle phase
