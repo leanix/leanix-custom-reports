@@ -200,10 +200,6 @@ class Report extends Component {
 				if (this._isTimestampInOnePhase(MAR, productionPhases)) {
 					// count if 31th mar <CURRENT_FYEAR + 1> is a timepoint in the 'active', 'phaseIn' or 'phaseOut' lifecycle phase
 					baselineMar++;
-				} else if (endOfLifePhase && endOfLifePhase.startDate === MAR) {
-					// application is in time frame, but it's decommissioned on MAR, still count to baseline
-					// NOTE: this baseline is at the end, so end of life counts if it's equal to MAR
-					baselineMar++;
 				}
 				// application decommissioning or decommissioned this FY?
 				// 'endOfLife' phase start date must be between 1st apr <CURRENT_FYEAR> and 31th mar <CURRENT_FYEAR + 1> (both inclusive)
