@@ -6,7 +6,7 @@ import RuleSet from './RuleSet';
 import Table from './Table';
 
 const RULE_OPTIONS = Utilities.createOptionsObj(
-	RuleSet.singleRules.concat(RuleSet.appTypeRule, RuleSet.overallRule));
+	RuleSet.singleRules.concat(RuleSet.overallRule));
 
 class Report extends Component {
 
@@ -36,12 +36,9 @@ class Report extends Component {
 		lx.executeGraphQL(CommonQueries.tagGroups).then((tagGroups) => {
 			const index = new DataIndex();
 			index.put(tagGroups);
-			const applicationTagId = index.getFirstTagID('Application Type', 'Application');
-			const itTagId = index.getFirstTagID('CostCentre', 'IT');
-			const appMapId = index.getFirstTagID('BC Type', 'AppMap');
-			lx.executeGraphQL(this._createQuery(applicationTagId, itTagId, appMapId)).then((data) => {
+			lx.executeGraphQL(this._createQuery()).then((data) => {
 				index.put(data);
-				this._handleData(index, applicationTagId, itTagId, appMapId);
+				this._handleData(index);
 			});
 		});
 	}
@@ -52,71 +49,23 @@ class Report extends Component {
 		};
 	}
 
-	_createQuery(applicationTagId, itTagId, appMapId) {
-		const applicationTagIdFilter = applicationTagId ? `, {facetKey: "Application Type", keys: ["${applicationTagId}"]}` : '';
-		const itTagIdFilter = itTagId ? `, {facetKey: "CostCentre", keys: ["${itTagId}"]}` : '';
-		let appMapIdFilter = ''; // initial assume tagGroup.name changed or the id couldn't be determined otherwise
-		let tagNameDef = 'tags { name }'; // initial assume to get it
-		if (appMapId) {
-			appMapIdFilter = `, {facetKey: "BC Type", keys: ["${appMapId}"]}`;
-			tagNameDef = '';
-		}
-		return `{applications: allFactSheets(
+	_createQuery() {
+		return `{projects: allFactSheets(
 					sort: { mode: BY_FIELD, key: "displayName", order: asc },
 					filter: {facetFilters: [
-						{facetKey: "FactSheetTypes", keys: ["Application"]}
-						${applicationTagIdFilter}
-						${itTagIdFilter}
+						{facetKey: "FactSheetTypes", keys: ["Project"]}
 					]}
-				) {
+				){
 					edges { node {
-						id name description tags { name }
-						subscriptions { edges { node { roles { name } } } }
-						... on Application {
-							lifecycle { asString phases { phase startDate } }
-							functionalSuitability technicalSuitability
-							relApplicationToProject { edges { node { projectImpact factSheet { id } } } }
-							relApplicationToBusinessCapability { edges { node { factSheet { id } } } }
-							relApplicationToITComponent { edges { node { factSheet { id } } } }
-							relApplicationToOwningUserGroup { edges { node { factSheet { id } } } }
+        				id name
+						... on Project {
+							relProjectToApplication { edges { node { factSheet {id name} }}}
 						}
-					}}
-				}
-				businessCapabilities: allFactSheets(
-					filter: {facetFilters: [
-						{facetKey: "FactSheetTypes", keys: ["BusinessCapability"]}
-						${appMapIdFilter}
-					]}
-				) {
-					edges { node { id ${tagNameDef} } }
-				}
-				itComponents: allFactSheets(
-					filter: {facetFilters: [
-						{facetKey: "FactSheetTypes", keys: ["ITComponent"]},
-						{facetKey: "category", keys: ["software"]}
-					]}
-				) {
-					edges { node { id tags { name } } }
-				}
-				userGroups: allFactSheets(
-					filter: {facetFilters: [
-						{facetKey: "FactSheetTypes", keys: ["UserGroup"]}
-					]}
-				) {
-					edges { node { id name } }
-				}
-				noAppType: allFactSheets(
-					sort: { mode: BY_FIELD, key: "displayName", order: asc },
-					filter: {facetFilters: [
-						{facetKey: "FactSheetTypes", keys: ["Application"]}
-						, {facetKey: "Application Type", keys: ["__missing__"]}
-					]}
-				) {
-					edges { node { id name } }
-				}}`;
+        			}}
+        		}}`;
 	}
 
-	_handleData(index, applicationTagId, itTagId, appMapId) {
+	_handleData(index) {
 		const tableData = [];
 		let additionalNotesMarker = 0;
 		const additionalNotes = RuleSet.singleRules.reduce((obj, e) => {
@@ -128,25 +77,18 @@ class Report extends Component {
 			}
 			return obj;
 		}, {});
-		// group applications by market
-		const groupResult = this._groupByMarket(index.applications.nodes, (application) => {
-			return (!applicationTagId && !index.includesTag(application, 'Application'))
-				|| (!itTagId && !index.includesTag(application, 'IT'));
-		});
+		// group projects by market
+		const groupResult = this._groupByMarket(index.projects.nodes);
 		const groupedByMarket = groupResult.groups;
 		this.MARKET_OPTIONS = groupResult.options;
-		// get 'noAppType' groups
-		const noAppTypeGroupResult = this._groupByMarket(index.noAppType.nodes);
-		const ruleConfig = {
-			appMapId: appMapId
-		};
+		const ruleConfig = {};
 		for (let market in groupedByMarket) {
 			ruleConfig.market = market;
-			const allApplications = groupedByMarket[market];
+			const allProjects = groupedByMarket[market];
 			// process single rules
 			const compliants = {};
 			const nonCompliants = {};
-			allApplications.forEach((e) => {
+			allProjects.forEach((e) => {
 				RuleSet.singleRules.forEach((e2) => {
 					if (!compliants[e2.name]) {
 						compliants[e2.name] = [];
@@ -173,63 +115,22 @@ class Report extends Component {
 					rule: this._getOptionKeyFromValue(RULE_OPTIONS, e.name),
 					overallRule: false,
 					compliant: compliant,
-					compliantApps: compliants[e.name].map((e2) => {
+					compliantPrjs: compliants[e.name].map((e2) => {
 						return e2.name;
 					}),
-					compliantAppIds: compliants[e.name].map((e2) => {
+					compliantPrjIds: compliants[e.name].map((e2) => {
 						return e2.id;
 					}),
 					nonCompliant: nonCompliant,
-					nonCompliantApps: nonCompliants[e.name].map((e2) => {
+					nonCompliantPrjs: nonCompliants[e.name].map((e2) => {
 						return e2.name;
 					}),
-					nonCompliantAppIds: nonCompliants[e.name].map((e2) => {
+					nonCompliantPrjIds: nonCompliants[e.name].map((e2) => {
 						return e2.id;
 					}),
 					percentage: this._computePercentage(compliant, nonCompliant)
 				});
 			});
-			// process 'noAppType' rule
-			const noAppTypeApps = noAppTypeGroupResult.groups[market];
-			if (noAppTypeApps) {
-				const noAppTypeRuleResult = RuleSet.appTypeRule.compute(index, noAppTypeApps, ruleConfig);
-				compliants[RuleSet.appTypeRule.name] = [];
-				nonCompliants[RuleSet.appTypeRule.name] = noAppTypeRuleResult.nonCompliant;
-				tableData.push({
-					id: market + '-' + RuleSet.appTypeRule.name,
-					market: this._getOptionKeyFromValue(this.MARKET_OPTIONS, market),
-					rule: this._getOptionKeyFromValue(RULE_OPTIONS, RuleSet.appTypeRule.name),
-					overallRule: false,
-					compliant: Number.NaN,
-					compliantApps: [],
-					compliantAppIds: [],
-					nonCompliant: noAppTypeRuleResult.nonCompliant.length,
-					nonCompliantApps: noAppTypeRuleResult.nonCompliant.map((e) => {
-						return e.name;
-					}),
-					nonCompliantAppIds: noAppTypeRuleResult.nonCompliant.map((e) => {
-						return e.id;
-					}),
-					percentage: (noAppTypeRuleResult.nonCompliant.length > 0 ? 0 : 100)
-				});
-			} else {
-				// add empty entry
-				compliants[RuleSet.appTypeRule.name] = [];
-				nonCompliants[RuleSet.appTypeRule.name] = [];
-				tableData.push({
-					id: market + '-' + RuleSet.appTypeRule.name,
-					market: this._getOptionKeyFromValue(this.MARKET_OPTIONS, market),
-					rule: this._getOptionKeyFromValue(RULE_OPTIONS, RuleSet.appTypeRule.name),
-					overallRule: false,
-					compliant: Number.NaN,
-					compliantApps: [],
-					compliantAppIds: [],
-					nonCompliant: 0,
-					nonCompliantApps: [],
-					nonCompliantAppIds: [],
-					percentage: Number.NaN
-				});
-			}
 			// process overall rule
 			const overallRuleResult = RuleSet.overallRule.compute(compliants, nonCompliants, ruleConfig);
 			tableData.push({
@@ -238,11 +139,11 @@ class Report extends Component {
 				rule: this._getOptionKeyFromValue(RULE_OPTIONS, RuleSet.overallRule.name),
 				overallRule: true,
 				compliant: overallRuleResult.compliant,
-				compliantApps: [],
-				compliantAppIds: [],
+				compliantPrjs: [],
+				compliantPrjIds: [],
 				nonCompliant: overallRuleResult.nonCompliant,
-				nonCompliantApps: [],
-				nonCompliantAppIds: [],
+				nonCompliantPrjs: [],
+				nonCompliantPrjIds: [],
 				percentage: this._computePercentage(overallRuleResult.compliant, overallRuleResult.nonCompliant)
 			});
 		}

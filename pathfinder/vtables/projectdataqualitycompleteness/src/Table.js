@@ -127,11 +127,11 @@ class Table extends Component {
 					 filter={TableUtilities.numberFilter}
 					>Compliant</TableHeaderColumn>
 				<TableHeaderColumn hidden export
-					 dataField='compliantApps'
-					 csvHeader='compliant-applications'
+					 dataField='compliantPrjs'
+					 csvHeader='compliant-projects'
 					 csvFormat={TableUtilities.formatArray}
 					 csvFormatExtraData=';'
-					>Compliant Applications</TableHeaderColumn>
+					>Compliant Projects</TableHeaderColumn>
 				<TableHeaderColumn
 					 dataField='nonCompliant'
 					 width='180px'
@@ -140,16 +140,16 @@ class Table extends Component {
 					 filter={TableUtilities.numberFilter}
 					>Non-Compliant</TableHeaderColumn>
 				<TableHeaderColumn columnClassName='small'
-					 dataField='nonCompliantApps'
+					 dataField='nonCompliantPrjs'
 					 width='300px'
 					 dataAlign='left'
 					 dataFormat={TableUtilities.formatLinkArrayFactsheets(this.props.setup)}
-					 formatExtraData={{ type: 'Application', id: 'nonCompliantAppIds' }}
-					 csvHeader='non-compliant-applications'
+					 formatExtraData={{ type: 'Project', id: 'nonCompliantPrjIds' }}
+					 csvHeader='non-compliant-projects'
 					 csvFormat={TableUtilities.formatArray}
 					 csvFormatExtraData=';'
 					 filter={TableUtilities.textFilter}
-					>Non-Compliant Applications</TableHeaderColumn>
+					>Non-Compliant Projects</TableHeaderColumn>
 				<TableHeaderColumn dataSort sortFunc={this._sortPercentage}
 					 dataField='percentage'
 					 width='180px'
@@ -172,11 +172,11 @@ Table.propTypes = {
 			rule: PropTypes.number.isRequired,
 			overallRule: PropTypes.bool.isRequired,
 			compliant: PropTypes.number.isRequired,
-			compliantAppIds: TableUtilities.PropTypes.idArray('compliantApps'),
-			compliantApps: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
+			compliantPrjIds: TableUtilities.PropTypes.idArray('compliantPrjs'),
+			compliantPrjs: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
 			nonCompliant: PropTypes.number.isRequired,
-			nonCompliantAppIds: TableUtilities.PropTypes.idArray('nonCompliantApps'),
-			nonCompliantApps: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
+			nonCompliantPrjIds: TableUtilities.PropTypes.idArray('nonCompliantPrjs'),
+			nonCompliantPrjs: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
 			percentage: PropTypes.number.isRequired
 		}).isRequired
 	).isRequired,
