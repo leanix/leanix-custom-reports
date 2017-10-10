@@ -24,7 +24,7 @@ function getFinancialYear(date) {
 	// get end point
 	const endDate = new Date();
 	endDate.setFullYear(startYear + 1, 2, 31); // 31th mar
-	endDate.setHours(23, 59, 59, 999);
+	startDate.setHours(0, 0, 0, 0);
 	return {
 		start: startDate,
 		end: endDate
@@ -105,7 +105,6 @@ class Report extends Component {
 		if (applicationTagId && itTagId) {
 			tagNameDef = '';
 		}
-		// TODO optimise query with lifecycle filter
 		return `{applications: allFactSheets(
 					sort: { mode: BY_FIELD, key: "displayName", order: asc },
 					filter: {facetFilters: [
@@ -185,35 +184,43 @@ class Report extends Component {
 				this._addLifecyclePhaseEnd(lifecycles, phaseInPhase);
 				this._addLifecyclePhaseEnd(lifecycles, phaseOutPhase);
 				if (this._isTimestampInOnePhase(APR, productionPhases)) {
-					// count if 1st apr <CURRENT_YEAR> is a timepoint in the 'active', 'phaseIn' or 'phaseOut' lifecycle phase
+					// count if 1st apr <CURRENT_FYEAR> is a timepoint in the 'active', 'phaseIn' or 'phaseOut' lifecycle phase
 					baselineApr++;
 				} else if (endOfLifePhase && endOfLifePhase.startDate === APR) {
-					// application is in time frame, but it's decommissioned on the first date, still count to baseline
-					// NOTE: that is unique for this baseline!
+					// application is in time frame, but it's decommissioned on APR, still count to baseline
 					baselineApr++;
 				}
 				if (this._isTimestampInOnePhase(CURRENT, productionPhases)) {
 					// count if <CURRENT_DATE> is a timepoint in the 'active', 'phaseIn' or 'phaseOut' lifecycle phase
 					baselineToday++;
+				} else if (endOfLifePhase && endOfLifePhase.startDate === CURRENT) {
+					// application is in time frame, but it's decommissioned on CURRENT, still count to baseline
+					baselineToday++;
 				}
 				if (this._isTimestampInOnePhase(MAR, productionPhases)) {
-					// count if 31th mar <CURRENT_YEAR + 1> is a timepoint in the 'active', 'phaseIn' or 'phaseOut' lifecycle phase
+					// count if 31th mar <CURRENT_FYEAR + 1> is a timepoint in the 'active', 'phaseIn' or 'phaseOut' lifecycle phase
+					baselineMar++;
+				} else if (endOfLifePhase && endOfLifePhase.startDate === MAR) {
+					// application is in time frame, but it's decommissioned on MAR, still count to baseline
+					// NOTE: this baseline is at the end, so end of life counts if it's equal to MAR
 					baselineMar++;
 				}
 				// application decommissioning or decommissioned this FY?
-				// 'endOfLife' phase start date must be between 1st apr <CURRENT_YEAR> and 31th mar <CURRENT_YEAR + 1> (both inclusive)
+				// 'endOfLife' phase start date must be between 1st apr <CURRENT_FYEAR> and 31th mar <CURRENT_FYEAR + 1> (both inclusive)
 				if (this._isLifecyclePhaseStartDateIn(endOfLifePhase, APR, MAR, false, false)) {
 					// planned (decommissioning) or actuals (decommissioned)?
-					if (endOfLifePhase.startDate > CURRENT) {
+					// NOTE: baseline CURRENT is at the beginning, so end of life counts to planned if it's equal to CURRENT
+					if (endOfLifePhase.startDate >= CURRENT) {
 						decommissionsPlanned++;
 					} else {
 						decommissionsActuals++;
 					}
 				}
 				// application commissioning or commissioned this FY?
-				// 'active' phase start date must be between 1st apr <CURRENT_YEAR> and 31th mar <CURRENT_YEAR + 1> (both inclusive)
+				// 'active' phase start date must be between 1st apr <CURRENT_FYEAR> and 31th mar <CURRENT_FYEAR + 1> (both inclusive)
 				if (this._isLifecyclePhaseStartDateIn(activePhase, APR, MAR, false, false)) {
 					// planned (commissioning) or actuals (commissioned)?
+					// NOTE: baseline CURRENT is at the beginning, so production counts to actuals if it's equal to CURRENT
 					if (activePhase.startDate > CURRENT) {
 						commissionsPlanned++;
 					} else {
@@ -374,7 +381,7 @@ class Report extends Component {
 					onChange={this._onMultiSelectChange}
 					values={this.state.multiSelectValues} />
 				<Table data={data}
-					currentYear={APR_DATE.getFullYear()}
+					currentFYear={APR_DATE.getFullYear()}
 					options={{
 						market: marketOptions
 					}}

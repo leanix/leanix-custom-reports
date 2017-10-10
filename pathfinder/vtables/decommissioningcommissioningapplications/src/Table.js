@@ -17,8 +17,8 @@ class Table extends Component {
 	}
 
 	render() {
-		const currentYear = this.props.currentYear;
-		const nextYear = currentYear + 1;
+		const currentFYear = this.props.currentFYear;
+		const nextFYear = currentFYear + 1;
 		return (
 			<BootstrapTable data={this.props.data} keyField='id'
 				 striped hover exportCSV condensed
@@ -37,8 +37,8 @@ class Table extends Component {
 					 dataField='baselineApr'
 					 headerAlign='left'
 					 dataAlign='right'
-					 csvHeader={'application-baseline-apr-' + currentYear}
-					>Baseline Apr {currentYear}</TableHeaderColumn>
+					 csvHeader={'application-baseline-apr-' + currentFYear}
+					>Baseline Apr {currentFYear}</TableHeaderColumn>
 				<TableHeaderColumn
 					 dataField='decommissionsActuals'
 					 headerAlign='left'
@@ -73,8 +73,8 @@ class Table extends Component {
 					 dataField='baselineMar'
 					 headerAlign='left'
 					 dataAlign='right'
-					 csvHeader={'application-baseline-mar-' + nextYear}
-					>Baseline Mar {nextYear}</TableHeaderColumn>
+					 csvHeader={'application-baseline-mar-' + nextFYear}
+					>Baseline Mar {nextFYear}</TableHeaderColumn>
 			</BootstrapTable>
 		);
 	}
@@ -94,7 +94,7 @@ Table.propTypes = {
 			baselineToday: PropTypes.number.isRequired
 		}).isRequired
 	).isRequired,
-	currentYear: PropTypes.number.isRequired,
+	currentFYear: PropTypes.number.isRequired,
 	options: PropTypes.shape({
 		market: TableUtilities.PropTypes.options
 	}).isRequired,

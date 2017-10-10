@@ -1,22 +1,15 @@
-function getCurrentLifecycle(node) {
+function getCurrentLifecycle(node, timestamp) {
 	if (!hasLifecycle(node)) {
 		return;
 	}
-	const currentPhase = node.lifecycle.asString;
 	let result = undefined;
-	if (currentPhase && currentPhase !== '-') {
-		result = node.lifecycle.phases.find((e) => {
-			return e.phase === currentPhase;
-		});
-	} else {
-		const now = Date.now();
-		node.lifecycle.phases.forEach((e) => {
-			const lcDate = Date.parse(e.startDate + ' 00:00:00');
-			if (lcDate <= now) {
-				result = e;
-			}
-		});
-	}
+	const now = timestamp ? timestamp : Date.now();
+	node.lifecycle.phases.forEach((e) => {
+		const lcDate = Date.parse(e.startDate + ' 00:00:00');
+		if (lcDate <= now) {
+			result = e;
+		}
+	});
 	return createLifecycleObj(result);
 }
 
