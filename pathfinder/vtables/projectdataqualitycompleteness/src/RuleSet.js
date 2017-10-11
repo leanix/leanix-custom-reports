@@ -1,8 +1,32 @@
 import Utilities from './common/Utilities';
 
 const singleRules = [{
-		name: 'Dummy Rule',
-		additionalNote: 'Dummy additional note',
+		name: 'Project must be linked to at least one application',
+		appliesTo: (index, project) => {
+			return true;
+		},
+		compute: (index, project, config) => {
+			const subIndex = project.relProjectToApplication;
+			if (!subIndex) {
+				return false;
+			}
+			return true;
+		}
+	}, {
+		name: 'Linked project has a impact',
+		additionalNote: 'If linked to an application, then it must have an project impact (e.g. \'Adds\', \'Modifies\', \'Sunsets\').',
+		appliesTo: (index, project) => {
+			return true;
+		},
+		compute: (index, project, config) => {
+			const subIndex = project.relProjectToApplication;
+			if (!subIndex) {
+				return false;
+			}
+			return _hasImpact(subIndex);
+		}
+	} , {
+		name: 'has a user group',
 		appliesTo: (index, project) => {
 			return true;
 		},
@@ -15,6 +39,16 @@ const singleRules = [{
 		}
 	}
 ];
+
+function _hasImpact(subIndex) {
+	return subIndex.nodes.some((e) => {
+		const impact = e.relationAttr.projectImpact;
+		if (!impact) {
+			return false;
+		}
+			return true;
+	});
+}
 
 const overallRule = {
 	name: 'Overall Quality',
