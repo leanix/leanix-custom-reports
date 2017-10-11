@@ -170,22 +170,26 @@ class Report extends Component {
 					return;
 				}
 				let activePhase = Utilities.getLifecyclePhase(lifecycles, ACTIVE);
-				const phaseInPhase = Utilities.getLifecyclePhase(lifecycles, PHASE_IN);
-				const phaseOutPhase = Utilities.getLifecyclePhase(lifecycles, PHASE_OUT);
+				//const phaseInPhase = Utilities.getLifecyclePhase(lifecycles, PHASE_IN);
+				//const phaseOutPhase = Utilities.getLifecyclePhase(lifecycles, PHASE_OUT);
 				const endOfLifePhase = Utilities.getLifecyclePhase(lifecycles, END_OF_LIFE);
 				// add impicit phase before 'endOfLife' if production phases are missing
-				if (!activePhase && !phaseInPhase && !phaseOutPhase && endOfLifePhase) {
+				if (!activePhase && /* !phaseInPhase && !phaseOutPhase && */ endOfLifePhase) {
 					activePhase = {
 						phase: ACTIVE
 					};
 				}
-				const productionPhases = [activePhase, phaseInPhase, phaseOutPhase];
+				const productionPhases = [activePhase];
 				this._addLifecyclePhaseEnd(lifecycles, activePhase);
-				this._addLifecyclePhaseEnd(lifecycles, phaseInPhase);
-				this._addLifecyclePhaseEnd(lifecycles, phaseOutPhase);
+				//this._addLifecyclePhaseEnd(lifecycles, phaseInPhase);
+				//this._addLifecyclePhaseEnd(lifecycles, phaseOutPhase);
 				if (this._isTimestampInOnePhase(APR, productionPhases)) {
 					// count if 1st apr <CURRENT_FYEAR> is a timepoint in the 'active', 'phaseIn' or 'phaseOut' lifecycle phase
 					baselineApr++;
+					if (activePhase && activePhase.startDate === APR) {
+						// transition to active on first date means it wasn't active on baseline
+						baselineApr--;
+					}
 				} else if (endOfLifePhase && endOfLifePhase.startDate === APR) {
 					// application is in time frame, but it's decommissioned on APR, still count to baseline
 					baselineApr++;
@@ -193,12 +197,18 @@ class Report extends Component {
 				if (this._isTimestampInOnePhase(CURRENT, productionPhases)) {
 					// count if <CURRENT_DATE> is a timepoint in the 'active', 'phaseIn' or 'phaseOut' lifecycle phase
 					baselineToday++;
+					if (activePhase && activePhase.startDate === CURRENT) {
+						// transition to active on first date means it wasn't active on baseline
+						baselineToday--;
+					}
 				} else if (endOfLifePhase && endOfLifePhase.startDate === CURRENT) {
 					// application is in time frame, but it's decommissioned on CURRENT, still count to baseline
 					baselineToday++;
 				}
 				if (this._isTimestampInOnePhase(MAR, productionPhases)) {
 					// count if 31th mar <CURRENT_FYEAR + 1> is a timepoint in the 'active', 'phaseIn' or 'phaseOut' lifecycle phase
+					// NOTE: while other baselines are meant as start point, this one points to the end
+					// therefore no adjustment for active and endOfLife needed
 					baselineMar++;
 				}
 				// application decommissioning or decommissioned this FY?
