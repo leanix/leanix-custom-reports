@@ -170,19 +170,17 @@ class Report extends Component {
 					return;
 				}
 				let activePhase = Utilities.getLifecyclePhase(lifecycles, ACTIVE);
-				//const phaseInPhase = Utilities.getLifecyclePhase(lifecycles, PHASE_IN);
-				//const phaseOutPhase = Utilities.getLifecyclePhase(lifecycles, PHASE_OUT);
+				const phaseOutPhase = Utilities.getLifecyclePhase(lifecycles, PHASE_OUT);
 				const endOfLifePhase = Utilities.getLifecyclePhase(lifecycles, END_OF_LIFE);
 				// add impicit phase before 'endOfLife' if production phases are missing
-				if (!activePhase && /* !phaseInPhase && !phaseOutPhase && */ endOfLifePhase) {
+				if (!activePhase && !phaseOutPhase && endOfLifePhase) {
 					activePhase = {
 						phase: ACTIVE
 					};
 				}
-				const productionPhases = [activePhase];
+				const productionPhases = [activePhase, phaseOutPhase];
 				this._addLifecyclePhaseEnd(lifecycles, activePhase);
-				//this._addLifecyclePhaseEnd(lifecycles, phaseInPhase);
-				//this._addLifecyclePhaseEnd(lifecycles, phaseOutPhase);
+				this._addLifecyclePhaseEnd(lifecycles, phaseOutPhase);
 				if (this._isTimestampInOnePhase(APR, productionPhases)) {
 					// count if 1st apr <CURRENT_FYEAR> is a timepoint in the 'active', 'phaseIn' or 'phaseOut' lifecycle phase
 					baselineApr++;
