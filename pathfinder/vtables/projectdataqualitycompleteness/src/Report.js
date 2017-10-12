@@ -57,9 +57,10 @@ class Report extends Component {
 					]}
 				){
 					edges { node {
-        				id name
+        				id name tags { name }
 						... on Project {
-							relProjectToApplication { edges { node { factSheet {id name} }}}
+							relProjectToApplication { edges { node { projectImpact factSheet { id name  } }}}
+							relProjectToUserGroup { edges { node { factSheet { id name  } }}}
 						}
         			}}
         		}}`;
