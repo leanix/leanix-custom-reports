@@ -18,13 +18,9 @@ function getFinancialYear(date) {
 	}
 	// get start point
 	const startYear = date.getMonth() >= 3 ? date.getFullYear() : date.getFullYear() - 1;
-	const startDate = new Date();
-	startDate.setFullYear(startYear, 3, 1); // 1st apr
-	startDate.setHours(0, 0, 0, 0);
+	const startDate = new Date(startYear, 3, 1, 0, 0, 0, 0); // 1st apr
 	// get end point
-	const endDate = new Date();
-	endDate.setFullYear(startYear + 1, 2, 31); // 31th mar
-	startDate.setHours(0, 0, 0, 0);
+	const endDate = new Date(startYear + 1, 2, 31, 0, 0, 0, 0); // 31th mar
 	return {
 		start: startDate,
 		end: endDate

@@ -2,38 +2,40 @@ import React, { Component } from 'react';
 import CommonQueries from './common/CommonGraphQLQueries';
 import DataIndex from './common/DataIndex';
 import Utilities from './common/Utilities';
-import Helper from './Helper';
+import RuleSet from './RuleSet';
 import Table from './Table';
-import RuleDefs from './RuleDefs';
 
-// dates and timestamps
-const TODAY = new Date();
-const THIS_YEAR = TODAY.getFullYear();
+const PLAN = 'plan';
+const PHASE_IN = 'phaseIn';
+const ACTIVE = 'active';
+const PHASE_OUT = 'phaseOut';
+const END_OF_LIFE = 'endOfLife';
 
-// Fiscal Year is from April 1st to March 31st
-const FISCAL_YEAR = (TODAY.getMonth() < 3 ? THIS_YEAR-1 : THIS_YEAR);
-const FISCAL_YEARS = [
-	{
-		startDate: new Date(FISCAL_YEAR,   3,  1, 0, 0, 0, 0).getTime(),
-		endDate:   new Date(FISCAL_YEAR+1, 2, 31, 0, 0, 0, 0).getTime()
-	},
-	{
-		startDate: new Date(FISCAL_YEAR+1, 3,  1, 0, 0, 0, 0).getTime(),
-		endDate:   new Date(FISCAL_YEAR+2, 2, 31, 0, 0, 0, 0).getTime()
-	},
-	{
-		startDate: new Date(FISCAL_YEAR+2, 3,  1, 0, 0, 0, 0).getTime(),
-		endDate:   new Date(FISCAL_YEAR+3, 2, 31, 0, 0, 0, 0).getTime()
-	},
-	{
-		startDate: new Date(FISCAL_YEAR+3, 3,  1, 0, 0, 0, 0).getTime(),
-		endDate:   new Date(FISCAL_YEAR+4, 2, 31, 0, 0, 0, 0).getTime()
-	},
-	{
-		startDate: new Date(FISCAL_YEAR+4, 3,  1, 0, 0, 0, 0).getTime(),
-		endDate:   new Date(FISCAL_YEAR+5, 2, 31, 0, 0, 0, 0).getTime()
-	}
+const RULE_OPTIONS = Utilities.createOptionsObj([RuleSet.adoptingApps].concat(RuleSet.singleRules));
+
+const CURRENT_DATE = new Date();
+const CURRENT_YEAR = CURRENT_DATE.getMonth() >= 3 ? CURRENT_DATE.getFullYear() : CURRENT_DATE.getFullYear() - 1;
+
+const MARKET_ROW = [
+	getFinancialYear(CURRENT_YEAR),
+	getFinancialYear(CURRENT_YEAR + 1),
+	getFinancialYear(CURRENT_YEAR + 2),
+	getFinancialYear(CURRENT_YEAR + 3),
+	getFinancialYear(CURRENT_YEAR + 4),
+	getFinancialYear(CURRENT_YEAR + 5)
 ];
+
+function getFinancialYear(year) {
+	// get start point
+	const startDate = new Date(year, 3, 1, 0, 0, 0, 0); // 1st apr
+	// get end point
+	const endDate = new Date(year + 1, 2, 31, 0, 0, 0, 0); // 31th mar
+	return {
+		name: (startDate.getFullYear() - 2000) + '/' + (endDate.getFullYear() - 2000),
+		start: startDate.getTime(),
+		end: endDate.getTime()
+	};
+}
 
 class Report extends Component {
 
@@ -41,12 +43,12 @@ class Report extends Component {
 		super(props);
 		this._initReport = this._initReport.bind(this);
 		this._handleData = this._handleData.bind(this);
-
-		this.MARKET_OPTIONS = {}; // the list of markets
-
+		this._addLifecyclePhaseEnd = this._addLifecyclePhaseEnd.bind(this);
+		this._renderAdditionalNotes = this._renderAdditionalNotes.bind(this);
+		this.MARKET_OPTIONS = {};
 		this.state = {
 			setup: null,
-			data: [],
+			data: []
 		};
 	}
 
@@ -56,26 +58,21 @@ class Report extends Component {
 
 	_initReport(setup) {
 		lx.ready(this._createConfig());
-		lx.showSpinner('Loading data ...');
+		lx.showSpinner('Loading data...');
 		this.setState({
 			setup: setup
 		});
-
 		// get all tags, then the data
-		lx
-			.executeGraphQL(CommonQueries.tagGroups)
-			.then((tagGroups) => {
-				const index = new DataIndex();
-				index.put(tagGroups);
-				const applicationTagId = index.getFirstTagID('Application Type', 'Application');
-				const itTagId = index.getFirstTagID('CostCentre', 'IT');
-				lx
-					.executeGraphQL(this._createQuery(applicationTagId, itTagId))
-					.then((data) => {
-						index.put(data);
-						this._handleData(index, applicationTagId, itTagId);
-					});
+		lx.executeGraphQL(CommonQueries.tagGroups).then((tagGroups) => {
+			const index = new DataIndex();
+			index.put(tagGroups);
+			const applicationTagId = index.getFirstTagID('Application Type', 'Application');
+			const itTagId = index.getFirstTagID('CostCentre', 'IT');
+			lx.executeGraphQL(this._createQuery(applicationTagId, itTagId)).then((data) => {
+				index.put(data);
+				this._handleData(index, applicationTagId, itTagId);
 			});
+		});
 	}
 
 	_createConfig() {
@@ -85,249 +82,240 @@ class Report extends Component {
 	}
 
 	_createQuery(applicationTagId, itTagId) {
-		const facetkeyApplicationTypeTag = applicationTagId ? `,{facetKey:"Application Type",keys:["${applicationTagId}"]}` : '';
-		const facetKeyCostCentreTag = itTagId ? `,{facetKey:"CostCentre",keys:["${itTagId}"]}` : '';
-		let query = `{records:allFactSheets(
-			sort:{mode:BY_FIELD,key:"displayName",order:asc },
-			filter:{facetFilters:[
-				{facetKey:"FactSheetTypes",keys:["Application"]}
-				${facetkeyApplicationTypeTag}
-				${facetKeyCostCentreTag}
-			]}
-		){
-			edges{node{...on Application{
-				name tags{name tagGroup{name}}
-				lifecycle{state:asString phases{phase startDate}}
-				relApplicationToProject{edges{node{factSheet{name}}}}
-			}}}
-		}}`;
-
-		return query;
+		const applicationTagIdFilter = applicationTagId ? `, {facetKey: "Application Type", keys: ["${applicationTagId}"]}` : '';
+		const itTagIdFilter = itTagId ? `, {facetKey: "CostCentre", keys: ["${itTagId}"]}` : '';
+		return `{applications: allFactSheets(
+					sort: { mode: BY_FIELD, key: "displayName", order: asc },
+					filter: {facetFilters: [
+						{facetKey: "FactSheetTypes", keys: ["Application"]}
+						${applicationTagIdFilter}
+						${itTagIdFilter}
+					]}
+				) {
+					edges { node {
+						id name tags { name }
+						... on Application {
+							lifecycle { phases { phase startDate } }
+							relApplicationToProject { edges { node { factSheet { id } } } }
+						}
+					}}
+				}
+				projects: allFactSheets(
+					sort: { mode: BY_FIELD, key: "displayName", order: asc },
+					filter: {facetFilters: [
+						{facetKey: "FactSheetTypes", keys: ["Project"]}
+					]}
+				) {
+					edges { node { id name } }
+				}}`;
 	}
 
 	_handleData(index, applicationTagId, itTagId) {
-
-		// group applications by market
-		let marketCount = 0;
-		const groupedByMarket = {};
-
-		index.records.nodes.forEach((appl) => {
-
-			// FALLBACK-Checks for applicationTagId and itTagId
-			if (!applicationTagId && !index.includesTag(e, 'Application')) {
-				return; // no valid record
-			}
-			if (!itTagId && !index.includesTag(e, 'IT')) {
-				return; // no valid record
-			}
-
-			// the counters for each market's marketEntry[maturityState].counters[fyOffset] have to be updated
-			// the application names for each market's have to be stored in marketEntry[maturityState].aplications[fyOffset]
-			let market;
-			let maturityState;
-			let fyOffset;
-
-			// get market (from application's name)
-			market = Utilities.getMarket(appl);
-			if (!market) {
-				return; // no valid record
-			}
-
-			// get maturity state tags
-			const msTags = index.getTagsFromGroup(appl, 'Cloud Maturity');
-			switch (msTags.length) {
-			case 0: // applications with no maturity state are regarded as DEPLOYED
-				maturityState = RuleDefs.DEPLOYED;
-				break;
-			case 1:
-				maturityState = RuleDefs.getMaturityStateFromTag(msTags[0].name);
-				break;
-			default:
-				return; // no valid maturity state
-			}
-
-			// get application's lifecycle information
-			const lifecycles = Utilities.getLifecycles(appl);
-			if (lifecycles.length === 0) {
-				return;
-			}
-
-			// get start and end date of application's 'active' phase
-			const activePhase = Utilities.getLifecyclePhase(lifecycles, Helper.ACTIVE);
-			Helper.addLifecyclePhaseEnd(lifecycles, activePhase);
-			let startDate;
-			let endDate;
-			if (activePhase) {
-				startDate = activePhase.startDate;
-				endDate = activePhase.endDate;
-			}
-
-			if (startDate === undefined ||                    // invalid
-				startDate > FISCAL_YEARS[4].endDate ||        // out of fiscal years scope
-				(endDate !== undefined &&
-					(endDate <= FISCAL_YEARS[0].startDate ||  // out of fiscal years scope
-					 endDate <= startDate))                   // invalid
-			) {
-				return; // application has no valid or fitting 'active' phase
-			}
-
-			let marketentry = groupedByMarket[market];
-			if (!marketentry) {
-				// a new market - init an empty 7-by-5 array of empty arrays
-				// the array will store the applications' names
-				marketentry = [
-					[[],[],[],[],[]], // PERCENT (calculated)
-					[[],[],[],[],[]], // PHYSICAL
-					[[],[],[],[],[]], // VIRTUALISED
-					[[],[],[],[],[]], // TBD
-					[[],[],[],[],[]], // READY
-					[[],[],[],[],[]], // NATIVE
-					[[],[],[],[],[]]  // DEPLOYED
-				];
-				groupedByMarket[market] = marketentry;
-				this.MARKET_OPTIONS[marketCount++] = market;
-			}
-
-			// increment the regarding fiscal year counters (AS-IS rule)
-			// DEPLOYED: increment fitting current and future fiscal year
-			// OTHERS:   increment fitting current fiscal year only
-			FISCAL_YEARS.forEach((fy, index) => {
-				// startDate before fiscal year endDate
-				// endDate - if defined - after fiscal year startDate
-				if (startDate <= fy.endDate && (endDate === undefined || endDate > fy.startDate)) {
-					if (index === 0) {
-						marketentry[maturityState][index].push(appl.name); // application name
-					} else {
-						marketentry[RuleDefs.DEPLOYED][index].push(appl.name); // application name
-					}
-				}
-			});
-
-			// TO-BE-Rule: investigate related projects
-			// Project name pattern: <MARKET>_<MATSTATE_NAME> FY<YY>/<YY>
-			//                       G1       G2                G3   G4
-			const PRJNAME_RE = /^([A-Z]+)_(Cloud Ready|Cloud Native|Cloud TBD)\s+FY(\d{2})\/(\d{2})$/;
-			if (appl.relApplicationToProject) {
-				appl.relApplicationToProject.nodes.forEach((prj) => {
-					let prj_name = prj.name;
-					const MATCH = PRJNAME_RE.exec(prj_name);
-					if (!MATCH) {
-						return; // no valid project name
-					}
-
-					// first one (0) is full match, followed by n group matches
-					//const market   = MATCH[1]; // market currently out-of-interest
-					const matState = MATCH[2]; // maturity state name
-					const fyStart  = 1 * MATCH[3] + 2000; // beginning of fiscal year (as 4-digit number)
-					const fyEnd    = 1 * MATCH[4] + 2000; // end of fiscal year (as 4-digit-number)
-					if (fyStart + 1 != fyEnd) {
-						return; // no valid project name (fyEnd must by fyStart + 1)
-					}
-
-					// TO-BE-Rule: check only the future fiscal years
-					if (fyStart < FISCAL_YEAR+1 || fyStart > FISCAL_YEAR + 4){
-						return; // project has no valid fiscal year
-					}
-
-					let prjMaturityState = RuleDefs.getMaturityStateFromTag(matState);
-					if (!prjMaturityState) {
-						return; // project has no valid 'Cloud Maturity' state
-					}
-
-					// increment the regarding future fiscal year counter (TO-BE rule)
-					marketentry[prjMaturityState][fyStart-FISCAL_YEAR].push(appl.name);
-				});
-			}
-
-		}); // records
-
-		// add fiscal year results to tableData (7 rows per market)
-
 		const tableData = [];
-		for (let marketKey in groupedByMarket) {
-			let m = groupedByMarket[marketKey]; // a 7-elements array of objects
-
-			// the PERCENT rule
-			let rule = RuleDefs.rules[RuleDefs.PERCENT];
-			tableData.push({
-				id: marketKey + '_' + rule.id,
-				market: Helper.getOptionKeyFromValue(this.MARKET_OPTIONS, marketKey),
-				rule:   Helper.getOptionKeyFromValue(RuleDefs.RULE_OPTIONS, rule.name),
-				percentage: rule.percentage,
-				// no Cloud TBD in current fiscal year
-				fy0: Helper.getPercent(
-						0,
-						m[RuleDefs.READY][0].length,
-						m[RuleDefs.NATIVE][0].length,
-						m[RuleDefs.DEPLOYED][0].length),
-				fy0Apps: m[0][0],
-				fy1: Helper.getPercent(
-						m[RuleDefs.TBD][1].length,
-						m[RuleDefs.READY][1].length,
-						m[RuleDefs.NATIVE][1].length,
-						m[RuleDefs.DEPLOYED][1].length),
-				fy1Apps: m[0][1],
-				fy2: Helper.getPercent(
-						m[RuleDefs.TBD][2].length,
-						m[RuleDefs.READY][2].length,
-						m[RuleDefs.NATIVE][2].length,
-						m[RuleDefs.DEPLOYED][2].length),
-				fy2Apps: m[0][2],
-				fy3: Helper.getPercent(
-						m[RuleDefs.TBD][3].length,
-						m[RuleDefs.READY][3].length,
-						m[RuleDefs.NATIVE][3].length,
-						m[RuleDefs.DEPLOYED][3].length),
-				fy3Apps: m[0][3],
-				fy4: Helper.getPercent(
-						m[RuleDefs.TBD][4].length,
-						m[RuleDefs.READY][4].length,
-						m[RuleDefs.NATIVE][4].length,
-						m[RuleDefs.DEPLOYED][4].length),
-				fy4Apps: m[0][4]
-			});
-
-			// the 6 other rules
-			for (let r = RuleDefs.PHYSICAL; r<RuleDefs.RULE_COUNT; r++) {
-				let rule = RuleDefs.rules[r];
-				tableData.push({
-					id: marketKey + '_' + rule.id,
-					market: Helper.getOptionKeyFromValue(this.MARKET_OPTIONS, marketKey),
-					rule:   Helper.getOptionKeyFromValue(RuleDefs.RULE_OPTIONS, rule.name),
-					percentage: rule.percentage,
-					fy0:     m[r][0].length,
-					fy0Apps: m[r][0],
-					fy1:     m[r][1].length,
-					fy1Apps: m[r][1],
-					fy2:     m[r][2].length,
-					fy2Apps: m[r][2],
-					fy3:     m[r][3].length,
-					fy3Apps: m[r][3],
-					fy4:     m[r][4].length,
-					fy4Apps: m[r][4]
-				});
+		let additionalNotesMarker = 0;
+		const additionalNotes = RuleSet.singleRules.reduce((obj, e) => {
+			if (e.additionalNote) {
+				obj[e.name] = {
+					marker: additionalNotesMarker++,
+					note: e.additionalNote
+				};
 			}
+			return obj;
+		}, {});
+		// group applications by market
+		const groupResult = this._groupByMarket(index.applications.nodes, (application) => {
+			return (!applicationTagId && !index.includesTag(application, 'Application'))
+				|| (!itTagId && !index.includesTag(application, 'IT'));
+		});
+		const groupedByMarket = groupResult.groups;
+		this.MARKET_OPTIONS = groupResult.options;
+		const ruleConfig = {};
+		for (let market in groupedByMarket) {
+			ruleConfig.market = market;
+			const allApplications = groupedByMarket[market];
+			// process rules
+			const marketRows = {};
+			// add a placeholder for 'adoptingApps' rule
+			const adoptingAppsIndex = tableData.length;
+			tableData.push({});
+			allApplications.forEach((e) => {
+				const lifecycles = Utilities.getLifecycles(e);
+				const activePhase = Utilities.getLifecyclePhase(lifecycles, ACTIVE);
+				if (!activePhase) {
+					return;
+				}
+				this._addLifecyclePhaseEnd(lifecycles, activePhase);
+				// add date range props
+				activePhase.start = activePhase.startDate;
+				activePhase.end = activePhase.endDate;
+				RuleSet.singleRules.forEach((e2) => {
+					// create row entry, if necessary
+					if (!marketRows[e2.name]) {
+						marketRows[e2.name] = MARKET_ROW.map((e3) => {
+							const copy = Utilities.copyObject(e3);
+							copy.apps = [];
+							return copy;
+						});
+					}
+					if (!e2.appliesTo(index, e)) {
+						return;
+					}
+					e2.compute(index, e, activePhase, marketRows[e2.name], ruleConfig);
+				});
+			});
+			// add results to tableData
+			RuleSet.singleRules.forEach((e) => {
+				tableData.push({
+					id: market + '-' + e.name,
+					market: this._getOptionKeyFromValue(this.MARKET_OPTIONS, market),
+					rule: this._getOptionKeyFromValue(RULE_OPTIONS, e.name),
+					overallRule: e.overallRule,
+					isPercentage: false,
+					fy0: marketRows[e.name][0].apps.length,
+					fy0Apps: marketRows[e.name][0].apps,
+					fy1: marketRows[e.name][1].apps.length,
+					fy1Apps: marketRows[e.name][1].apps,
+					fy2: marketRows[e.name][2].apps.length,
+					fy2Apps: marketRows[e.name][2].apps,
+					fy3: marketRows[e.name][3].apps.length,
+					fy3Apps: marketRows[e.name][3].apps,
+					fy4: marketRows[e.name][4].apps.length,
+					fy4Apps: marketRows[e.name][4].apps,
+					fy5: marketRows[e.name][5].apps.length,
+					fy5Apps: marketRows[e.name][5].apps
+				});
+			});
+			// process adoptingApps
+			const ruleResult = RuleSet.adoptingApps.compute(marketRows, ruleConfig);
+			tableData[adoptingAppsIndex] = {
+				id: market + '-' + RuleSet.adoptingApps.name,
+				market: this._getOptionKeyFromValue(this.MARKET_OPTIONS, market),
+				rule: this._getOptionKeyFromValue(RULE_OPTIONS, RuleSet.adoptingApps.name),
+				isPercentage: true,
+				fy0: ruleResult.fy0,
+				fy0Apps: [],
+				fy1: ruleResult.fy1,
+				fy1Apps: [],
+				fy2: ruleResult.fy2,
+				fy2Apps: [],
+				fy3: ruleResult.fy3,
+				fy3Apps: [],
+				fy4: ruleResult.fy4,
+				fy4Apps: [],
+				fy5: ruleResult.fy5,
+				fy5Apps: []
+			};
 		}
-
 		lx.hideSpinner();
 		this.setState({
-			data: tableData
+			data: tableData,
+			additionalNotes: additionalNotes
 		});
+	}
+
+	_groupByMarket(nodes, additionalFilter) {
+		let marketCount = 0;
+		const groupedByMarket = {};
+		const marketOptions = {};
+		nodes.forEach((e) => {
+			if (additionalFilter && additionalFilter(e)) {
+				return;
+			}
+			const market = Utilities.getMarket(e);
+			if (!market) {
+				return;
+			}
+			if (!groupedByMarket[market]) {
+				groupedByMarket[market] = [];
+				marketOptions[marketCount++] = market;
+			}
+			groupedByMarket[market].push(e);
+		});
+		return {
+			groups: groupedByMarket,
+			options: marketOptions
+		};
+	}
+
+	_addLifecyclePhaseEnd(lifecycles, phase) {
+		if (!lifecycles || !phase || !phase.phase || !phase.startDate) {
+			return;
+		}
+		let nextPhaseKey = this._getNextPhaseKey(phase.phase);
+		let nextPhase = Utilities.getLifecyclePhase(lifecycles, nextPhaseKey);
+		while (!nextPhase) {
+			nextPhaseKey = this._getNextPhaseKey(nextPhaseKey);
+			if (!nextPhaseKey) {
+				break;
+			}
+			nextPhase = Utilities.getLifecyclePhase(lifecycles, nextPhaseKey);
+		}
+		if (nextPhase) {
+			phase.endDate = nextPhase.startDate;
+		}
+	}
+
+	_getNextPhaseKey(phase) {
+		switch (phase) {
+			case PLAN:
+				return PHASE_IN;
+			case PHASE_IN:
+				return ACTIVE;
+			case ACTIVE:
+				return PHASE_OUT;
+			case PHASE_OUT:
+				return END_OF_LIFE;
+			case END_OF_LIFE:
+			default:
+				return;
+		}
+	}
+
+	_getOptionKeyFromValue(options, value) {
+		if (!value) {
+			return undefined;
+		}
+		const key = Utilities.getKeyToValue(options, value);
+		return key !== undefined && key !== null ? parseInt(key, 10) : undefined;
 	}
 
 	render() {
 		if (this.state.data.length === 0) {
-			return (<h4 className='text-center'>Loading data ...</h4>);
+			return (<h4 className='text-center'>Loading data...</h4>);
 		}
 		return (
-			<Table
-				data={this.state.data}
-				options={{
-					market: this.MARKET_OPTIONS,
-					rules: RuleDefs.RULE_OPTIONS
-				}}
-				fiscalYear={FISCAL_YEAR % 100}
-				setup={this.state.setup} />
+			<div>
+				<Table data={this.state.data}
+					currentFYear={CURRENT_YEAR}
+					additionalNotes={this.state.additionalNotes}
+					options={{
+						market: this.MARKET_OPTIONS,
+						rule: RULE_OPTIONS
+					}}
+					pageSize={RuleSet.ruleCount * 3}
+					setup={this.state.setup} />
+				{this._renderAdditionalNotes()}
+			</div>
+		);
+	}
+
+	_renderAdditionalNotes() {
+		const arr = [];
+		for (let key in this.state.additionalNotes) {
+			const additionalNote = this.state.additionalNotes[key];
+			arr[additionalNote.marker] = additionalNote.note;
+		}
+		return (
+			<dl className='small'>
+				{arr.map((e, i) => {
+					return (
+						<span key={i}>
+							<dt>{i + 1}.</dt>
+							<dd>{e}</dd>
+						</span>
+					);
+				})}
+			</dl>
 		);
 	}
 }
