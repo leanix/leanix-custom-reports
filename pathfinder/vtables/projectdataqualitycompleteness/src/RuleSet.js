@@ -38,49 +38,24 @@ const singleRules = [{
 			if (!subIndex) {
 				return false;
 			}
-			return _hasProjectWithImpact(subIndex, 'Sunsets') && _hasProjectType(index, project);
+			return _hasProjectWithImpact(subIndex, 'Sunsets') && _hasProjectType(index, project, 'Legacy');
 		}
 	}, {
-		//TODO What is Start date?
-		name: 'Have a end phase date > start date',
-		additionalNote: 'All projects must have an End Phase date greater than the Start Date.',
+		name: 'Linked projects has /w type \'Transformation\', w/ impact',
+		additionalNote: 'All Projects with the Project Type set to \'Transformation\' must be linked to at least one application,'
+		+ ' the ‘Project Impact’ must be set (\'Adds\', \'Sunsets\', \'Modifies\')',
 		appliesTo: (index, project) => {
-			return true;
+			return _hasProjectType(index, project, 'Transformation');
 		},
 		compute: (index, project, config) => {
-			const subIndex = project.relProjectToUserGroup;
+			const subIndex = project.relProjectToApplication;
 			if (!subIndex) {
 				return false;
 			}
-			return true;
-			}
-	}, {
-		name: 'active phase date < end phase date',
-		appliesTo: (index, project) => {
-			return true;
-		},
-		compute: (index, project, config) => {
-			const subIndex = project.relProjectToUserGroup;
-			if (!subIndex) {
-				return false;
-			}
-			return true;
+			return _hasProjectWithImpact(subIndex, 'Modifies') || _hasProjectWithImpact(subIndex, 'Adds') || _hasProjectWithImpact(subIndex, 'Sunsets');
 		}
 	}, {
-		//TODO: transformation plan
-		name: 'Transformation',
-		appliesTo: (index, project) => {
-			return true;
-		},
-		compute: (index, project, config) => {
-			const subIndex = project.relProjectToUserGroup;
-			if (!subIndex) {
-				return false;
-			}
-			return true;
-		}
-	}, {
-		name: 'has a user group',
+		name: 'has owning local market',
 		appliesTo: (index, project) => {
 			return true;
 		},
@@ -110,10 +85,10 @@ function _hasProjectWithImpact(subIndex, impact) {
 	});
 }
 
-function _hasProjectType(index, project, tagGroup) {
+function _hasProjectType(index, project, tag) {
 	const hasProjectType = index.getFirstTagFromGroup(project, 'Project Type');
 	if(hasProjectType) {
-		return hasProjectType.name === 'Legacy';
+		return hasProjectType.name === tag;
 	}
 	return false;
 }
