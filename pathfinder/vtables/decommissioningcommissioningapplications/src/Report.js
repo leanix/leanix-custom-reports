@@ -220,7 +220,7 @@ class Report extends Component {
 				// 'active' phase start date must be between 1st apr <CURRENT_FYEAR> and 31th mar <CURRENT_FYEAR + 1> (both inclusive)
 				if (this._isLifecyclePhaseStartDateIn(activePhase, APR, MAR, false, false)) {
 					// planned (commissioning) or actuals (commissioned)?
-					// NOTE: baseline CURRENT is at the beginning, so end of life counts to planned if it's equal to CURRENT
+					// NOTE: baseline CURRENT is at the beginning, so active counts to planned if it's equal to CURRENT
 					if (activePhase.startDate >= CURRENT) {
 						commissionsPlanned++;
 					} else {
