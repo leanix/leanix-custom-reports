@@ -16,6 +16,7 @@ const RULE_OPTIONS = Utilities.createOptionsObj([RuleSet.adoptingApps].concat(Ru
 const CURRENT_DATE = new Date();
 const CURRENT_YEAR = CURRENT_DATE.getMonth() >= 3 ? CURRENT_DATE.getFullYear() : CURRENT_DATE.getFullYear() - 1;
 
+// that's a template for the _handleData method
 const MARKET_ROW = [
 	getFinancialYear(CURRENT_YEAR),
 	getFinancialYear(CURRENT_YEAR + 1),
@@ -31,6 +32,7 @@ function getFinancialYear(year) {
 	// get end point
 	const endDate = new Date(year + 1, 2, 31, 0, 0, 0, 0); // 31th mar
 	return {
+		// name property is used as a comparable identifier in RuleSet
 		name: (startDate.getFullYear() - 2000) + '/' + (endDate.getFullYear() - 2000),
 		start: startDate.getTime(),
 		end: endDate.getTime()
@@ -135,19 +137,32 @@ class Report extends Component {
 			const allApplications = groupedByMarket[market];
 			// process rules
 			const marketRows = {};
-			// add a placeholder for 'adoptingApps' rule
+			// add a placeholder for 'adoptingApps' rule, since the rule
+			// must be placed first, but computation is later
 			const adoptingAppsIndex = tableData.length;
 			tableData.push({});
 			allApplications.forEach((e) => {
 				const lifecycles = Utilities.getLifecycles(e);
 				const activePhase = Utilities.getLifecyclePhase(lifecycles, ACTIVE);
-				if (!activePhase) {
+				const phaseOutPhase = Utilities.getLifecyclePhase(lifecycles, PHASE_OUT);
+				if (!activePhase && !phaseOutPhase) {
 					return;
 				}
 				this._addLifecyclePhaseEnd(lifecycles, activePhase);
-				// add date range props
-				activePhase.start = activePhase.startDate;
-				activePhase.end = activePhase.endDate;
+				this._addLifecyclePhaseEnd(lifecycles, phaseOutPhase);
+				// create combined production phase and add date range props
+				let productionPhase = undefined;
+				if (activePhase) {
+					productionPhase = Utilities.copyObject(activePhase);
+					if (phaseOutPhase) {
+						productionPhase.endDate = phaseOutPhase.endDate;
+					}
+				} else {
+					productionPhase = Utilities.copyObject(phaseOutPhase);
+				}
+				productionPhase.start = productionPhase.startDate;
+				productionPhase.end = productionPhase.endDate;
+				// process single rules
 				RuleSet.singleRules.forEach((e2) => {
 					// create row entry, if necessary
 					if (!marketRows[e2.name]) {
@@ -160,7 +175,7 @@ class Report extends Component {
 					if (!e2.appliesTo(index, e)) {
 						return;
 					}
-					e2.compute(index, e, activePhase, marketRows[e2.name], ruleConfig);
+					e2.compute(index, e, productionPhase, marketRows[e2.name], ruleConfig);
 				});
 			});
 			// add results to tableData
@@ -172,17 +187,29 @@ class Report extends Component {
 					overallRule: e.overallRule,
 					isPercentage: false,
 					fy0: marketRows[e.name][0].apps.length,
-					fy0Apps: marketRows[e.name][0].apps,
+					fy0Apps: marketRows[e.name][0].apps.map((e) => {
+						return e.name;
+					}),
 					fy1: marketRows[e.name][1].apps.length,
-					fy1Apps: marketRows[e.name][1].apps,
+					fy1Apps: marketRows[e.name][1].apps.map((e) => {
+						return e.name;
+					}),
 					fy2: marketRows[e.name][2].apps.length,
-					fy2Apps: marketRows[e.name][2].apps,
+					fy2Apps: marketRows[e.name][2].apps.map((e) => {
+						return e.name;
+					}),
 					fy3: marketRows[e.name][3].apps.length,
-					fy3Apps: marketRows[e.name][3].apps,
+					fy3Apps: marketRows[e.name][3].apps.map((e) => {
+						return e.name;
+					}),
 					fy4: marketRows[e.name][4].apps.length,
-					fy4Apps: marketRows[e.name][4].apps,
+					fy4Apps: marketRows[e.name][4].apps.map((e) => {
+						return e.name;
+					}),
 					fy5: marketRows[e.name][5].apps.length,
-					fy5Apps: marketRows[e.name][5].apps
+					fy5Apps: marketRows[e.name][5].apps.map((e) => {
+						return e.name;
+					})
 				});
 			});
 			// process adoptingApps
@@ -292,7 +319,7 @@ class Report extends Component {
 						market: this.MARKET_OPTIONS,
 						rule: RULE_OPTIONS
 					}}
-					pageSize={RuleSet.ruleCount * 3}
+					pageSize={RuleSet.ruleCount * 2}
 					setup={this.state.setup} />
 				{this._renderAdditionalNotes()}
 			</div>

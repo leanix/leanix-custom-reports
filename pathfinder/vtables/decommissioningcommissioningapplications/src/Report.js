@@ -337,7 +337,7 @@ class Report extends Component {
 			data = data.filter((e) => {
 				return this.state.multiSelectValues.some((e2) => {
 					const key = Utilities.getKeyToValue(this.MARKET_OPTIONS, e2);
-					return key && e.market === parseInt(key);
+					return key && e.market === parseInt(key, 10);
 				});
 			});
 			// filter market options for table only

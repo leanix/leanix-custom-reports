@@ -73,7 +73,7 @@ class Report extends Component {
 						id name description tags { name }
 						subscriptions { edges { node { roles { name } } } }
 						... on Application {
-							lifecycle { asString phases { phase startDate } }
+							lifecycle { phases { phase startDate } }
 							functionalSuitability technicalSuitability
 							relApplicationToProject { edges { node { projectImpact factSheet { id } } } }
 							relApplicationToBusinessCapability { edges { node { factSheet { id } } } }

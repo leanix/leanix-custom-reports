@@ -29,7 +29,7 @@ class MultiSelectField extends Component {
 		const options = [];
 		for (let key in this.props.items) {
 			options.push({
-				value: parseInt(key),
+				value: parseInt(key, 10),
 				label: this.props.items[key]
 			});
 		}
@@ -40,7 +40,7 @@ class MultiSelectField extends Component {
 				return;
 			}
 			return {
-				value: parseInt(value),
+				value: parseInt(value, 10),
 				label: e
 			};
 		}).filter((e) => {

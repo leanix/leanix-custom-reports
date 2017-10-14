@@ -124,7 +124,7 @@ class Report extends Component {
 							admScope customisationLevel functionalSuitability technicalSuitability
 							applicationComplexity businessCriticality applicationUsage
 							deployment alias externalId { externalId } leanixV3IdApplication { externalId }
-							soxPci accessType lifecycle { asString phases { phase startDate } }
+							soxPci accessType lifecycle { phases { phase startDate } }
 							networkTechnicalProductFamily lastMajorUpgradeDate
 							relApplicationToBusinessCapability { edges { node { factSheet { id } } } }
 							relApplicationToITComponent { edges { node { resourceType factSheet { id } } } }
