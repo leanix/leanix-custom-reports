@@ -178,7 +178,7 @@ class Report extends Component {
 				this._addLifecyclePhaseEnd(lifecycles, activePhase);
 				this._addLifecyclePhaseEnd(lifecycles, phaseOutPhase);
 				if (this._isTimestampInOnePhase(APR, productionPhases)) {
-					// count if 1st apr <CURRENT_FYEAR> is a timepoint in the 'active', 'phaseIn' or 'phaseOut' lifecycle phase
+					// count if 1st apr <CURRENT_FYEAR> is a timepoint in the 'active' or 'phaseOut' lifecycle phase
 					baselineApr++;
 					if (activePhase && activePhase.startDate === APR) {
 						// transition to active on first date means it wasn't active on baseline
@@ -189,7 +189,7 @@ class Report extends Component {
 					baselineApr++;
 				}
 				if (this._isTimestampInOnePhase(CURRENT, productionPhases)) {
-					// count if <CURRENT_DATE> is a timepoint in the 'active', 'phaseIn' or 'phaseOut' lifecycle phase
+					// count if <CURRENT_DATE> is a timepoint in the 'active' or 'phaseOut' lifecycle phase
 					baselineToday++;
 					if (activePhase && activePhase.startDate === CURRENT) {
 						// transition to active on first date means it wasn't active on baseline
@@ -200,7 +200,7 @@ class Report extends Component {
 					baselineToday++;
 				}
 				if (this._isTimestampInOnePhase(MAR, productionPhases)) {
-					// count if 31th mar <CURRENT_FYEAR + 1> is a timepoint in the 'active', 'phaseIn' or 'phaseOut' lifecycle phase
+					// count if 31th mar <CURRENT_FYEAR + 1> is a timepoint in the 'active' or 'phaseOut' lifecycle phase
 					// NOTE: while other baselines are meant as start point, this one points to the end
 					// therefore no adjustment for active and endOfLife needed
 					baselineMar++;
@@ -220,8 +220,8 @@ class Report extends Component {
 				// 'active' phase start date must be between 1st apr <CURRENT_FYEAR> and 31th mar <CURRENT_FYEAR + 1> (both inclusive)
 				if (this._isLifecyclePhaseStartDateIn(activePhase, APR, MAR, false, false)) {
 					// planned (commissioning) or actuals (commissioned)?
-					// NOTE: baseline CURRENT is at the beginning, so production counts to actuals if it's equal to CURRENT
-					if (activePhase.startDate > CURRENT) {
+					// NOTE: baseline CURRENT is at the beginning, so end of life counts to planned if it's equal to CURRENT
+					if (activePhase.startDate >= CURRENT) {
 						commissionsPlanned++;
 					} else {
 						commissionsActuals++;
