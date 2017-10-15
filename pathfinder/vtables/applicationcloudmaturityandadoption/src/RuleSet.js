@@ -1,9 +1,10 @@
 import Utilities from './common/Utilities';
 
+// regexp are designed to be forgivable regarding case-sensitivity and spaces
 const virtualisedRE = /Virtualised/i;
-const cloudNativeRE = /Cloud Native/i;
-const cloudReadyRE = /Cloud Ready/i;
-const cloudTBDRE = /Cloud TBD/i;
+const cloudNativeRE = /Cloud\s*Native/i;
+const cloudReadyRE = /Cloud\s*Ready/i;
+const cloudTBDRE = /Cloud\s*TBD/i;
 
 const financialYearRE = /FY(\d{2}\/\d{2})/;
 
@@ -167,7 +168,7 @@ const adoptingApps = {
 			const total = totalRow[i].apps.length;
 			const percentage = total === 0 ? 0
 				: ((cloudReady + cloudNative + (i === 0 ? 0 : cloudTBD)) * 100 / total);
-			result['fy' + i] = percentage;
+			result['fy' + i] = Math.round(percentage * 10) / 10;
 		});
 		return result;
 	}

@@ -8,8 +8,6 @@ class Table extends Component {
 	constructor(props) {
 		super(props);
 		this._formatRule = this._formatRule.bind(this);
-		this._formatNumber = this._formatNumber.bind(this);
-		this._csvFormatNumber = this._csvFormatNumber.bind(this);
 	}
 
 	_formatRule(cell, row, enums) {
@@ -34,7 +32,7 @@ class Table extends Component {
 						width: '4em',
 						marginLeft: '0.2em',
 						textAlign: 'right'
-					}}>{this._formatPercentage(cell)} %</span>
+					}}>{cell} %</span>
 				</div>
 			);
 		}
@@ -53,15 +51,11 @@ class Table extends Component {
 		);
 	}
 
-	_formatPercentage(value) {
-		return Math.round(value * 10) / 10;
-	}
-
 	_csvFormatNumber(cell, row) {
 		if (cell === undefined || cell === null || Number.isNaN(cell)) {
 			return '';
 		}
-		return this._formatPercentage(cell);
+		return cell;
 	}
 
 	_trClassname(row, fieldValue, rowIdx, colIdx) {
