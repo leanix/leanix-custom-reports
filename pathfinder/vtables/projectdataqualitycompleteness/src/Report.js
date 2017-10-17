@@ -59,8 +59,8 @@ class Report extends Component {
 					edges { node {
         				id name tags { name }
 						... on Project {
-							relProjectToApplication { edges { node { projectImpact factSheet { id name  } }}}
-							relProjectToUserGroup { edges { node { factSheet { id name  } }}}
+							relProjectToApplication { edges { node { projectImpact factSheet { id } }}}
+							relProjectToUserGroup { edges { node { factSheet { id } }}}
 						}
         			}}
         		}}`;
@@ -163,9 +163,9 @@ class Report extends Component {
 			if (additionalFilter && additionalFilter(e)) {
 				return;
 			}
-			const market = Utilities.getMarket(e);
+			let market = Utilities.getMarket(e);
 			if (!market) {
-				return;
+				market = 'unknown';
 			}
 			if (!groupedByMarket[market]) {
 				groupedByMarket[market] = [];
