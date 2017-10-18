@@ -3,7 +3,7 @@ import Utilities from './common/Utilities';
 const decommissioningRE = /decommissioning/i;
 
 const singleRules = [{
-		name: 'Project must be linked to at least one application',
+		name: 'has at least one application',
 		appliesTo: (index, project) => {
 			return true;
 		},
@@ -15,8 +15,8 @@ const singleRules = [{
 			return true;
 		}
 	}, {
-		name: 'has a impact',
-		additionalNote: 'If linked to an application, then it must have a project impact.',
+		name: 'has applications w/ an impact',
+		additionalNote: 'Rule includes projects which have relations to applications.',
 		appliesTo: (index, project) => {
 			const subIndex = project.relProjectToApplication;
 			if (!subIndex) {
@@ -26,12 +26,12 @@ const singleRules = [{
 		},
 		compute: (index, project, config) => {
 			const subIndex = project.relProjectToApplication;
-			return _hasImpact(subIndex);
+			return _allNodesHaveImpact(subIndex);
 		}
 	}, {
-		name: '\'Decommissions\' project has w/ type \'Legacy\', w/ impact \'Sunsets\'',
-		additionalNote: 'All Decommissioning Projects with tag \'Legacy\' must be linked to at least one application '
-			+ 'and the ‘Project Impact’ must be \'Sunsets\'.',
+		name: 'Decommissioning project has relations to applications w/ impact \'Sunsets\'',
+		additionalNote: 'Rule includes projects which have \'Decommissioning\' in name and '
+			+ 'a \'Project Type\' tag group assignment of \'Legacy\'.',
 		appliesTo: (index, project) => {
 			return decommissioningRE.test(project.name) && _hasProjectType(index, project, 'Legacy');
 		},
@@ -40,12 +40,11 @@ const singleRules = [{
 			if (!subIndex) {
 				return false;
 			}
-			return _hasProjectWithImpact(subIndex, 'Sunsets');
+			return _allNodesHaveImpact(subIndex, 'Sunsets');
 		}
 	}, {
-		name: 'Projects has /w type \'Transformation\', w/ impact',
-		additionalNote: 'All Projects with the Project Type set to \'Transformation\' must be linked to at least one application,'
-		+ ' the ‘Project Impact’ must be set.',
+		name: 'Transformation project has relations to applications w/ any impact',
+		additionalNote: 'Rule includes projects which have a \'Project Type\' tag group assignment of \'Transformation\'.',
 		appliesTo: (index, project) => {
 			return _hasProjectType(index, project, 'Transformation');
 		},
@@ -54,10 +53,10 @@ const singleRules = [{
 			if (!subIndex) {
 				return false;
 			}
-			return _hasImpact(subIndex);
+			return _allNodesHaveImpact(subIndex);
 		}
 	}, {
-		name: 'has owning local market',
+		name: 'has at least one affected user group',
 		appliesTo: (index, project) => {
 			return true;
 		},
@@ -71,17 +70,16 @@ const singleRules = [{
 	}
 ];
 
-function _hasImpact(subIndex) {
-	return subIndex.nodes.every((e) => {
-		const impact = e.relationAttr.projectImpact;
-		if (!impact) {
-			return false;
-		}
-		return true;
-	});
-}
-
-function _hasProjectWithImpact(subIndex, impact) {
+function _allNodesHaveImpact(subIndex, impact) {
+	if (!impact) {
+		return subIndex.nodes.every((e) => {
+			const impact = e.relationAttr.projectImpact;
+			if (!impact) {
+				return false;
+			}
+			return true;
+		});
+	}
 	return subIndex.nodes.every((e) => {
 		return e.relationAttr.projectImpact === impact;
 	});
