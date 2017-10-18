@@ -15,8 +15,8 @@ const singleRules = [{
 			return true;
 		}
 	}, {
-		name: 'Linked project has a impact',
-		additionalNote: 'If linked to an application, then it must have a project impact (e.g. \'Adds\', \'Modifies\', \'Sunsets\').',
+		name: 'has a impact',
+		additionalNote: 'If linked to an application, then it must have a project impact.',
 		appliesTo: (index, project) => {
 			const subIndex = project.relProjectToApplication;
 			if (!subIndex) {
@@ -29,9 +29,9 @@ const singleRules = [{
 			return _hasImpact(subIndex);
 		}
 	}, {
-		name: '\'Decommissions\' project has w/ impact \'Sunsets\' , w/ type \'Legacy\'',
+		name: '\'Decommissions\' project has w/ type \'Legacy\', w/ impact \'Sunsets\'',
 		additionalNote: 'All Decommissioning Projects with tag \'Legacy\' must be linked to at least one application '
-			+ 'and the ‘Project Impact’ must be \'Sunsets\' and \'Project Type\' tag must be \'Legacy\'.',
+			+ 'and the ‘Project Impact’ must be \'Sunsets\'.',
 		appliesTo: (index, project) => {
 			return decommissioningRE.test(project.name) && _hasProjectType(index, project, 'Legacy');
 		},
