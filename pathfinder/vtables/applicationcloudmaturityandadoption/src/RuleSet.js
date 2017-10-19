@@ -6,6 +6,9 @@ const cloudNativeRE = /Cloud\s*Native/i;
 const cloudReadyRE = /Cloud\s*Ready/i;
 const cloudTBDRE = /Cloud\s*TBD/i;
 
+// a string starting with any amount of non-space characters followed by an underline followed by at least one char
+const prefixRE = /^(\S*)_.*/;
+
 const financialYearRE = /FY(\d{2}\/\d{2})/;
 
 const singleRules = [{
@@ -21,6 +24,20 @@ const singleRules = [{
 					e.apps.push(application);
 				}
 			});
+		}
+	}, {
+		name: 'Total number of group applications used',
+		additionalNote: 'An application is counted if it is related to a market that uses applications having a name '
+			+ 'which is prefixed by \'VGS\' or \'VGE\' and  an \'Active\' and/or \'Phase Out\' lifecycle phase in the financial year.',
+		appliesTo: (index, application) => {
+			const subIndex = application.relApplicationToOwningUserGroup;
+			if (!subIndex) {
+				return false;
+			}
+			return true;
+		},
+		compute: (index, application, productionPhase, marketRow, config) => {
+			_addFromOwningUsergroups(index, application, productionPhase, marketRow);
 		}
 	}, {
 		name: 'Total number of virtualised applications',
@@ -73,7 +90,7 @@ const singleRules = [{
 		}
 	}, {
 		name: 'Total number of deployed applications according to IT scope',
-		additionalNote: 'An application is counted if it\'s lifecycle phase is \'Active\' '
+		additionalNote: 'An application is counted if its lifecycle phase is \'Active\' '
 			+ 'and/or \'Phase Out\' in the financial year.',
 		overallRule: true,
 		appliesTo: (index, application) => {
@@ -153,21 +170,81 @@ function _addFromCloudMaturity(index, application, productionPhase, marketRow, c
 	}
 }
 
+/**
+  * adapt FY counters depending on related 'owned user groups' and
+  * their 'used applications' with Prefix 'VGS' or 'VGE'
+  */
+function _addFromOwningUsergroups(index, application, productionPhase, marketRow) {
+	// get the applicaton's related 'owning user groups'
+	const subIndex = application.relApplicationToOwningUserGroup;
+	
+	// user group index to access parent and used applications details
+	const ugIndex = index['userGroups'];
+	if (!ugIndex) {
+		return;
+	}
+
+	// access userGroups - there can be more than one!
+	subIndex.nodes.forEach((ug, i) => {
+		let currentUG = ugIndex.byID[ug.id];
+		while (currentUG) {
+			// inspect UG's used applications
+			const applIndex = currentUG.relUserGroupToApplication;
+			if (applIndex) {
+				applIndex.nodes.forEach((e) => {
+					const usedAppl = index.byID[e.id];
+					// check prefix
+					let prefix = _getNamePrefix(usedAppl);
+					if (prefix && (prefix === 'VGS' || prefix === 'VGE')) {
+						marketRow.forEach((e1) => {
+							if (_isOverlapping(e1, productionPhase) && !_includesID(e1.apps, usedAppl.id)) {
+								e1.apps.push(usedAppl);
+							}
+						});
+					}
+				});
+			}
+			// check the parent
+			const parent = index.getParent('userGroups', currentUG.id);
+			if (!parent) {
+				break;
+			}
+			currentUG = ugIndex.byID[parent.id];
+		}
+	});
+}
+
+function _getNamePrefix(factsheet) {
+	if (!factsheet) {
+		return;
+	}
+	if (!prefixRE.test(factsheet.name)) {
+		return;
+	}
+	const m = prefixRE.exec(factsheet.name);
+	if (!m) {
+		return;
+	}
+	return m[1];
+}
+
 const adoptingApps = {
 	name: '% Cloud applications',
 	compute: (marketRows, config) => {
 		const result = {};
-		const cloudTBDRow = marketRows[singleRules[2].name];
-		const cloudReadyRow = marketRows[singleRules[3].name];
-		const cloudNativeRow = marketRows[singleRules[4].name];
-		const totalRow = marketRows[singleRules[5].name];
+		const groupAppsRow = marketRows[singleRules[1].name];
+		const cloudTBDRow = marketRows[singleRules[3].name];
+		const cloudReadyRow = marketRows[singleRules[4].name];
+		const cloudNativeRow = marketRows[singleRules[5].name];
+		const totalRow = marketRows[singleRules[6].name];
 		totalRow.forEach((e, i) => {
+			const groupApps = groupAppsRow[i].apps.length;
 			const cloudTBD = cloudTBDRow[i].apps.length;
 			const cloudReady = cloudReadyRow[i].apps.length;
 			const cloudNative = cloudNativeRow[i].apps.length;
 			const total = totalRow[i].apps.length;
 			const percentage = total === 0 ? 0
-				: ((cloudReady + cloudNative + (i === 0 ? 0 : cloudTBD)) * 100 / total);
+				: ((groupApps + (i === 0 ? 0 : cloudTBD) + cloudReady + cloudNative) * 100 / total);
 			result['fy' + i] = Math.round(percentage * 10) / 10;
 		});
 		return result;

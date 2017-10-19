@@ -97,8 +97,9 @@ class Report extends Component {
 					edges { node {
 						id name tags { name }
 						... on Application {
-							lifecycle { phases { phase startDate } }
-							relApplicationToProject { edges { node { factSheet { id } } } }
+							lifecycle{phases{phase startDate}}
+							relApplicationToProject{edges{node{factSheet{id}}}}
+							relApplicationToOwningUserGroup{edges{node{factSheet{id}}}}
 						}
 					}}
 				}
@@ -108,7 +109,22 @@ class Report extends Component {
 						{facetKey: "FactSheetTypes", keys: ["Project"]}
 					]}
 				) {
-					edges { node { id name } }
+					edges{node{id name}}
+				}
+				userGroups: allFactSheets(
+					sort: { mode: BY_FIELD, key: "displayName", order: asc },
+					filter: {facetFilters: [
+						{facetKey: "FactSheetTypes", keys: ["UserGroup"]}
+					]}
+				) {
+					edges{node{
+						id name
+						...on UserGroup{
+							id
+							relUserGroupToApplication{edges{node{factSheet{id name}}}}
+							relToParent{edges{node{factSheet{id}}}}
+						}
+					}}
 				}}`;
 	}
 
@@ -124,7 +140,7 @@ class Report extends Component {
 			}
 			return obj;
 		}, {});
-		// group applications by market
+		// group applications by market, but ignore applications that meet the exclusion filter's condition
 		const groupResult = this._groupByMarket(index.applications.nodes, (application) => {
 			return (!applicationTagId && !index.includesTag(application, 'Application'))
 				|| (!itTagId && !index.includesTag(application, 'IT'));
@@ -240,12 +256,13 @@ class Report extends Component {
 		});
 	}
 
-	_groupByMarket(nodes, additionalFilter) {
+	// group nodes by market, but ignore nodes that meet the exclusion filter's condition
+	_groupByMarket(nodes, exclusionFilter) {
 		let marketCount = 0;
 		const groupedByMarket = {};
 		const marketOptions = {};
 		nodes.forEach((e) => {
-			if (additionalFilter && additionalFilter(e)) {
+			if (exclusionFilter && exclusionFilter(e)) {
 				return;
 			}
 			const market = Utilities.getMarket(e);
