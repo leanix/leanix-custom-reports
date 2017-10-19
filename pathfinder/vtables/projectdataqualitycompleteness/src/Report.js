@@ -78,10 +78,12 @@ class Report extends Component {
 			}
 			return obj;
 		}, {});
-		// group projects by market
+		// group projects by market and attach unknown market
 		const groupResult = this._groupByMarket(index.projects.nodes);
 		const groupedByMarket = groupResult.groups;
+		groupedByMarket.unknown = groupResult.unknown;
 		this.MARKET_OPTIONS = groupResult.options;
+		this.MARKET_OPTIONS[groupResult.count++] = 'unknown';
 		const ruleConfig = {};
 		for (let market in groupedByMarket) {
 			ruleConfig.market = market;
@@ -159,13 +161,15 @@ class Report extends Component {
 		let marketCount = 0;
 		const groupedByMarket = {};
 		const marketOptions = {};
+		const unknownMarket = [];
 		nodes.forEach((e) => {
 			if (additionalFilter && additionalFilter(e)) {
 				return;
 			}
 			let market = Utilities.getMarket(e);
 			if (!market) {
-				market = 'unknown';
+				unknownMarket.push(e);
+				return;
 			}
 			if (!groupedByMarket[market]) {
 				groupedByMarket[market] = [];
@@ -174,8 +178,10 @@ class Report extends Component {
 			groupedByMarket[market].push(e);
 		});
 		return {
+			count: marketCount,
 			groups: groupedByMarket,
-			options: marketOptions
+			options: marketOptions,
+			unknown: unknownMarket
 		};
 	}
 
