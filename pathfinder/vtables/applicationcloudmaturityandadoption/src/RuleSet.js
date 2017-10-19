@@ -185,7 +185,7 @@ function _addFromOwningUsergroups(index, application, productionPhase, marketRow
 	}
 
 	// access userGroups - there can be more than one!
-	subIndex.nodes.forEach((ug, i) => {
+	subIndex.nodes.forEach((ug) => {
 		let currentUG = ugIndex.byID[ug.id];
 		while (currentUG) {
 			// inspect UG's used applications
