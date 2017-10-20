@@ -5,10 +5,9 @@ const virtualisedRE = /Virtualised/i;
 const cloudNativeRE = /Cloud\s*Native/i;
 const cloudReadyRE = /Cloud\s*Ready/i;
 const cloudTBDRE = /Cloud\s*TBD/i;
-
 // a string starting with any amount of non-space characters followed by an underline followed by at least one char
 const prefixRE = /^(\S*)_.*/;
-
+// 'FYnn/nn'
 const financialYearRE = /FY(\d{2}\/\d{2})/;
 
 const singleRules = [{
@@ -148,6 +147,10 @@ function _addFromProjects(index, application, cloudRE, marketRow) {
 		const financialYear = marketRow[financialYearIndex];
 		if (financialYear && !_includesID(financialYear.apps, application.id)) {
 			financialYear.apps.push(application);
+			if (financialYear.isCurrentYear && financialYearIndex>0) {
+				// the 'current' column must always be right before the current fiscal year!
+				marketRow[financialYearIndex-1].apps.push(application);
+			}
 			// add application for future financial years as well
 			for (let i = financialYearIndex + 1; i < marketRow.length; i++) {
 				const futureFY = marketRow[i];
@@ -245,7 +248,7 @@ const adoptingApps = {
 			const total = totalRow[i].apps.length;
 			const percentage = total === 0 ? 0
 				: ((groupApps + (i === 0 ? 0 : cloudTBD) + cloudReady + cloudNative) * 100 / total);
-			result['fy' + i] = Math.round(percentage * 10) / 10;
+			result[(i>0 ? 'fy' + (i-1) : 'current')] = Math.round(percentage * 10) / 10;
 		});
 		return result;
 	}

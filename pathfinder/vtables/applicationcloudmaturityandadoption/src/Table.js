@@ -97,6 +97,20 @@ class Table extends Component {
 					 filter={TableUtilities.selectFilter(this.props.options.rule)}
 					>Rule</TableHeaderColumn>
 				<TableHeaderColumn
+					 dataField='current'
+					 dataAlign='right'
+					 headerAlign='left'
+					 dataFormat={this._formatNumber}
+					 csvHeader={'current'}
+					 csvFormat={this._csvFormatNumber}
+					>Current</TableHeaderColumn>
+				<TableHeaderColumn hidden export
+					 dataField='currentApps'
+					 csvHeader={'current-apps'}
+					 csvFormat={TableUtilities.formatArray}
+					 csvFormatExtraData=';'
+					>Current - Applications</TableHeaderColumn>
+				<TableHeaderColumn
 					 dataField='fy0'
 					 dataAlign='right'
 					 headerAlign='left'
@@ -193,6 +207,8 @@ Table.propTypes = {
 			rule: PropTypes.number.isRequired,
 			overallRule: PropTypes.bool,
 			isPercentage: PropTypes.bool.isRequired,
+			current: PropTypes.number.isRequired,
+			currentApps: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
 			fy0: PropTypes.number.isRequired,
 			fy0Apps: PropTypes.arrayOf(PropTypes.string.isRequired).isRequired,
 			fy1: PropTypes.number.isRequired,

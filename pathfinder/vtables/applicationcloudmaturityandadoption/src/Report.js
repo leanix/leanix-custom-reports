@@ -15,9 +15,12 @@ const RULE_OPTIONS = Utilities.createOptionsObj([RuleSet.adoptingApps].concat(Ru
 
 const CURRENT_DATE = new Date();
 const CURRENT_YEAR = CURRENT_DATE.getMonth() >= 3 ? CURRENT_DATE.getFullYear() : CURRENT_DATE.getFullYear() - 1;
+const CURRENT_DATE_TS = CURRENT_DATE.getTime();
 
 // that's a template for the _handleData method
-const MARKET_ROW = [
+const MARKET_ROW_COLUMNS = [
+	// the 'current' column must always be right before the current fiscal year!
+	getCurrentDate(),
 	getFinancialYear(CURRENT_YEAR),
 	getFinancialYear(CURRENT_YEAR + 1),
 	getFinancialYear(CURRENT_YEAR + 2),
@@ -26,16 +29,30 @@ const MARKET_ROW = [
 	getFinancialYear(CURRENT_YEAR + 5)
 ];
 
+function getCurrentDate() {
+	CURRENT_DATE.setTime(0, 0, 0);
+	return {
+		// name property is used as a comparable identifier in RuleSet
+		name: 'current',
+		start: CURRENT_DATE_TS,
+		end: CURRENT_DATE_TS + 24 * 60 * 60 * 1000,
+		isCurrentYear: true
+	};
+}
+
 function getFinancialYear(year) {
 	// get start point
 	const startDate = new Date(year, 3, 1, 0, 0, 0, 0); // 1st apr
+	const startDateTS = startDate.getTime();
 	// get end point
 	const endDate = new Date(year + 1, 2, 31, 0, 0, 0, 0); // 31th mar
+	const endDateTS = endDate.getTime();
 	return {
 		// name property is used as a comparable identifier in RuleSet
 		name: (startDate.getFullYear() - 2000) + '/' + (endDate.getFullYear() - 2000),
-		start: startDate.getTime(),
-		end: endDate.getTime()
+		start: startDateTS,
+		end: endDateTS,
+		isCurrentYear: (startDateTS <= CURRENT_DATE_TS && CURRENT_DATE_TS < endDateTS) 
 	};
 }
 
@@ -83,7 +100,7 @@ class Report extends Component {
 		};
 	}
 
-	_createQuery(applicationTagId, itTagId) {
+	_createQuery(applicationTagId, itTagId, tco80TagId) {
 		const applicationTagIdFilter = applicationTagId ? `, {facetKey: "Application Type", keys: ["${applicationTagId}"]}` : '';
 		const itTagIdFilter = itTagId ? `, {facetKey: "CostCentre", keys: ["${itTagId}"]}` : '';
 		return `{applications: allFactSheets(
@@ -182,7 +199,7 @@ class Report extends Component {
 				RuleSet.singleRules.forEach((e2) => {
 					// create row entry, if necessary
 					if (!marketRows[e2.name]) {
-						marketRows[e2.name] = MARKET_ROW.map((e3) => {
+						marketRows[e2.name] = MARKET_ROW_COLUMNS.map((e3) => {
 							const copy = Utilities.copyObject(e3);
 							copy.apps = [];
 							return copy;
@@ -202,28 +219,32 @@ class Report extends Component {
 					rule: this._getOptionKeyFromValue(RULE_OPTIONS, e.name),
 					overallRule: e.overallRule,
 					isPercentage: false,
-					fy0: marketRows[e.name][0].apps.length,
-					fy0Apps: marketRows[e.name][0].apps.map((e) => {
+					current: marketRows[e.name][0].apps.length,
+					currentApps: marketRows[e.name][0].apps.map((e) => {
 						return e.name;
 					}),
-					fy1: marketRows[e.name][1].apps.length,
-					fy1Apps: marketRows[e.name][1].apps.map((e) => {
+					fy0: marketRows[e.name][1].apps.length,
+					fy0Apps: marketRows[e.name][1].apps.map((e) => {
 						return e.name;
 					}),
-					fy2: marketRows[e.name][2].apps.length,
-					fy2Apps: marketRows[e.name][2].apps.map((e) => {
+					fy1: marketRows[e.name][2].apps.length,
+					fy1Apps: marketRows[e.name][2].apps.map((e) => {
 						return e.name;
 					}),
-					fy3: marketRows[e.name][3].apps.length,
-					fy3Apps: marketRows[e.name][3].apps.map((e) => {
+					fy2: marketRows[e.name][3].apps.length,
+					fy2Apps: marketRows[e.name][3].apps.map((e) => {
 						return e.name;
 					}),
-					fy4: marketRows[e.name][4].apps.length,
-					fy4Apps: marketRows[e.name][4].apps.map((e) => {
+					fy3: marketRows[e.name][4].apps.length,
+					fy3Apps: marketRows[e.name][4].apps.map((e) => {
 						return e.name;
 					}),
-					fy5: marketRows[e.name][5].apps.length,
-					fy5Apps: marketRows[e.name][5].apps.map((e) => {
+					fy4: marketRows[e.name][5].apps.length,
+					fy4Apps: marketRows[e.name][5].apps.map((e) => {
+						return e.name;
+					}),
+					fy5: marketRows[e.name][6].apps.length,
+					fy5Apps: marketRows[e.name][6].apps.map((e) => {
 						return e.name;
 					})
 				});
@@ -235,6 +256,8 @@ class Report extends Component {
 				market: this._getOptionKeyFromValue(this.MARKET_OPTIONS, market),
 				rule: this._getOptionKeyFromValue(RULE_OPTIONS, RuleSet.adoptingApps.name),
 				isPercentage: true,
+				current: ruleResult.current,
+				currentApps: [],
 				fy0: ruleResult.fy0,
 				fy0Apps: [],
 				fy1: ruleResult.fy1,
