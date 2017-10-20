@@ -32,5 +32,6 @@ install_report csmoperations
 install_report csmservices
 install_report decommissioningcommissioningapplications
 install_report globalapplicationportfolio
+install_report projectdataqualitycompleteness
 install_report technopedia
 cd ..

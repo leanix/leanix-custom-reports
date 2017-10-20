@@ -32,5 +32,6 @@ upload_report csmoperations
 upload_report csmservices
 upload_report decommissioningcommissioningapplications
 upload_report globalapplicationportfolio
+upload_report projectdataqualitycompleteness
 upload_report technopedia
 cd ..
