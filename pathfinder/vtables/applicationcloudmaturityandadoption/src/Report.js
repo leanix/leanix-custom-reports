@@ -10,13 +10,10 @@ const PHASE_IN = 'phaseIn';
 const ACTIVE = 'active';
 const PHASE_OUT = 'phaseOut';
 const END_OF_LIFE = 'endOfLife';
-
 const RULE_OPTIONS = Utilities.createOptionsObj([RuleSet.adoptingApps].concat(RuleSet.singleRules));
-
 const CURRENT_DATE = new Date();
 const CURRENT_YEAR = CURRENT_DATE.getMonth() >= 3 ? CURRENT_DATE.getFullYear() : CURRENT_DATE.getFullYear() - 1;
 const CURRENT_DATE_TS = CURRENT_DATE.getTime();
-
 // that's a template for the _handleData method
 const MARKET_ROW_COLUMNS = [
 	// the 'current' column must always be right before the current fiscal year!
@@ -35,7 +32,7 @@ function getCurrentDate() {
 		// name property is used as a comparable identifier in RuleSet
 		name: 'current',
 		start: CURRENT_DATE_TS,
-		end: CURRENT_DATE_TS + 24 * 60 * 60 * 1000,
+		end: CURRENT_DATE_TS + 86400000,
 		isCurrentYear: true
 	};
 }
@@ -100,7 +97,7 @@ class Report extends Component {
 		};
 	}
 
-	_createQuery(applicationTagId, itTagId, tco80TagId) {
+	_createQuery(applicationTagId, itTagId) {
 		const applicationTagIdFilter = applicationTagId ? `, {facetKey: "Application Type", keys: ["${applicationTagId}"]}` : '';
 		const itTagIdFilter = itTagId ? `, {facetKey: "CostCentre", keys: ["${itTagId}"]}` : '';
 		return `{applications: allFactSheets(
@@ -137,7 +134,6 @@ class Report extends Component {
 					edges{node{
 						id name
 						...on UserGroup{
-							id
 							relUserGroupToApplication{edges{node{factSheet{id name}}}}
 							relToParent{edges{node{factSheet{id}}}}
 						}

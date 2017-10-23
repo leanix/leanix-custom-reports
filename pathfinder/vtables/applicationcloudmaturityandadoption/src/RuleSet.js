@@ -1,15 +1,11 @@
 import Utilities from './common/Utilities';
-
 // regexp are designed to be forgivable regarding case-sensitivity and spaces
 const virtualisedRE = /Virtualised/i;
 const cloudNativeRE = /Cloud\s*Native/i;
 const cloudReadyRE = /Cloud\s*Ready/i;
 const cloudTBDRE = /Cloud\s*TBD/i;
-// a string starting with any amount of non-space characters followed by an underline followed by at least one char
-const prefixRE = /^(\S*)_.*/;
 // 'FYnn/nn'
 const financialYearRE = /FY(\d{2}\/\d{2})/;
-
 const singleRules = [{
 		name: 'Total number of physical applications',
 		additionalNote: 'An application needs a \'Cloud Maturity\' tag of \'Physical/Legacy\' to be counted.',
@@ -23,20 +19,6 @@ const singleRules = [{
 					e.apps.push(application);
 				}
 			});
-		}
-	}, {
-		name: 'Total number of group applications used',
-		additionalNote: 'An application is counted if it is related to a market that uses applications having a name '
-			+ 'which is prefixed by \'VGS\' or \'VGE\' and  an \'Active\' and/or \'Phase Out\' lifecycle phase in the financial year.',
-		appliesTo: (index, application) => {
-			const subIndex = application.relApplicationToOwningUserGroup;
-			if (!subIndex) {
-				return false;
-			}
-			return true;
-		},
-		compute: (index, application, productionPhase, marketRow, config) => {
-			_addFromOwningUsergroups(index, application, productionPhase, marketRow);
 		}
 	}, {
 		name: 'Total number of virtualised applications',
@@ -86,6 +68,20 @@ const singleRules = [{
 			_addFromCloudMaturity(index, application, productionPhase, marketRow, 'Cloud Native');
 			// check and add from projects for financial years
 			_addFromProjects(index, application, cloudNativeRE, marketRow);
+		}
+	}, {
+		name: 'Total number of group applications used',
+		additionalNote: 'An application is counted if it is related to a market that uses applications having a name '
+			+ 'which is prefixed by \'VGS\' or \'VGE\' and  an \'Active\' and/or \'Phase Out\' lifecycle phase in the financial year.',
+		appliesTo: (index, application) => {
+			const subIndex = application.relApplicationToOwningUserGroup;
+			if (!subIndex) {
+				return false;
+			}
+			return true;
+		},
+		compute: (index, application, productionPhase, marketRow, config) => {
+			_addFromOwningUsergroups(index, application, productionPhase, marketRow);
 		}
 	}, {
 		name: 'Total number of deployed applications according to IT scope',
@@ -148,7 +144,7 @@ function _addFromProjects(index, application, cloudRE, marketRow) {
 		if (financialYear && !_includesID(financialYear.apps, application.id)) {
 			financialYear.apps.push(application);
 			if (financialYear.isCurrentYear && financialYearIndex>0) {
-				// the 'current' column must always be right before the current fiscal year!
+				// the 'current' column is always right before the current fiscal year!
 				marketRow[financialYearIndex-1].apps.push(application);
 			}
 			// add application for future financial years as well
@@ -180,25 +176,18 @@ function _addFromCloudMaturity(index, application, productionPhase, marketRow, c
 function _addFromOwningUsergroups(index, application, productionPhase, marketRow) {
 	// get the applicaton's related 'owning user groups'
 	const subIndex = application.relApplicationToOwningUserGroup;
-	
-	// user group index to access parent and used applications details
-	const ugIndex = index['userGroups'];
-	if (!ugIndex) {
-		return;
-	}
-
 	// access userGroups - there can be more than one!
 	subIndex.nodes.forEach((ug) => {
-		let currentUG = ugIndex.byID[ug.id];
+		let currentUG = index.byID[ug.id];
 		while (currentUG) {
-			// inspect UG's used applications
-			const applIndex = currentUG.relUserGroupToApplication;
-			if (applIndex) {
-				applIndex.nodes.forEach((e) => {
+			const usedApplIndex = currentUG.relUserGroupToApplication;
+			if (usedApplIndex) {
+				usedApplIndex.nodes.forEach((e) => {
 					const usedAppl = index.byID[e.id];
-					// check prefix
-					let prefix = _getNamePrefix(usedAppl);
-					if (prefix && (prefix === 'VGS' || prefix === 'VGE')) {
+					if (!usedAppl || !usedAppl.name) {
+						return;
+					}
+					if (usedAppl.name.startsWith('VGS') || usedAppl.name.startsWith('VGE')) {
 						marketRow.forEach((e1) => {
 							if (_isOverlapping(e1, productionPhase) && !_includesID(e1.apps, usedAppl.id)) {
 								e1.apps.push(usedAppl);
@@ -212,42 +201,28 @@ function _addFromOwningUsergroups(index, application, productionPhase, marketRow
 			if (!parent) {
 				break;
 			}
-			currentUG = ugIndex.byID[parent.id];
+			currentUG = index.byID[parent.id];
 		}
 	});
-}
-
-function _getNamePrefix(factsheet) {
-	if (!factsheet) {
-		return;
-	}
-	if (!prefixRE.test(factsheet.name)) {
-		return;
-	}
-	const m = prefixRE.exec(factsheet.name);
-	if (!m) {
-		return;
-	}
-	return m[1];
 }
 
 const adoptingApps = {
 	name: '% Cloud applications',
 	compute: (marketRows, config) => {
 		const result = {};
-		const groupAppsRow = marketRows[singleRules[1].name];
-		const cloudTBDRow = marketRows[singleRules[3].name];
-		const cloudReadyRow = marketRows[singleRules[4].name];
-		const cloudNativeRow = marketRows[singleRules[5].name];
+		const cloudTBDRow = marketRows[singleRules[2].name];
+		const cloudReadyRow = marketRows[singleRules[3].name];
+		const cloudNativeRow = marketRows[singleRules[4].name];
+		const groupAppsRow = marketRows[singleRules[5].name];
 		const totalRow = marketRows[singleRules[6].name];
 		totalRow.forEach((e, i) => {
-			const groupApps = groupAppsRow[i].apps.length;
 			const cloudTBD = cloudTBDRow[i].apps.length;
 			const cloudReady = cloudReadyRow[i].apps.length;
 			const cloudNative = cloudNativeRow[i].apps.length;
+			const groupApps = groupAppsRow[i].apps.length;
 			const total = totalRow[i].apps.length;
 			const percentage = total === 0 ? 0
-				: ((groupApps + (i === 0 ? 0 : cloudTBD) + cloudReady + cloudNative) * 100 / total);
+				: ((i === 0 ? 0 : cloudTBD) + cloudReady + cloudNative + groupApps) * 100 / (total + groupApps);
 			result[(i>0 ? 'fy' + (i-1) : 'current')] = Math.round(percentage * 10) / 10;
 		});
 		return result;
