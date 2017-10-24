@@ -67,6 +67,15 @@ const singleRules = [{
 			}
 			return true;
 		}
+	}, {
+		name: 'has Lifecycle',
+		additionalNote: 'Rule includes projects which have a life cycle phase of \'Active\' and a life cycle phase of \'End Of Life\' or \'Phase Out\'.',
+		appliesTo: (index, project) => {
+			return _projectHaveLifeCycle(project, 'active');
+		},
+		compute: (index, project, config) => {
+			return true;
+		}
 	}
 ];
 
@@ -89,6 +98,17 @@ function _hasProjectType(index, project, tag) {
 	const hasProjectType = index.getFirstTagFromGroup(project, 'Project Type');
 	if (hasProjectType) {
 		return hasProjectType.name === tag;
+	}
+	return false;
+}
+
+function _projectHaveLifeCycle(project, phase) {
+	const lifecycles = Utilities.getLifecycles(project);
+	for (let i = 0; i < lifecycles.length; i++) {
+		const lifecycle = lifecycles[i];
+		if (lifecycle.phase === phase) {
+			return true;
+		}
 	}
 	return false;
 }
