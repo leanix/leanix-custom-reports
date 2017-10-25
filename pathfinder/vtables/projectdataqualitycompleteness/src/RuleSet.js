@@ -71,10 +71,10 @@ const singleRules = [{
 		name: 'has Lifecycle',
 		additionalNote: 'Rule includes projects which have a life cycle phase of \'Active\' and a life cycle phase of \'End Of Life\' or \'Phase Out\'.',
 		appliesTo: (index, project) => {
-			return _projectHaveLifeCycle(project, 'active');
+			return true;
 		},
 		compute: (index, project, config) => {
-			return true;
+			return _projectHaveLifeCycle(project, 'active') && (_projectHaveLifeCycle(project, 'endOfLife') ||  _projectHaveLifeCycle(project, 'phaseOut'));
 		}
 	}
 ];
