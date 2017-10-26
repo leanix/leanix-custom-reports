@@ -120,15 +120,15 @@ function _projectHaveLifeCycle(project, phase) {
 function _isInTimeframe(project) {
 	const lifecycles = Utilities.getLifecycles(project);
 	const active = Utilities.getLifecyclePhase(lifecycles, 'active');
-	if(active) {
+	if (active) {
 		return (active.startDate >= ONE_YEAR_BEFORE && active.startDate <= ONE_YEAR_IN_FUTURE);
 	}
 	const phaseOut = Utilities.getLifecyclePhase(lifecycles, 'phaseOut');
-	if(phaseOut) {
+	if (phaseOut) {
 		return (phaseOut.startDate >= ONE_YEAR_BEFORE && phaseOut.startDate <= ONE_YEAR_IN_FUTURE);
 	}
 	const endOfLife = Utilities.getLifecyclePhase(lifecycles, 'endOfLife');
-	if(endOfLife) {
+	if (endOfLife) {
 		return (endOfLife.startDate >= ONE_YEAR_BEFORE && endOfLife.startDate <= ONE_YEAR_IN_FUTURE);
 	}
 	return false;
