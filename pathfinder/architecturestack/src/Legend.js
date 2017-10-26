@@ -9,16 +9,21 @@ class Legend extends Component {
 	}
 
 	render() {
+		if (!this.props.items || this.props.items.length === 0) {
+			return null;
+		}
 		return (
 			<div>
 				{this.props.items.map((e, i) => {
 					return (
-						<Label key={i + e.label}
-							label={e.label}
-							bgColor={e.bgColor}
-							color={e.color}
-							width={this.props.width}
-						/>
+						<span key={i} style={{ marginRight: '0.5em' }}>
+							<Label
+								label={e.label}
+								bgColor={e.bgColor}
+								color={e.color}
+								width={this.props.width}
+							/>
+						</span>
 					);
 				})}
 			</div>
@@ -29,10 +34,10 @@ class Legend extends Component {
 Legend.propTypes = {
 	items: PropTypes.arrayOf(
 		PropTypes.shape({
-			label: PropTypes.string.isRequired,
+			label: PropTypes.func.isRequired,
 			bgColor: PropTypes.string.isRequired,
 			color: PropTypes.string.isRequired
-		})
+		}).isRequired
 	).isRequired,
 	width: PropTypes.string.isRequired
 };

@@ -43,7 +43,7 @@ SelectField.propTypes = {
 		PropTypes.shape({
 			value: PropTypes.string.isRequired,
 			label: PropTypes.string.isRequired
-		})
+		}).isRequired
 	).isRequired,
 	onChange: PropTypes.func,
 	value: PropTypes.string

@@ -11,13 +11,26 @@ class Matrix extends Component {
 		return (
 			<div style={{
 				overflow: 'auto',
-				width: '100%',
-				height: '100%',
+				width: '1200px',
+				height: '800px',
 				backgroundColor: 'green'
 			}}>
 				TODO
 			</div>
 		);
+	}
+
+	_renderLabelLink(text, link) {
+		if (!link) {
+			return () => {
+				return text;
+			}
+		}
+		return () => {
+			return (
+				<Link link={link} target='_blank' text={text} />
+			);
+		}
 	}
 }
 

@@ -21,22 +21,26 @@ class Label extends Component {
 			case '#FFFFFF':
 			case '#FFF':
 			case '#FF':
+			case '#ffffff':
+			case '#fff':
+			case '#ff':
 			case 'rgb(255,255,255)':
 				style.border = '1px solid silver';
 				break;
 			default:
+				style.border = '1px solid ' + this.props.bgColor;
 				break;
 		}
 		return (
 			<span className='label' style={style}>
-				{this.props.label}
+				{this.props.label()}
 			</span>
 		);
 	}
 }
 
 Label.propTypes = {
-	label: PropTypes.string.isRequired,
+	label: PropTypes.func.isRequired,
 	bgColor: PropTypes.string.isRequired,
 	color: PropTypes.string.isRequired,
 	width: PropTypes.string
