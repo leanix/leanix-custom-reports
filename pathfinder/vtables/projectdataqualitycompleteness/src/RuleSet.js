@@ -2,10 +2,20 @@ import Utilities from './common/Utilities';
 
 const decommissioningRE = /decommissioning/i;
 
+const ONE_YEAR_BEFORE_DATE = new Date();
+ONE_YEAR_BEFORE_DATE.setHours(0, 0, 0, 0);
+ONE_YEAR_BEFORE_DATE.setFullYear(ONE_YEAR_BEFORE_DATE.getFullYear() - 1);
+const ONE_YEAR_BEFORE = ONE_YEAR_BEFORE_DATE.getTime();
+
+const ONE_YEAR_IN_FUTURE_DATE = new Date();
+ONE_YEAR_IN_FUTURE_DATE.setHours(0, 0, 0, 0);
+ONE_YEAR_IN_FUTURE_DATE.setFullYear(ONE_YEAR_IN_FUTURE_DATE.getFullYear() + 1);
+const ONE_YEAR_IN_FUTURE = ONE_YEAR_IN_FUTURE_DATE.getTime();
+
 const singleRules = [{
 		name: 'has at least one application',
 		appliesTo: (index, project) => {
-			return true;
+			return _isInTimeframe(project);
 		},
 		compute: (index, project, config) => {
 			const subIndex = project.relProjectToApplication;
@@ -18,7 +28,7 @@ const singleRules = [{
 		name: 'has applications w/ an impact',
 		additionalNote: 'Rule includes projects which have relations to applications.',
 		appliesTo: (index, project) => {
-			const subIndex = project.relProjectToApplication;
+			const subIndex = _isInTimeframe(project) && project.relProjectToApplication;
 			if (!subIndex) {
 				return false;
 			}
@@ -33,7 +43,7 @@ const singleRules = [{
 		additionalNote: 'Rule includes projects which have \'Decommissioning\' in name and '
 			+ 'a \'Project Type\' tag group assignment of \'Legacy\'.',
 		appliesTo: (index, project) => {
-			return decommissioningRE.test(project.name) && _hasProjectType(index, project, 'Legacy');
+			return _isInTimeframe(project) && decommissioningRE.test(project.name) && _hasProjectType(index, project, 'Legacy');
 		},
 		compute: (index, project, config) => {
 			const subIndex = project.relProjectToApplication;
@@ -46,7 +56,7 @@ const singleRules = [{
 		name: 'Transformation project has relations to applications w/ any impact',
 		additionalNote: 'Rule includes projects which have a \'Project Type\' tag group assignment of \'Transformation\'.',
 		appliesTo: (index, project) => {
-			return _hasProjectType(index, project, 'Transformation');
+			return _isInTimeframe(project) && _hasProjectType(index, project, 'Transformation');
 		},
 		compute: (index, project, config) => {
 			const subIndex = project.relProjectToApplication;
@@ -58,7 +68,7 @@ const singleRules = [{
 	}, {
 		name: 'has at least one affected user group',
 		appliesTo: (index, project) => {
-			return true;
+			return _isInTimeframe(project);
 		},
 		compute: (index, project, config) => {
 			const subIndex = project.relProjectToUserGroup;
@@ -104,13 +114,25 @@ function _hasProjectType(index, project, tag) {
 
 function _projectHaveLifeCycle(project, phase) {
 	const lifecycles = Utilities.getLifecycles(project);
-	for (let i = 0; i < lifecycles.length; i++) {
-		const lifecycle = lifecycles[i];
-		if (lifecycle.phase === phase) {
-			return true;
-		}
+	return Utilities.getLifecyclePhase(lifecycles,phase);
+}
+
+function _isInTimeframe(project) {
+	const lifecycles = Utilities.getLifecycles(project);
+	const active = Utilities.getLifecyclePhase(lifecycles, 'active');
+	if(active) {
+		return (active.startDate >= ONE_YEAR_BEFORE && active.startDate <= ONE_YEAR_IN_FUTURE);
+	}
+	const phaseOut = Utilities.getLifecyclePhase(lifecycles, 'phaseOut');
+	if(phaseOut) {
+		return (phaseOut.startDate >= ONE_YEAR_BEFORE && phaseOut.startDate <= ONE_YEAR_IN_FUTURE);
+	}
+	const endOfLife = Utilities.getLifecyclePhase(lifecycles, 'endOfLife');
+	if(endOfLife) {
+		return (endOfLife.startDate >= ONE_YEAR_BEFORE && endOfLife.startDate <= ONE_YEAR_IN_FUTURE);
 	}
 	return false;
+
 }
 
 const overallRule = {

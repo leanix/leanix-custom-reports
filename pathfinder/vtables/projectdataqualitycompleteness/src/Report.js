@@ -59,7 +59,7 @@ class Report extends Component {
 					edges { node {
         				id name tags { name }
 						... on Project {
-							lifecycle { phases { phase } }
+							lifecycle { phases { phase startDate } }
 							relProjectToApplication { edges { node { projectImpact factSheet { id } }}}
 							relProjectToUserGroup { edges { node { factSheet { id } }}}
 						}
