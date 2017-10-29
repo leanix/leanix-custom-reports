@@ -13,3 +13,22 @@ body {
 	display: inline-block !important;
 	vertical-align: top;
 }
+
+.matrix table {
+	border-collapse: separate;
+	border-spacing: 0.5em;
+	empty-cells: hide;
+}
+
+.matrix .label {
+	font-weight: initial;
+}
+
+.matrix .label a {
+	color: inherit;
+}
+
+.matrix th {
+	background: lightgrey;
+	padding: 0.5em;
+}

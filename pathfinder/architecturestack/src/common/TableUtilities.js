@@ -226,6 +226,7 @@ function isStringArray(arr) {
 }
 
 export default {
+	OVERFLOW_CELL_STYLE: OVERFLOW_CELL_STYLE,
 	formatLinkFactsheet: formatLinkFactsheet,
 	formatLinkArrayFactsheets: formatLinkArrayFactsheets,
 	formatEnum: formatEnum,

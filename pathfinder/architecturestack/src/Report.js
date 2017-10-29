@@ -2,14 +2,14 @@ import React, { Component } from 'react';
 import CommonQueries from './common/CommonGraphQLQueries';
 import DataIndex from './common/DataIndex';
 import Utilities from './common/Utilities';
-import Link from './common/Link';
 import SelectField from './SelectField';
 import Legend from './Legend';
 import Matrix from './Matrix';
 
 const LOADING_INIT = 0;
-const LOADING_SUCCESSFUL = 1;
-const LOADING_ERROR = 2;
+const LOADING_NEW_DATA = 1;
+const LOADING_SUCCESSFUL = 2;
+const LOADING_ERROR = 3;
 
 class Report extends Component {
 
@@ -19,10 +19,11 @@ class Report extends Component {
 		this._initReport = this._initReport.bind(this);
 		this._createConfig = this._createConfig.bind(this);
 		this._handleError = this._handleError.bind(this);
-		this._handleFacetData = this._handleFacetData.bind(this);
+		this._getAndHandleAdditionalData = this._getAndHandleAdditionalData.bind(this);
 		this._createAllViewsQuery = this._createAllViewsQuery.bind(this);
 		this._getAndHandleViewData = this._getAndHandleViewData.bind(this);
-		this._handleData = this._handleData.bind(this);
+		this._computeData = this._computeData.bind(this);
+		this._getValue = this._getValue.bind(this);
 		this._getViewModel = this._getViewModel.bind(this);
 		this._getDataValues = this._getDataValues.bind(this);
 		this._handleViewSelect = this._handleViewSelect.bind(this);
@@ -38,7 +39,9 @@ class Report extends Component {
 		this.state = {
 			loadingState: LOADING_INIT,
 			legendData: [],
-			matrixData: []
+			matrixData: [],
+			matrixDataAvailable: false,
+			missingData: []
 		};
 	}
 
@@ -111,7 +114,7 @@ class Report extends Component {
 				callback: (facetData) => {
 					this.lastFacetData = facetData;
 					this.selectedFactsheetType = e;
-					this._handleFacetData();
+					this._getAndHandleAdditionalData();
 				}
 			});
 		});
@@ -128,7 +131,7 @@ class Report extends Component {
 		});
 	}
 
-	_handleFacetData() {
+	_getAndHandleAdditionalData() {
 		// remove previous data
 		this.index.remove('additionalData');
 		const factsheetType = this.selectedFactsheetType;
@@ -147,22 +150,8 @@ class Report extends Component {
 		attributes.push(this._getQueryAttribute(yAxisOption.value, yAxisOption.type));
 		lx.executeGraphQL(this._createAdditionalDataQuery(ids, factsheetType, attributes)).then((additionalData) => {
 			this.index.put(additionalData);
-			this._getAndHandleViewData(this._handleData);
+			this._getAndHandleViewData(this._computeData);
 		}).catch(this._handleError);
-	}
-
-	_getQueryAttribute(fieldName, type) {
-		switch (type) {
-			case 'LIFECYCLE':
-				return fieldName + ' { asString }';
-			case 'TAG':
-				return 'tags { name }';
-			case 'SINGLE_SELECT':
-				return fieldName;
-			default:
-				console.warn('_getQueryAttribute: Unknown type "' + type + '" of data field "' + fieldName + '"!');
-				return fieldName;
-		}
 	}
 
 	_createAllViewsQuery() {
@@ -219,7 +208,8 @@ class Report extends Component {
 		}).catch(this._handleError);
 	}
 
-	_handleData() {
+	_computeData() {
+		// TODO remove
 		console.log(this.index);
 		console.log(this.lastFacetData);
 		console.log(this.selectedFactsheetType);
@@ -268,55 +258,110 @@ class Report extends Component {
 				return lx.translateFieldValue(factsheetType, xAxisOption.value, e);
 			})));
 		}
-		// all other rows contain the values from the y axis option as their first value
 		if (yAxisOption.type === 'TAG') {
 			yAxisValues.forEach((e) => {
-				matrixData.push([e]);
+				// extend the row with empty arrays for later use
+				matrixData.push([e].concat(xAxisValues.map(() => {
+					// all other rows contain the values from the y axis option as their first value
+					return [];
+				})));
 			});
 		} else {
 			yAxisValues.forEach((e) => {
-				matrixData.push([lx.translateFieldValue(factsheetType, yAxisOption.value, e)]);
+				// extend the row with empty arrays for later use
+				matrixData.push([lx.translateFieldValue(factsheetType, yAxisOption.value, e)].concat(xAxisValues.map(() => {
+					// all other rows contain the values from the y axis option as their first value
+					return [];
+				})));
 			});
 		}
 		// now add the data
+		let matrixDataAvailable = false;
+		const missingData = [];
 		facetData.forEach((e) => {
 			const id = e.id;
 			const additionalData = index.additionalData.byID[id];
 			// get the data values
-			const xValue = additionalData[xAxisOption.value]; // TODO andere data typen unterstützen!
-			const yValue = additionalData[yAxisOption.value];
+			const xValue = this._getValue(xAxisOption, additionalData);
+			const yValue = this._getValue(yAxisOption, additionalData);
 			if (!xValue || !yValue) {
+				missingData.push(e);
 				return;
 			}
 			// determine the coordinates (+1 for both since 0 positions are reserved)
 			let x = xAxisValues.indexOf(xValue) + 1;
 			let y = yAxisValues.indexOf(yValue) + 1;
 			if (x < 1 || y < 1) {
+				missingData.push(e);
 				return;
 			}
 			// determine view model for the label
 			const itemViewModel = this._getViewModel(viewOption, additionalData);
 			if (!itemViewModel || !itemViewModel.inLegend) {
+				missingData.push(e);
 				return;
 			}
-			let cellValues = matrixData[y][x];
-			if (!cellValues) {
-				cellValues = [];
-				matrixData[y][x] = cellValues;
-			}
-			cellValues.push({
+			matrixDataAvailable = true;
+			matrixData[y][x].push({
 				id: id,
 				name: e.displayName,
 				viewModel: itemViewModel
 			});
 		});
+		// TODO remove
+		console.log(matrixDataAvailable);
 		console.log(matrixData);
+		console.log(missingData);
 		lx.hideSpinner();
 		this.setState({
 			legendData: legendData,
 			matrixData: matrixData,
+			matrixDataAvailable: matrixDataAvailable,
+			missingData: missingData,
 			loadingState: LOADING_SUCCESSFUL
 		});
+	}
+
+	_getQueryAttribute(fieldName, type) {
+		switch (type) {
+			case 'LIFECYCLE':
+				return fieldName + ' { asString }';
+			case 'TAG':
+				return 'tags { name }';
+			case 'SINGLE_SELECT':
+				return fieldName;
+			default:
+				console.warn('_getQueryAttribute: Unknown type "' + type + '" of data field "' + fieldName + '"!');
+				return fieldName;
+		}
+	}
+
+	_getValue(option, additionalData) {
+		const index = this.index;
+		switch (option.type) {
+			case 'LIFECYCLE':
+				const lifecycleData = additionalData[option.value];
+				if (!lifecycleData) {
+					return;
+				}
+				return lifecycleData.asString;
+			case 'SINGLE_SELECT':
+				const dataValue = additionalData[option.value];
+				if (!dataValue) {
+					return;
+				}
+				return dataValue;
+			case 'TAG':
+				// TODO what if the tag group isn't a single select type?
+				const tags = index.getTagsFromGroup(additionalData, option.originalLabel);
+				if (tags.length === 0) {
+					return;
+				}
+				return tags[0].name;
+			default:
+				console.warn('_getValue: Unknown type in "' + option.type + '" of data field "' + option.value + '"!');
+				return;
+		}
 	}
 
 	_getViewModel(viewOption, additionalData) {
@@ -341,7 +386,7 @@ class Report extends Component {
 				if (tags.length === 0) {
 					return viewModel['__missing__'];
 				}
-				return viewModel[tags[0]];
+				return viewModel[tags[0].name];
 			default:
 				console.warn('_getViewModel: Unknown type in "' + viewOption.type + '" of data field "' + viewOption.value + '"!');
 				return viewModel['__missing__'];
@@ -383,7 +428,14 @@ class Report extends Component {
 			return;
 		}
 		this.selectedView = val;
-		this._handleFacetData();
+		this.setState({
+			loadingState: LOADING_NEW_DATA,
+			legendData: [],
+			matrixData: [],
+			matrixDataAvailable: false,
+			missingData: []
+		});
+		this._getAndHandleAdditionalData();
 	}
 
 	_handleXAxisSelect(val) {
@@ -393,7 +445,14 @@ class Report extends Component {
 			return;
 		}
 		this.selectedXAxis = val;
-		this._handleFacetData();
+		this.setState({
+			loadingState: LOADING_NEW_DATA,
+			legendData: [],
+			matrixData: [],
+			matrixDataAvailable: false,
+			missingData: []
+		});
+		this._getAndHandleAdditionalData();
 	}
 
 	_handleYAxisSelect(val) {
@@ -403,7 +462,14 @@ class Report extends Component {
 			return;
 		}
 		this.selectedYAxis = val;
-		this._handleFacetData();
+		this.setState({
+			loadingState: LOADING_NEW_DATA,
+			legendData: [],
+			matrixData: [],
+			matrixDataAvailable: false,
+			missingData: []
+		});
+		this._getAndHandleAdditionalData();
 	}
 
 	_getSelectedViewOption(factsheetType) {
@@ -430,6 +496,8 @@ class Report extends Component {
 	render() {
 		switch (this.state.loadingState) {
 			case LOADING_INIT:
+				return this._renderInit();
+			case LOADING_NEW_DATA:
 				return this._renderLoading();
 			case LOADING_SUCCESSFUL:
 				return this._renderSuccessful();
@@ -440,11 +508,41 @@ class Report extends Component {
 		}
 	}
 
-	_renderLoading() {
+	_renderInit() {
 		return (
 			<div>
 				<h4 className='text-center' style={{ position: 'absolute', width: '100%' }}>Loading data...</h4>
 				{this._renderSelectFields()}
+			</div>
+		);
+	}
+
+	_renderLoading() {
+		const factsheetType = this.selectedFactsheetType;
+		let viewOptions = [];
+		let xAxisOptions = [];
+		let yAxisOptions = [];
+		let selectedViewOption = undefined;
+		let selectedXAxisOption = undefined;
+		let selectedYAxisOption = undefined;
+		if (factsheetType) {
+			viewOptions = this.viewOptions[factsheetType];
+			selectedViewOption = this._getSelectedViewOption(factsheetType).value;
+			selectedXAxisOption = this._getSelectedXAxisOption(factsheetType).value;
+			selectedYAxisOption = this._getSelectedYAxisOption(factsheetType).value;
+			xAxisOptions = Utilities.copyArray(viewOptions).filter((e) => {
+				// remove selected options from y axis options
+				return e.value !== selectedYAxisOption;
+			});
+			yAxisOptions = Utilities.copyArray(viewOptions).filter((e) => {
+				// remove selected options from x axis options
+				return e.value !== selectedXAxisOption;
+			});
+		}
+		return (
+			<div>
+				<h4 className='text-center' style={{ position: 'absolute', width: '100%' }}>Loading new data...</h4>
+				{this._renderSelectFields(viewOptions, xAxisOptions, yAxisOptions, selectedViewOption, selectedXAxisOption, selectedYAxisOption)}
 			</div>
 		);
 	}
@@ -455,24 +553,37 @@ class Report extends Component {
 
 	_renderSuccessful() {
 		const factsheetType = this.selectedFactsheetType;
-		const viewOptions = !factsheetType ? [] : this.viewOptions[factsheetType];
-		const selectedViewOption = !factsheetType ? undefined : this._getSelectedViewOption(factsheetType).value;
-		const selectedXAxisOption = !factsheetType ? undefined : this._getSelectedXAxisOption(factsheetType).value;
-		const selectedYAxisOption = !factsheetType ? undefined : this._getSelectedYAxisOption(factsheetType).value;
-		const xAxisOptions = !factsheetType ? [] : Utilities.copyArray(viewOptions).filter((e) => {
-			// remove selected options from y axis options
-			return e.value !== selectedYAxisOption;
-		});
-		const yAxisOptions = !factsheetType ? [] : Utilities.copyArray(viewOptions).filter((e) => {
-			// remove selected options from x axis options
-			return e.value !== selectedXAxisOption;
-		});
+		let viewOptions = [];
+		let xAxisOptions = [];
+		let yAxisOptions = [];
+		let selectedViewOption = undefined;
+		let selectedXAxisOption = undefined;
+		let selectedYAxisOption = undefined;
+		if (factsheetType) {
+			viewOptions = this.viewOptions[factsheetType];
+			selectedViewOption = this._getSelectedViewOption(factsheetType).value;
+			selectedXAxisOption = this._getSelectedXAxisOption(factsheetType).value;
+			selectedYAxisOption = this._getSelectedYAxisOption(factsheetType).value;
+			xAxisOptions = Utilities.copyArray(viewOptions).filter((e) => {
+				// remove selected options from y axis options
+				return e.value !== selectedYAxisOption;
+			});
+			yAxisOptions = Utilities.copyArray(viewOptions).filter((e) => {
+				// remove selected options from x axis options
+				return e.value !== selectedXAxisOption;
+			});
+		}
+		// TODO show missingData notice as bootstrap alert
 		return (
 			<div>
 				{this._renderSelectFields(viewOptions, xAxisOptions, yAxisOptions, selectedViewOption, selectedXAxisOption, selectedYAxisOption)}
-				<div className='inline' style={{ paddingLeft: '2em', paddingTop: '0.5em' }}>
-					<Legend items={this.state.legendData} width='150px' />
-					<Matrix />
+				<div className='inline' style={{ paddingLeft: '1.5em', paddingTop: '0.5em' }}>
+					<Legend items={this.state.legendData} itemWidth='150px' />
+					<Matrix setup={this.setup} cellWidth='200px'
+						factsheetType={factsheetType}
+						data={this.state.matrixData}
+						dataAvailable={this.state.matrixDataAvailable}
+					/>
 				</div>
 			</div>
 		);
@@ -488,6 +599,7 @@ class Report extends Component {
 		if (!yAxisOptions) {
 			yAxisOptions = [];
 		}
+		// TODO arrange horizontally
 		return (
 			<div className='inline' style={{ width: '250px' }}>
 				<SelectField id='view' label='View' options={viewOptions}

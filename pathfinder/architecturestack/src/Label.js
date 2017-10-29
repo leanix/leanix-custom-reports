@@ -25,10 +25,10 @@ class Label extends Component {
 			case '#fff':
 			case '#ff':
 			case 'rgb(255,255,255)':
-				style.border = '1px solid silver';
+				style.border = '2px solid silver';
 				break;
 			default:
-				style.border = '1px solid ' + this.props.bgColor;
+				style.border = '2px solid ' + this.props.bgColor;
 				break;
 		}
 		return (

@@ -13,7 +13,7 @@ class Legend extends Component {
 			return null;
 		}
 		return (
-			<div>
+			<div style={{ marginBottom: '0.5em' }}>
 				{this.props.items.map((e, i) => {
 					return (
 						<span key={i} style={{ marginRight: '0.5em' }}>
@@ -21,7 +21,7 @@ class Legend extends Component {
 								label={e.label}
 								bgColor={e.bgColor}
 								color={e.color}
-								width={this.props.width}
+								width={this.props.itemWidth}
 							/>
 						</span>
 					);
@@ -39,7 +39,7 @@ Legend.propTypes = {
 			color: PropTypes.string.isRequired
 		}).isRequired
 	).isRequired,
-	width: PropTypes.string.isRequired
+	itemWidth: PropTypes.string.isRequired
 };
 
 export default Legend;
