@@ -16,7 +16,7 @@ class Legend extends Component {
 			<div style={{ marginBottom: '0.5em' }}>
 				{this.props.items.map((e, i) => {
 					return (
-						<span key={i} style={{ marginRight: '0.5em' }}>
+						<span key={i} style={{ marginRight: '0.4em' }}>
 							<Label
 								label={e.label}
 								bgColor={e.bgColor}

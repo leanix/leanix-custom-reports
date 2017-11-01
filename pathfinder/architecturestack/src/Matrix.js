@@ -87,9 +87,7 @@ class Matrix extends Component {
 		if (Array.isArray(cell)) {
 			return (
 				<td key={rowIndex + '-' + columnIndex}>
-					<div style={TableUtilities.OVERFLOW_CELL_STYLE}>
-						{this._renderLabelLinkList(cell, baseUrl)}
-					</div>
+					{this._renderLabelLinkList(cell, baseUrl)}
 				</td>
 			);
 		} else {

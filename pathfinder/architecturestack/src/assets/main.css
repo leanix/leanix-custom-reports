@@ -9,14 +9,9 @@ body {
 	padding: 0px;
 }
 
-.inline {
-	display: inline-block !important;
-	vertical-align: top;
-}
-
 .matrix table {
 	border-collapse: separate;
-	border-spacing: 0.5em;
+	border-spacing: 0.25em;
 	empty-cells: hide;
 }
 
@@ -31,4 +26,54 @@ body {
 .matrix th {
 	background: lightgrey;
 	padding: 0.5em;
+}
+
+.matrix td {
+	background: #F3F3F3;
+	vertical-align: top;
+}
+
+/*
+ * from 'react-select/dist/react-select.css'
+ *
+ * controls are about 25% smaller
+ */
+
+.Select-control, .Select-input {
+	height: 2.1em !important;
+}
+
+.Select-placeholder, .Select-value {
+	line-height: 2.1em !important;
+}
+
+.Select-arrow-zone {
+	padding-top: 0.4em;
+}
+
+.Select-option {
+	padding-top: 0.4em;
+	padding-bottom: 0.4em;
+}
+
+/*
+ * from 'react-bootstrap-table/css/react-bootstrap-table.css'
+ */
+.react-bs-table table td,
+.react-bs-table table th {
+	white-space: normal !important;
+}
+
+.react-bs-container-header > table > thead > tr > th {
+    vertical-align: bottom !important;
+}
+
+.react-bs-table,
+.react-bs-table-tool-bar,
+.react-bs-table-pagination {
+	margin: 0px;
+}
+
+.react-bs-table-tool-bar {
+	margin-bottom: 10px;
 }

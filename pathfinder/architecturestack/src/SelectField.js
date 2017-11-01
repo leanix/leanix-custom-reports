@@ -15,7 +15,7 @@ class SelectField extends Component {
 
 	render() {
 		return (
-			<div className='form-group'>
+			<div className={ 'form-group' + (this.props.useSmallerFontSize ? ' small' : '') }>
 				<label htmlFor={this.props.id}>{this.props.label}</label>
 				<Select
 					name={'SelectField-' + this.props.id}
@@ -46,7 +46,8 @@ SelectField.propTypes = {
 		}).isRequired
 	).isRequired,
 	onChange: PropTypes.func,
-	value: PropTypes.string
+	value: PropTypes.string,
+	useSmallerFontSize: PropTypes.bool
 };
 
 export default SelectField;

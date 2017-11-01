@@ -138,7 +138,7 @@ function csvFormatDate(cell, row) {
 	if (!cell) {
 		return '';
 	}
-	return _formatDate(cell);
+	return cell.toLocaleDateString();
 }
 
 /* pre-defined filter objects */
