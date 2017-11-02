@@ -193,7 +193,8 @@ function _addFromOwningUsergroups(index, application, productionPhase, marketRow
 		while (currentUG) {
 			const usedApplIndex = currentUG.relUserGroupToApplication;
 			if (!usedApplIndex) {
-				break;
+				currentUG = index.getParent('userGroups', currentUG.id);
+				continue;
 			}
 			usedApplIndex.nodes.forEach((e) => {
 				const usedApp = index.byID[e.id];
