@@ -203,9 +203,9 @@ class Report extends Component {
 		if (factsheetType) {
 			attributeDef = `...on ${factsheetType} { ${attributeDef} }`;
 		}
-		return `{additionalData: allFactSheets(
-					filter: { ids: [${ids}] }
-				) {
+		// TODO deactivated idFilter b/c of a server-side limitation of 1024 entries
+		const idFilter = ''; // `(filter: { ids: [${ids}] })`;
+		return `{additionalData: allFactSheets${idFilter} {
 					edges { node {
 						${attributeDef}
 					}}
