@@ -204,7 +204,7 @@ class Report extends Component {
 			attributeDef = `...on ${factsheetType} { ${attributeDef} }`;
 		}
 		// TODO deactivated idFilter b/c of a server-side limitation of 1024 entries
-		const idFilter = ''; // `(filter: { ids: [${ids}] })`;
+		const idFilter = factsheetType ? `(filter: {facetFilters: [{facetKey: "FactSheetTypes", keys: ["${factsheetType}"]}]})` : ''; // `(filter: { ids: [${ids}] })`;
 		return `{additionalData: allFactSheets${idFilter} {
 					edges { node {
 						${attributeDef}
