@@ -10,34 +10,37 @@ const PHASE_IN = 'phaseIn';
 const ACTIVE = 'active';
 const PHASE_OUT = 'phaseOut';
 const END_OF_LIFE = 'endOfLife';
+
 const RULE_OPTIONS = Utilities.createOptionsObj([RuleSet.adoptingApps].concat(RuleSet.singleRules));
+
 const CURRENT_DATE = new Date();
+	CURRENT_DATE.setHours(0, 0, 0, 0);
 const CURRENT_YEAR = CURRENT_DATE.getMonth() >= 3 ? CURRENT_DATE.getFullYear() : CURRENT_DATE.getFullYear() - 1;
 const CURRENT_DATE_TS = CURRENT_DATE.getTime();
+
 // that's a template for the _handleData method
 const MARKET_ROW_COLUMNS = [
 	// the 'current' column must always be right before the current fiscal year!
 	getCurrentDate(),
-	getFinancialYear(CURRENT_YEAR),
-	getFinancialYear(CURRENT_YEAR + 1),
-	getFinancialYear(CURRENT_YEAR + 2),
-	getFinancialYear(CURRENT_YEAR + 3),
-	getFinancialYear(CURRENT_YEAR + 4),
-	getFinancialYear(CURRENT_YEAR + 5)
+	getFinancialYear(CURRENT_YEAR, true),
+	getFinancialYear(CURRENT_YEAR + 1, false),
+	getFinancialYear(CURRENT_YEAR + 2, false),
+	getFinancialYear(CURRENT_YEAR + 3, false),
+	getFinancialYear(CURRENT_YEAR + 4, false),
+	getFinancialYear(CURRENT_YEAR + 5, false)
 ];
 
 function getCurrentDate() {
-	CURRENT_DATE.setTime(0, 0, 0);
 	return {
 		// name property is used as a comparable identifier in RuleSet
 		name: 'current',
 		start: CURRENT_DATE_TS,
-		end: CURRENT_DATE_TS + 86400000,
+		end: CURRENT_DATE_TS + 86400000, // next day at 00:00:00:000
 		isCurrentYear: true
 	};
 }
 
-function getFinancialYear(year) {
+function getFinancialYear(year, isCurrentYear) {
 	// get start point
 	const startDate = new Date(year, 3, 1, 0, 0, 0, 0); // 1st apr
 	const startDateTS = startDate.getTime();
@@ -49,7 +52,7 @@ function getFinancialYear(year) {
 		name: (startDate.getFullYear() - 2000) + '/' + (endDate.getFullYear() - 2000),
 		start: startDateTS,
 		end: endDateTS,
-		isCurrentYear: (startDateTS <= CURRENT_DATE_TS && CURRENT_DATE_TS < endDateTS) 
+		isCurrentYear: isCurrentYear
 	};
 }
 
@@ -98,12 +101,12 @@ class Report extends Component {
 	}
 
 	_createQuery(applicationTagId, itTagId) {
-		const applicationTagIdFilter = applicationTagId ? `, {facetKey: "Application Type", keys: ["${applicationTagId}"]}` : '';
-		const itTagIdFilter = itTagId ? `, {facetKey: "CostCentre", keys: ["${itTagId}"]}` : '';
+		const applicationTagIdFilter = applicationTagId ? `, { facetKey: "Application Type", keys: ["${applicationTagId}"] }` : '';
+		const itTagIdFilter = itTagId ? `, { facetKey: "CostCentre", keys: ["${itTagId}"] }` : '';
 		return `{applications: allFactSheets(
 					sort: { mode: BY_FIELD, key: "displayName", order: asc },
-					filter: {facetFilters: [
-						{facetKey: "FactSheetTypes", keys: ["Application"]}
+					filter: { facetFilters: [
+						{ facetKey: "FactSheetTypes", keys: ["Application"] }
 						${applicationTagIdFilter}
 						${itTagIdFilter}
 					]}
@@ -111,31 +114,31 @@ class Report extends Component {
 					edges { node {
 						id name tags { name }
 						... on Application {
-							lifecycle{phases{phase startDate}}
-							relApplicationToProject{edges{node{factSheet{id}}}}
-							relApplicationToOwningUserGroup{edges{node{factSheet{id}}}}
+							lifecycle { phases { phase startDate } }
+							relApplicationToProject { edges { node { factSheet { id } } } }
+							relApplicationToOwningUserGroup { edges { node { factSheet { id } } } }
 						}
 					}}
 				}
 				projects: allFactSheets(
 					sort: { mode: BY_FIELD, key: "displayName", order: asc },
-					filter: {facetFilters: [
-						{facetKey: "FactSheetTypes", keys: ["Project"]}
+					filter: { facetFilters: [
+						{ facetKey: "FactSheetTypes", keys: ["Project"] }
 					]}
 				) {
-					edges{node{id name}}
+					edges { node { id name } }
 				}
 				userGroups: allFactSheets(
 					sort: { mode: BY_FIELD, key: "displayName", order: asc },
-					filter: {facetFilters: [
-						{facetKey: "FactSheetTypes", keys: ["UserGroup"]}
+					filter: { facetFilters: [
+						{ facetKey: "FactSheetTypes", keys: ["UserGroup"] }
 					]}
 				) {
-					edges{node{
+					edges { node {
 						id name
-						...on UserGroup{
-							relUserGroupToApplication{edges{node{factSheet{id name}}}}
-							relToParent{edges{node{factSheet{id}}}}
+						...on UserGroup {
+							relUserGroupToApplication { edges { node { factSheet { id } } } }
+							relToParent { edges { node { factSheet { id } } } }
 						}
 					}}
 				}}`;

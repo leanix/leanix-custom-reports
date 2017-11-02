@@ -2,7 +2,9 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { BootstrapTable, TableHeaderColumn } from 'react-bootstrap-table';
 import TableUtilities from './common/TableUtilities';
+
 class Table extends Component {
+
 	constructor(props) {
 		super(props);
 		this._formatRule = this._formatRule.bind(this);

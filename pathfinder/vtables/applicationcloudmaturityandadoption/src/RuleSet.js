@@ -1,11 +1,14 @@
 import Utilities from './common/Utilities';
+
 // regexp are designed to be forgivable regarding case-sensitivity and spaces
 const virtualisedRE = /Virtualised/i;
 const cloudNativeRE = /Cloud\s*Native/i;
 const cloudReadyRE = /Cloud\s*Ready/i;
 const cloudTBDRE = /Cloud\s*TBD/i;
+
 // 'FYnn/nn'
-const financialYearRE = /FY(\d{2}\/\d{2})/;
+const financialYearRE = /FY(\d{2}\/\d{2})/i;
+
 const singleRules = [{
 		name: 'Total number of physical applications',
 		additionalNote: 'An application needs a \'Cloud Maturity\' tag of \'Physical/Legacy\' to be counted.',
@@ -81,6 +84,7 @@ const singleRules = [{
 			return true;
 		},
 		compute: (index, application, productionPhase, marketRow, config) => {
+			// check and add from owing user groups for financial years
 			_addFromOwningUsergroups(index, application, productionPhase, marketRow);
 		}
 	}, {
@@ -97,6 +101,8 @@ const singleRules = [{
 					e.apps.push(application);
 				}
 			});
+			// check and add from owing user groups for financial years
+			_addFromOwningUsergroups(index, application, productionPhase, marketRow);
 		}
 	}
 ];
@@ -143,9 +149,10 @@ function _addFromProjects(index, application, cloudRE, marketRow) {
 		const financialYear = marketRow[financialYearIndex];
 		if (financialYear && !_includesID(financialYear.apps, application.id)) {
 			financialYear.apps.push(application);
-			if (financialYear.isCurrentYear && financialYearIndex>0) {
+			// TODO das irgendwie anders gestalten
+			if (financialYear.isCurrentYear && financialYearIndex > 0) {
 				// the 'current' column is always right before the current fiscal year!
-				marketRow[financialYearIndex-1].apps.push(application);
+				marketRow[financialYearIndex - 1].apps.push(application);
 			}
 			// add application for future financial years as well
 			for (let i = financialYearIndex + 1; i < marketRow.length; i++) {
@@ -176,32 +183,32 @@ function _addFromCloudMaturity(index, application, productionPhase, marketRow, c
 function _addFromOwningUsergroups(index, application, productionPhase, marketRow) {
 	// get the applicaton's related 'owning user groups'
 	const subIndex = application.relApplicationToOwningUserGroup;
-	// access userGroups - there can be more than one!
+	if (!subIndex) {
+		return;
+	}
+	// access userGroups - there can be more than one and
+	// there could be more at the parents
 	subIndex.nodes.forEach((ug) => {
 		let currentUG = index.byID[ug.id];
 		while (currentUG) {
 			const usedApplIndex = currentUG.relUserGroupToApplication;
-			if (usedApplIndex) {
-				usedApplIndex.nodes.forEach((e) => {
-					const usedAppl = index.byID[e.id];
-					if (!usedAppl || !usedAppl.name) {
-						return;
-					}
-					if (usedAppl.name.startsWith('VGS') || usedAppl.name.startsWith('VGE')) {
-						marketRow.forEach((e1) => {
-							if (_isOverlapping(e1, productionPhase) && !_includesID(e1.apps, usedAppl.id)) {
-								e1.apps.push(usedAppl);
-							}
-						});
-					}
-				});
-			}
-			// check the parent
-			const parent = index.getParent('userGroups', currentUG.id);
-			if (!parent) {
+			if (!usedApplIndex) {
 				break;
 			}
-			currentUG = index.byID[parent.id];
+			usedApplIndex.nodes.forEach((e) => {
+				const usedApp = index.byID[e.id];
+				if (!usedApp || (!usedApp.name.startsWith('VGS') && !usedApp.name.startsWith('VGE'))) {
+					return;
+				}
+				marketRow.forEach((e1) => {
+					// TODO use productionPhase from usedApp
+					if (_isOverlapping(e1, productionPhase) && !_includesID(e1.apps, usedApp.id)) {
+						e1.apps.push(usedApp);
+					}
+				});
+			});
+			// set parent as next
+			currentUG = index.getParent('userGroups', currentUG.id);
 		}
 	});
 }
@@ -221,9 +228,13 @@ const adoptingApps = {
 			const cloudNative = cloudNativeRow[i].apps.length;
 			const groupApps = groupAppsRow[i].apps.length;
 			const total = totalRow[i].apps.length;
+			/* formula:
+				fy0 -> (cloudTBD + cloudReady + cloudNative + groupApps) * 100 / total
+				fy1-n & current -> (cloudReady + cloudNative + groupApps) * 100 / total
+			*/
 			const percentage = total === 0 ? 0
-				: ((i === 0 ? 0 : cloudTBD) + cloudReady + cloudNative + groupApps) * 100 / (total + groupApps);
-			result[(i>0 ? 'fy' + (i-1) : 'current')] = Math.round(percentage * 10) / 10;
+				: ((i === 0 ? 0 : cloudTBD) + cloudReady + cloudNative + groupApps) * 100 / total;
+			result[(i > 0 ? 'fy' + (i - 1) : 'current')] = Math.round(percentage * 10) / 10;
 		});
 		return result;
 	}
