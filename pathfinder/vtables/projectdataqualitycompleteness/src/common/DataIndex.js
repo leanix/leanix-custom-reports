@@ -38,6 +38,21 @@ class DataIndex {
 		}
 	}
 
+	remove(fromOrigin) {
+		const origin = this[fromOrigin];
+		if (!origin) {
+			return;
+		}
+		delete this[fromOrigin];
+		// remove all data in this.byID
+		origin.nodes.forEach((e) => {
+			if (!e.id) {
+				return;
+			}
+			delete this.byID[e.id];
+		});
+	}
+
 	getParent(fromOrigin, from) {
 		// v workspace note: only one parent possible
 		if (!this[fromOrigin]) {

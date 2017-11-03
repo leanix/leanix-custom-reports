@@ -1,6 +1,6 @@
 const tagGroups = `{tagGroups: allTagGroups(sort: {mode: BY_FIELD, key: "name", order: asc}) {
 		edges { node {
-				id name restrictToFactSheetTypes
+				id name restrictToFactSheetTypes mode
 				tags { edges { node { id name } } }
 			}}
 		}}`;

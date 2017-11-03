@@ -150,6 +150,15 @@ function copyObject(obj) {
 	return result;
 }
 
+function copyArray(arr) {
+	if (!arr) {
+		return [];
+	}
+	return arr.map((e) => {
+		return e;
+	});
+}
+
 export default {
 	getCurrentLifecycle: getCurrentLifecycle,
 	hasLifecycle: hasLifecycle,
@@ -162,5 +171,6 @@ export default {
 	getKeyToValue: getKeyToValue,
 	isProductionPhase: isProductionPhase,
 	getMarket: getMarket,
-	copyObject: copyObject
+	copyObject: copyObject,
+	copyArray: copyArray
 };
