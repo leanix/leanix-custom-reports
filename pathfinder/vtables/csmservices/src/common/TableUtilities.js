@@ -97,14 +97,19 @@ function formatDate(cell, row) {
 	}
 	return (
 		<span style={{ paddingRight: '10%' }}>
-			{_formatDate(cell)}
+			{_formatDate(cell, '-', false)}
 		</span>
 	);
 }
 
-function _formatDate(date) {
-	return _formatDateNumber(date.getDate()) + '-'
-		+ _formatDateNumber(date.getMonth() + 1) + '-'
+function _formatDate(date, delimiter, reverse) {
+	if (reverse) {
+		return date.getFullYear() + delimiter
+			+ _formatDateNumber(date.getMonth() + 1) + delimiter
+			+ _formatDateNumber(date.getDate());
+	}
+	return _formatDateNumber(date.getDate()) + delimiter
+		+ _formatDateNumber(date.getMonth() + 1) + delimiter
 		+ date.getFullYear();
 }
 
@@ -138,7 +143,7 @@ function csvFormatDate(cell, row) {
 	if (!cell) {
 		return '';
 	}
-	return cell.toLocaleDateString();
+	return _formatDate(cell, '-', true);
 }
 
 /* pre-defined filter objects */
