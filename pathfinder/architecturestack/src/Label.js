@@ -32,9 +32,7 @@ class Label extends Component {
 				break;
 		}
 		return (
-			<span className='label' style={style}>
-				{this.props.label()}
-			</span>
+			<span className='label' style={style}>{this.props.label()}</span>
 		);
 	}
 }

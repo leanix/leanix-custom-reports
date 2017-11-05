@@ -100,35 +100,22 @@ class Matrix extends Component {
 
 	_renderLabelLinkList(list, baseUrl) {
 		return (
-			<span>
+			<div>
 				{list.map((e, i) => {
 					const link = baseUrl + '/factsheet/'
 						+ this.props.factsheetType + '/' + e.id;
-					if (i === 0) {
-						return (
-							<span key={i}>
-								<Label
-									label={this._renderLabelLink(e.name, link)}
-									bgColor={e.viewModel.bgColor}
-									color={e.viewModel.color}
-									width={this.props.cellWidth}
-								/>
-							</span>
-						);
-					}
 					return (
-						<span key={i}>
-							<br />
+						<div key={i} style={{ marginBottom: '0.3em', lineHeight: '0' }}>
 							<Label
 								label={this._renderLabelLink(e.name, link)}
 								bgColor={e.viewModel.bgColor}
 								color={e.viewModel.color}
 								width={this.props.cellWidth}
 							/>
-						</span>
+						</div>
 					);
 				})}
-			</span>
+			</div>
 		);
 	}
 
@@ -147,7 +134,7 @@ Matrix.propTypes = {
 	data: PropTypes.arrayOf(PropTypes.array.isRequired).isRequired,
 	dataAvailable: PropTypes.bool.isRequired,
 	cellWidth: PropTypes.string.isRequired,
-	factsheetType: PropTypes.string,
+	factsheetType: PropTypes.string.isRequired,
 	setup: PropTypes.object.isRequired
 };
 

@@ -6,10 +6,9 @@ import SelectField from './SelectField';
 import Legend from './Legend';
 import Matrix from './Matrix';
 import MissingDataAlert from './MissingDataAlert';
+import ModalDialog from './ModalDialog';
 
 // TODO save feature
-// TODO factsheet type chooser via config dialog
-// TODO export config
 
 const LOADING_INIT = 0;
 const LOADING_NEW_DATA = 1;
@@ -42,12 +41,15 @@ class Report extends Component {
 		this._handleXAxisSelect = this._handleXAxisSelect.bind(this);
 		this._handleYAxisSelect = this._handleYAxisSelect.bind(this);
 		this._handleDismissAlertButton = this._handleDismissAlertButton.bind(this);
+		this._handleConfig = this._handleConfig.bind(this);
+		this._handleFactsheetTypeSelect = this._handleFactsheetTypeSelect.bind(this);
 		this._getSelectedViewOption = this._getSelectedViewOption.bind(this);
 		this._getSelectedXAxisOption = this._getSelectedXAxisOption.bind(this);
 		this._getSelectedYAxisOption = this._getSelectedYAxisOption.bind(this);
 		this._renderLoading = this._renderLoading.bind(this);
 		this._renderError = this._renderError.bind(this);
 		this._renderSuccessful = this._renderSuccessful.bind(this);
+		this._renderConfigContent = this._renderConfigContent.bind(this);
 		this._renderSelectFields = this._renderSelectFields.bind(this);
 		this._resetState = this._resetState.bind(this);
 		this.state = {
@@ -56,7 +58,9 @@ class Report extends Component {
 			matrixData: [],
 			matrixDataAvailable: false,
 			missingData: [],
-			showMissingDataWarning: true
+			showMissingDataWarning: true,
+			showConfigure: false,
+			configStore: {}
 		};
 	}
 
@@ -70,6 +74,13 @@ class Report extends Component {
 		// get all factsheet defs from dataModel
 		this.factsheetModels = Object.keys(Utilities.getFrom(setup, 'settings.dataModel.factSheets'));
 		this.factsheetModels.sort();
+		// first one should be Application, fallback: use first entry
+		this.selectedFactsheetType = this.factsheetModels.find((e) => {
+			return e === 'Application';
+		});
+		if (!this.selectedFactsheetType) {
+			this.selectedFactsheetType = this.factsheetModels[0];
+		}
 		// get all tags, then the data from facet config
 		lx.executeGraphQL(CommonQueries.tagGroups).then((tagGroups) => {
 			this.index.put(tagGroups);
@@ -116,18 +127,12 @@ class Report extends Component {
 	}
 
 	_createConfig() {
-		// create facet configs
-		const facets = [];
-		this.factsheetModels.forEach((e) => {
-			// just applications at the moment for performance reasons
-			// TODO B/C EVERY FACET CONFIG WILL TRIGGER AN I/O OPERATION IMMEDIATELY FFS!
-			if (e !== 'Application') {
-				return;
-			}
-			facets.push({
-				key: e,
-				label: lx.translateFactSheetType(e, 'plural'),
-				fixedFactSheetType: e,
+		return {
+			allowEditing: false,
+			facets: [{
+				key: this.selectedFactsheetType,
+				label: lx.translateFactSheetType(this.selectedFactsheetType, 'plural'),
+				fixedFactSheetType: this.selectedFactsheetType,
 				attributes: ['id', 'displayName'],
 				sorting: [{
 						key: 'displayName',
@@ -136,15 +141,36 @@ class Report extends Component {
 					}
 				],
 				callback: (facetData) => {
+					if (this.state.loadingState === LOADING_SUCCESSFUL) {
+						this.setState({
+							loadingState: LOADING_NEW_DATA
+						});
+					}
 					this.lastFacetData = facetData;
-					this.selectedFactsheetType = e;
 					this._getAndHandleAdditionalData();
 				}
-			});
-		});
-		return {
-			allowEditing: false,
-			facets: facets
+			}],
+			menuActions: {
+				showConfigure: true,
+				configureCallback: () => {
+					if (this.state.loadingState !== LOADING_SUCCESSFUL) {
+						return;
+					}
+					this.setState({
+						showConfigure: true,
+						configStore: {
+							factsheetType: this.selectedFactsheetType
+						}
+					});
+				}
+			},
+			export: {
+				autoScale: true,
+				exportElementSelector: '#content',
+				format: 'a1',
+				inputType: 'HTML',
+				orientation: 'landscape'
+			}
 		};
 	}
 
@@ -199,7 +225,10 @@ class Report extends Component {
 	}
 
 	_createAdditionalDataQuery(ids, factsheetType, attributes) {
-		let attributeDef = 'id ' + attributes.join(' ');
+		let attributeDef = 'id ' + attributes.filter((e, i) => {
+			// avoid duplicates
+			return attributes.indexOf(e, i + 1) < 0;
+		}).join(' ');
 		if (factsheetType) {
 			attributeDef = `...on ${factsheetType} { ${attributeDef} }`;
 		}
@@ -233,14 +262,6 @@ class Report extends Component {
 	}
 
 	_computeData() {
-		// TODO remove
-		console.log(this.index);
-		console.log(this.lastFacetData);
-		console.log(this.selectedFactsheetType);
-		console.log(this._getSelectedViewOption(this.selectedFactsheetType));
-		console.log(this._getSelectedXAxisOption(this.selectedFactsheetType));
-		console.log(this._getSelectedYAxisOption(this.selectedFactsheetType));
-		console.log(this.viewModel);
 		const setup = this.setup;
 		const index = this.index;
 		const facetData = this.lastFacetData;
@@ -344,10 +365,6 @@ class Report extends Component {
 				viewModel: itemViewModel
 			});
 		});
-		// TODO remove
-		console.log(matrixDataAvailable);
-		console.log(matrixData);
-		console.log(missingData);
 		lx.hideSpinner();
 		this.setState({
 			legendData: legendData,
@@ -467,6 +484,7 @@ class Report extends Component {
 	}
 
 	_resetState() {
+		// do not reset all states!
 		this.setState({
 			loadingState: LOADING_NEW_DATA,
 			legendData: [],
@@ -501,6 +519,45 @@ class Report extends Component {
 	_handleDismissAlertButton() {
 		this.setState({
 			showMissingDataWarning: false
+		});
+	}
+
+	_handleConfig(forClose) {
+		if (forClose) {
+			// close or cancel
+			return () => {
+				this.setState({
+					showConfigure: false,
+					configStore: {}
+				});
+			};
+		} else {
+			// OK
+			return () => {
+				const old = this.selectedFactsheetType;
+				this.selectedFactsheetType = this.state.configStore.factsheetType;
+				this.setState({
+					showConfigure: false,
+					configStore: {}
+				});
+				if (old === this.selectedFactsheetType) {
+					return;
+				}
+				// update report config, this will trigger the facet callback automatically
+				lx.updateConfiguration(this._createConfig());
+			};
+		}
+	}
+
+	_handleFactsheetTypeSelect(val) {
+		const factsheetType = this.selectedFactsheetType;
+		if (this.state.configStore.factsheetType === val.value) {
+			return;
+		}
+		this.setState({
+			configStore: {
+				factsheetType: val.value
+			}
 		});
 	}
 
@@ -544,6 +601,8 @@ class Report extends Component {
 		return (
 			<div>
 				{this._renderSelectFields()}
+				<h4 className='text-center' style={{ width: '100%' }}>Initialise report...</h4>
+				<div id='content' />
 			</div>
 		);
 	}
@@ -552,18 +611,27 @@ class Report extends Component {
 		return (
 			<div>
 				{this._renderSelectFields()}
+				<h4 className='text-center' style={{ width: '100%' }}>Loading data...</h4>
+				<div id='content' />
 			</div>
 		);
 	}
 
 	_renderError() {
-		return null;
+		return (<div id='content' />);
 	}
 
 	_renderSuccessful() {
 		const factsheetType = this.selectedFactsheetType;
 		return (
 			<div>
+				<ModalDialog show={this.state.showConfigure}
+					width='500px'
+					title='Configure'
+					content={this._renderConfigContent}
+					onClose={this._handleConfig(true)}
+					onOK={this._handleConfig(false)}
+				/>
 				{this._renderSelectFields()}
 				<MissingDataAlert
 					show={this.state.showMissingDataWarning}
@@ -571,13 +639,31 @@ class Report extends Component {
 					onClose={this._handleDismissAlertButton}
 					factsheetType={factsheetType}
 					setup={this.setup} />
-				<Legend items={this.state.legendData} itemWidth='150px' />
-				<Matrix setup={this.setup} cellWidth='150px'
-					factsheetType={factsheetType}
-					data={this.state.matrixData}
-					dataAvailable={this.state.matrixDataAvailable}
-				/>
+				<div id='content'>
+					<Legend items={this.state.legendData} itemWidth='150px' />
+					<Matrix setup={this.setup} cellWidth='180px'
+						factsheetType={factsheetType}
+						data={this.state.matrixData}
+						dataAvailable={this.state.matrixDataAvailable}
+					/>
+				</div>
 			</div>
+		);
+	}
+
+	_renderConfigContent() {
+		const options = this.factsheetModels.map((e) => {
+			return {
+				value: e,
+				label: lx.translateFactSheetType(e, 'plural')
+			};
+		});
+		return (
+			<SelectField id='factsheetType' label='Type'
+				options={options}
+				useSmallerFontSize
+				value={this.state.configStore.factsheetType}
+				onChange={this._handleFactsheetTypeSelect} />
 		);
 	}
 
