@@ -75,6 +75,7 @@ class Report extends Component {
 		this.factsheetModels = Object.keys(Utilities.getFrom(setup, 'settings.dataModel.factSheets'));
 		this.factsheetModels.sort();
 		// first one should be Application, fallback: use first entry
+		// TODO was wenn es leer ist oder es nicht genügens ViewOptions gibt?
 		this.selectedFactsheetType = this.factsheetModels.find((e) => {
 			return e === 'Application';
 		});
@@ -88,6 +89,7 @@ class Report extends Component {
 			lx.executeGraphQL(this._createAllViewsQuery()).then((allViewData) => {
 				// extract viewInfos
 				this.viewOptions = {};
+				// TODO viewModel könnte factsheets enthalten, die keine oder zu wenige Einträge hat
 				for (let key in allViewData) {
 					const fieldModels = Utilities.getFrom(setup, 'settings.dataModel.factSheets.' + key + '.fields');
 					this.viewOptions[key] = allViewData[key].viewInfos.filter((e) => {
