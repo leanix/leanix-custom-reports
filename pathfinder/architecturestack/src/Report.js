@@ -3,6 +3,7 @@ import CommonQueries from './common/CommonGraphQLQueries';
 import DataIndex from './common/DataIndex';
 import Utilities from './common/Utilities';
 import SelectField from './SelectField';
+import Checkbox from './Checkbox';
 import Legend from './Legend';
 import Matrix from './Matrix';
 import MissingDataAlert from './MissingDataAlert';
@@ -19,6 +20,13 @@ const SELECT_FIELD_STYLE = {
 	width: '250px',
 	display: 'inline-block',
 	verticalAlign: 'top',
+	marginRight: '1em'
+};
+
+const SWAP_BUTTON_STYLE = {
+	display: 'inline-block',
+	verticalAlign: 'top',
+	marginTop: '1.5em',
 	marginRight: '1em'
 };
 
@@ -43,6 +51,8 @@ class Report extends Component {
 		this._handleDismissAlertButton = this._handleDismissAlertButton.bind(this);
 		this._handleConfig = this._handleConfig.bind(this);
 		this._handleFactsheetTypeSelect = this._handleFactsheetTypeSelect.bind(this);
+		this._handleShowMissingDataWarningCheck = this._handleShowMissingDataWarningCheck.bind(this);
+		this._handleSwapAxes = this._handleSwapAxes.bind(this);
 		this._getSelectedViewOption = this._getSelectedViewOption.bind(this);
 		this._getSelectedXAxisOption = this._getSelectedXAxisOption.bind(this);
 		this._getSelectedYAxisOption = this._getSelectedYAxisOption.bind(this);
@@ -59,8 +69,18 @@ class Report extends Component {
 			matrixDataAvailable: false,
 			missingData: [],
 			showMissingDataWarning: true,
-			showConfigure: false,
-			configStore: {}
+			showConfigure: false
+		};
+		this.reportState = {
+			configStore: {},
+			factsheetModels: [],
+			selectedFactsheetType: null,
+			selectedView: null,
+			selectedXAxis: null,
+			selectedYAxis: null,
+			viewOptions: {},
+			lastFacetData: [],
+			viewModel: {}
 		};
 	}
 
@@ -72,30 +92,21 @@ class Report extends Component {
 		this.setup = setup;
 		lx.showSpinner('Loading data...');
 		// get all factsheet defs from dataModel
-		this.factsheetModels = Object.keys(Utilities.getFrom(setup, 'settings.dataModel.factSheets'));
-		this.factsheetModels.sort();
-		// first one should be Application, fallback: use first entry
-		// TODO was wenn es leer ist oder es nicht genügens ViewOptions gibt?
-		this.selectedFactsheetType = this.factsheetModels.find((e) => {
-			return e === 'Application';
-		});
-		if (!this.selectedFactsheetType) {
-			this.selectedFactsheetType = this.factsheetModels[0];
-		}
+		this.reportState.factsheetModels = Object.keys(Utilities.getFrom(setup, 'settings.dataModel.factSheets'));
+		this.reportState.factsheetModels.sort();
 		// get all tags, then the data from facet config
 		lx.executeGraphQL(CommonQueries.tagGroups).then((tagGroups) => {
 			this.index.put(tagGroups);
 			// get the views
 			lx.executeGraphQL(this._createAllViewsQuery()).then((allViewData) => {
 				// extract viewInfos
-				this.viewOptions = {};
-				// TODO viewModel könnte factsheets enthalten, die keine oder zu wenige Einträge hat
 				for (let key in allViewData) {
 					const fieldModels = Utilities.getFrom(setup, 'settings.dataModel.factSheets.' + key + '.fields');
-					this.viewOptions[key] = allViewData[key].viewInfos.filter((e) => {
+					this.reportState.viewOptions[key] = allViewData[key].viewInfos.filter((e) => {
 						switch (e.type) {
 							case 'FIELD':
-								return true;
+								// check if field type can be handled
+								return this._checkFieldType(fieldModels[e.key].type);
 							case 'TAG':
 								// only single selectable tag groups are allowed
 								const tagGroup = this.index.tagGroups.byID[e.key.slice(5)];
@@ -122,6 +133,26 @@ class Report extends Component {
 						};
 					});
 				}
+				// filter out all have less than 3 elements
+				Object.keys(this.reportState.viewOptions).forEach((e) => {
+					if (this.reportState.viewOptions[e].length < 3) {
+						delete this.reportState.viewOptions[e];
+					}
+				});
+				// re-assign updated factsheetModels
+				this.reportState.factsheetModels = Object.keys(this.reportState.viewOptions);
+				// first one should be Application, fallback: use first entry
+				this.reportState.selectedFactsheetType = this.reportState.factsheetModels.find((e) => {
+					return e === 'Application';
+				});
+				if (!this.reportState.selectedFactsheetType) {
+					this.reportState.selectedFactsheetType = this.reportState.factsheetModels[0];
+				}
+				if (!this.reportState.selectedFactsheetType) {
+					// error, since there is no factsheet type with enough data
+					this._handleError('There is no factsheet type with enough data.');
+					return;
+				}
 				lx.hideSpinner();
 				lx.ready(this._createConfig());
 			}).catch(this._handleError);
@@ -132,9 +163,9 @@ class Report extends Component {
 		return {
 			allowEditing: false,
 			facets: [{
-				key: this.selectedFactsheetType,
-				label: lx.translateFactSheetType(this.selectedFactsheetType, 'plural'),
-				fixedFactSheetType: this.selectedFactsheetType,
+				key: this.reportState.selectedFactsheetType,
+				label: lx.translateFactSheetType(this.reportState.selectedFactsheetType, 'plural'),
+				fixedFactSheetType: this.reportState.selectedFactsheetType,
 				attributes: ['id', 'displayName'],
 				sorting: [{
 						key: 'displayName',
@@ -148,7 +179,7 @@ class Report extends Component {
 							loadingState: LOADING_NEW_DATA
 						});
 					}
-					this.lastFacetData = facetData;
+					this.reportState.lastFacetData = facetData;
 					this._getAndHandleAdditionalData();
 				}
 			}],
@@ -158,11 +189,12 @@ class Report extends Component {
 					if (this.state.loadingState !== LOADING_SUCCESSFUL) {
 						return;
 					}
+					this.reportState.configStore = {
+						factsheetType: this.reportState.selectedFactsheetType,
+						showMissingDataWarning: this.state.showMissingDataWarning
+					};
 					this.setState({
-						showConfigure: true,
-						configStore: {
-							factsheetType: this.selectedFactsheetType
-						}
+						showConfigure: true
 					});
 				}
 			},
@@ -186,14 +218,14 @@ class Report extends Component {
 	_getAndHandleAdditionalData() {
 		// remove previous data
 		this.index.remove('additionalData');
-		const factsheetType = this.selectedFactsheetType;
+		const factsheetType = this.reportState.selectedFactsheetType;
 		// get current selected values from SelectFields
 		const viewOption = this._getSelectedViewOption(factsheetType);
 		const xAxisOption = this._getSelectedXAxisOption(factsheetType);
 		const yAxisOption = this._getSelectedYAxisOption(factsheetType);
 		// get remaining data based on selected combobox values
 		lx.showSpinner('Loading data...');
-		const ids = this.lastFacetData.map((e) => {
+		const ids = this.reportState.lastFacetData.map((e) => {
 			return '"' + e.id + '"';
 		}).join(',');
 		const attributes = [];
@@ -207,7 +239,7 @@ class Report extends Component {
 	}
 
 	_createAllViewsQuery() {
-		const query = this.factsheetModels.map((e) => {
+		const query = this.reportState.factsheetModels.map((e) => {
 			return `${e}:view(
 						filter: {facetFilters: [{facetKey: "FactSheetTypes", keys: ["${e}"]}]}
 					) {
@@ -244,21 +276,21 @@ class Report extends Component {
 	}
 
 	_getAndHandleViewData(then) {
-		const factsheetType = this.selectedFactsheetType;
+		const factsheetType = this.reportState.selectedFactsheetType;
 		const viewOption = this._getSelectedViewOption(factsheetType);
-		if (this.viewModel && this.viewModel._key === viewOption.value) {
+		if (this.reportState.viewModel && this.reportState.viewModel._key === viewOption.value) {
 			// no need to query the same data again
 			then();
 			return;
 		}
 		lx.executeGraphQL(this._createViewQuery(factsheetType, viewOption.key)).then((viewData) => {
 			const legendItems = Utilities.getFrom(viewData, 'view.legendItems');
-			this.viewModel = legendItems.reduce((acc, e) => {
+			this.reportState.viewModel = legendItems.reduce((acc, e) => {
 				acc[e.value] = e;
 				return acc;
 			}, {});
-			this.viewModel._rawLegendItems = legendItems;
-			this.viewModel._key = viewOption.value;
+			this.reportState.viewModel._rawLegendItems = legendItems;
+			this.reportState.viewModel._key = viewOption.value;
 			then();
 		}).catch(this._handleError);
 	}
@@ -266,10 +298,10 @@ class Report extends Component {
 	_computeData() {
 		const setup = this.setup;
 		const index = this.index;
-		const facetData = this.lastFacetData;
-		const factsheetType = this.selectedFactsheetType;
+		const facetData = this.reportState.lastFacetData;
+		const factsheetType = this.reportState.selectedFactsheetType;
 		const viewOption = this._getSelectedViewOption(factsheetType);
-		const viewModel = this.viewModel;
+		const viewModel = this.reportState.viewModel;
 		const xAxisOption = this._getSelectedXAxisOption(factsheetType);
 		const yAxisOption = this._getSelectedYAxisOption(factsheetType);
 		// create legend data
@@ -335,7 +367,7 @@ class Report extends Component {
 				missingData.push({
 					id: e.id,
 					name: e.displayName,
-					reason: 'TODO #1'
+					reason: this._createMissingDataMsgForValues(xValue, yValue, xAxisOption.label, yAxisOption.label)
 				});
 				return;
 			}
@@ -346,7 +378,7 @@ class Report extends Component {
 				missingData.push({
 					id: e.id,
 					name: e.displayName,
-					reason: 'TODO #2'
+					reason: this._createMissingDataMsgForCoordinates(x, y, xValue, yValue, xAxisOption.label, yAxisOption.label)
 				});
 				return;
 			}
@@ -356,7 +388,7 @@ class Report extends Component {
 				missingData.push({
 					id: e.id,
 					name: e.displayName,
-					reason: 'TODO #3'
+					reason: this._createMissingDataMsgForIVMs(viewOption, itemViewModel ? itemViewModel.inLegend : true)
 				});
 				return;
 			}
@@ -377,16 +409,61 @@ class Report extends Component {
 		});
 	}
 
+	_createMissingDataMsgForValues(xValue, yValue, xAxisName, yAxisName) {
+		if (!xValue && !yValue) {
+			return 'Values for ' + xAxisName + ' & '
+				+ yAxisName + ' are missing.';
+		}
+		if (!xValue) {
+			return 'Value for ' + xAxisName + ' is missing.';
+		} else {
+			return 'Value for ' + yAxisName + ' is missing.';
+		}
+	}
+
+	_createMissingDataMsgForCoordinates(x, y, xValue, yValue, xAxisName, yAxisName) {
+		if (x < 1 && y < 1) {
+			return 'Unknown values for ' + xAxisName + ' (' + xValue + ') & '
+				+ yAxisName + ' (' + yValue + ').';
+		}
+		if (x < 1) {
+			return 'Unknown value for ' + xAxisName + ' (' + xValue + ').';
+		} else {
+			return 'Unknown value for ' + yAxisName + ' (' + yValue + ').';
+		}
+	}
+
+	_createMissingDataMsgForIVMs(viewOption, inLegend) {
+		if (!inLegend) {
+			return 'Value for view is marked as hidden.';
+		}
+		return 'There are no values defined for the selected view (' + viewOption.label + ').';
+	}
+
+	_checkFieldType(type) {
+		switch (type) {
+			case 'LIFECYCLE':
+			case 'PROJECT_STATUS':
+			case 'TAG':
+			case 'SINGLE_SELECT':
+				return true;
+			default:
+				console.error('_checkFieldType: Unknown type "' + type + '", which can not be handled by this report!');
+				return false;
+		}
+	}
+
 	_getQueryAttribute(fieldName, type) {
 		switch (type) {
 			case 'LIFECYCLE':
+			case 'PROJECT_STATUS':
 				return fieldName + ' { asString }';
 			case 'TAG':
 				return 'tags { name }';
 			case 'SINGLE_SELECT':
 				return fieldName;
 			default:
-				console.warn('_getQueryAttribute: Unknown type "' + type + '" of data field "' + fieldName + '"!');
+				console.error('_getQueryAttribute: Unknown type "' + type + '" of data field "' + fieldName + '"!');
 				return fieldName;
 		}
 	}
@@ -395,6 +472,7 @@ class Report extends Component {
 		const index = this.index;
 		switch (option.type) {
 			case 'LIFECYCLE':
+			case 'PROJECT_STATUS':
 				const lifecycleData = additionalData[option.value];
 				if (!lifecycleData) {
 					return;
@@ -413,16 +491,17 @@ class Report extends Component {
 				}
 				return tags[0].name;
 			default:
-				console.warn('_getValue: Unknown type in "' + option.type + '" of data field "' + option.value + '"!');
+				console.error('_getValue: Unknown type in "' + option.type + '" of data field "' + option.value + '"!');
 				return;
 		}
 	}
 
 	_getViewModel(viewOption, additionalData) {
 		const index = this.index;
-		const viewModel = this.viewModel;
+		const viewModel = this.reportState.viewModel;
 		switch (viewOption.type) {
 			case 'LIFECYCLE':
+			case 'PROJECT_STATUS':
 				const lifecycleData = additionalData[viewOption.value];
 				if (!lifecycleData) {
 					return viewModel['__missing__'];
@@ -441,17 +520,18 @@ class Report extends Component {
 				}
 				return viewModel[tags[0].name];
 			default:
-				console.warn('_getViewModel: Unknown type in "' + viewOption.type + '" of data field "' + viewOption.value + '"!');
+				console.error('_getViewModel: Unknown type in "' + viewOption.type + '" of data field "' + viewOption.value + '"!');
 				return viewModel['__missing__'];
 		}
 	}
 
 	_getDataValues(option) {
-		const factsheetType = this.selectedFactsheetType;
+		const factsheetType = this.reportState.selectedFactsheetType;
 		const index = this.index;
 		const setup = this.setup;
 		switch (option.type) {
 			case 'LIFECYCLE':
+			case 'PROJECT_STATUS':
 			case 'SINGLE_SELECT':
 				return Utilities.getFrom(setup, 'settings.dataModel.factSheets.'
 					+ factsheetType + '.fields.' + option.value + '.values');
@@ -468,19 +548,19 @@ class Report extends Component {
 					return e.name;
 				});
 			default:
-				console.warn('_getDataValues: Unknown type in "' + option.type + '" of data field "' + option.value + '"!');
+				console.error('_getDataValues: Unknown type in "' + option.type + '" of data field "' + option.value + '"!');
 				return Utilities.getFrom(setup, 'settings.dataModel.factSheets.'
 					+ factsheetType + '.fields.' + option.value + '.values');
 		}
 	}
 
 	_handleViewSelect(val) {
-		const factsheetType = this.selectedFactsheetType;
+		const factsheetType = this.reportState.selectedFactsheetType;
 		const viewOption = this._getSelectedViewOption(factsheetType);
 		if (viewOption.value === val.value) {
 			return;
 		}
-		this.selectedView = val;
+		this.reportState.selectedView = val;
 		this._resetState();
 		this._getAndHandleAdditionalData();
 	}
@@ -497,23 +577,23 @@ class Report extends Component {
 	}
 
 	_handleXAxisSelect(val) {
-		const factsheetType = this.selectedFactsheetType;
+		const factsheetType = this.reportState.selectedFactsheetType;
 		const xAxisOption = this._getSelectedXAxisOption(factsheetType);
 		if (xAxisOption.value === val.value) {
 			return;
 		}
-		this.selectedXAxis = val;
+		this.reportState.selectedXAxis = val;
 		this._resetState();
 		this._getAndHandleAdditionalData();
 	}
 
 	_handleYAxisSelect(val) {
-		const factsheetType = this.selectedFactsheetType;
+		const factsheetType = this.reportState.selectedFactsheetType;
 		const yAxisOption = this._getSelectedYAxisOption(factsheetType);
 		if (yAxisOption.value === val.value) {
 			return;
 		}
-		this.selectedYAxis = val;
+		this.reportState.selectedYAxis = val;
 		this._resetState();
 		this._getAndHandleAdditionalData();
 	}
@@ -526,23 +606,27 @@ class Report extends Component {
 
 	_handleConfig(forClose) {
 		if (forClose) {
-			// close or cancel
+			// close or cancel: do not update values
 			return () => {
+				this.reportState.configStore = {};
 				this.setState({
-					showConfigure: false,
-					configStore: {}
+					showConfigure: false
 				});
 			};
 		} else {
-			// OK
+			// OK: update values
 			return () => {
-				const old = this.selectedFactsheetType;
-				this.selectedFactsheetType = this.state.configStore.factsheetType;
+				const oldSFT = this.reportState.selectedFactsheetType;
+				this.reportState.selectedFactsheetType = this.reportState.configStore.factsheetType;
+				// reset all select states
+				this.reportState.selectedView = null;
+				this.reportState.selectedXAxis = null;
+				this.reportState.selectedYAxis = null;
 				this.setState({
 					showConfigure: false,
-					configStore: {}
+					showMissingDataWarning: this.reportState.configStore.showMissingDataWarning
 				});
-				if (old === this.selectedFactsheetType) {
+				if (oldSFT === this.reportState.selectedFactsheetType) {
 					return;
 				}
 				// update report config, this will trigger the facet callback automatically
@@ -552,36 +636,49 @@ class Report extends Component {
 	}
 
 	_handleFactsheetTypeSelect(val) {
-		const factsheetType = this.selectedFactsheetType;
-		if (this.state.configStore.factsheetType === val.value) {
+		if (this.reportState.configStore.factsheetType === val.value) {
 			return;
 		}
-		this.setState({
-			configStore: {
-				factsheetType: val.value
-			}
-		});
+		this.reportState.configStore.factsheetType = val.value;
+		this.forceUpdate();
+	}
+
+	_handleShowMissingDataWarningCheck(val) {
+		if (this.reportState.configStore.showMissingDataWarning === val) {
+			return;
+		}
+		this.reportState.configStore.showMissingDataWarning = val;
+		this.forceUpdate();
+	}
+
+	_handleSwapAxes() {
+		const factsheetType = this.reportState.selectedFactsheetType;
+		const xAxisOption = this._getSelectedXAxisOption(factsheetType);
+		const yAxisOption = this._getSelectedYAxisOption(factsheetType);
+		this.reportState.selectedXAxis = yAxisOption;
+		this.reportState.selectedYAxis = xAxisOption;
+		this._computeData();
 	}
 
 	_getSelectedViewOption(factsheetType) {
-		if (!this.selectedView) {
-			return this.viewOptions[factsheetType][0];
+		if (!this.reportState.selectedView) {
+			return this.reportState.viewOptions[factsheetType][0];
 		}
-		return this.selectedView;
+		return this.reportState.selectedView;
 	}
 
 	_getSelectedXAxisOption(factsheetType) {
-		if (!this.selectedXAxis) {
-			return this.viewOptions[factsheetType][1];
+		if (!this.reportState.selectedXAxis) {
+			return this.reportState.viewOptions[factsheetType][1];
 		}
-		return this.selectedXAxis;
+		return this.reportState.selectedXAxis;
 	}
 
 	_getSelectedYAxisOption(factsheetType) {
-		if (!this.selectedYAxis) {
-			return this.viewOptions[factsheetType][2];
+		if (!this.reportState.selectedYAxis) {
+			return this.reportState.viewOptions[factsheetType][2];
 		}
-		return this.selectedYAxis;
+		return this.reportState.selectedYAxis;
 	}
 
 	render() {
@@ -624,7 +721,7 @@ class Report extends Component {
 	}
 
 	_renderSuccessful() {
-		const factsheetType = this.selectedFactsheetType;
+		const factsheetType = this.reportState.selectedFactsheetType;
 		return (
 			<div>
 				<ModalDialog show={this.state.showConfigure}
@@ -654,23 +751,29 @@ class Report extends Component {
 	}
 
 	_renderConfigContent() {
-		const options = this.factsheetModels.map((e) => {
+		const options = this.reportState.factsheetModels.map((e) => {
 			return {
 				value: e,
 				label: lx.translateFactSheetType(e, 'plural')
 			};
 		});
 		return (
-			<SelectField id='factsheetType' label='Type'
-				options={options}
-				useSmallerFontSize
-				value={this.state.configStore.factsheetType}
-				onChange={this._handleFactsheetTypeSelect} />
+			<div>
+				<SelectField id='factsheetType' label='Type'
+					options={options}
+					useSmallerFontSize
+					value={this.reportState.configStore.factsheetType}
+					onChange={this._handleFactsheetTypeSelect} />
+				<Checkbox id='showMissingDataWarning' label='Show missing data warning'
+					useSmallerFontSize
+					value={this.reportState.configStore.showMissingDataWarning}
+					onChange={this._handleShowMissingDataWarningCheck} />
+			</div>
 		);
 	}
 
 	_renderSelectFields() {
-		const factsheetType = this.selectedFactsheetType;
+		const factsheetType = this.reportState.selectedFactsheetType;
 		let viewOptions = [];
 		let xAxisOptions = [];
 		let yAxisOptions = [];
@@ -678,7 +781,7 @@ class Report extends Component {
 		let selectedXAxisOption = undefined;
 		let selectedYAxisOption = undefined;
 		if (factsheetType) {
-			viewOptions = this.viewOptions[factsheetType];
+			viewOptions = this.reportState.viewOptions[factsheetType];
 			selectedViewOption = this._getSelectedViewOption(factsheetType).value;
 			selectedXAxisOption = this._getSelectedXAxisOption(factsheetType).value;
 			selectedYAxisOption = this._getSelectedYAxisOption(factsheetType).value;
@@ -695,15 +798,25 @@ class Report extends Component {
 			<div>
 				<span style={SELECT_FIELD_STYLE}>
 					<SelectField id='view' label='View' options={viewOptions} useSmallerFontSize
-						value={selectedViewOption} onChange={viewOptions.length === 0 ? undefined : this._handleViewSelect} />
+						value={selectedViewOption} onChange={viewOptions && viewOptions.length === 0 ? undefined : this._handleViewSelect} />
 				</span>
 				<span style={SELECT_FIELD_STYLE}>
 					<SelectField id='x-axis' label='X-Axis' options={xAxisOptions} useSmallerFontSize
-						value={selectedXAxisOption} onChange={xAxisOptions.length === 0 ? undefined : this._handleXAxisSelect} />
+						value={selectedXAxisOption} onChange={xAxisOptions && xAxisOptions.length === 0 ? undefined : this._handleXAxisSelect} />
+				</span>
+				<span style={SWAP_BUTTON_STYLE}>
+					<button type='button' className='btn btn-default btn-xs'
+						aria-label='Swap axes' title='Swap axes'
+						disabled={(xAxisOptions && xAxisOptions.length < 2) || (yAxisOptions && yAxisOptions.length < 2)}
+						onClick={this._handleSwapAxes}
+					>
+						<span className='glyphicon glyphicon-retweet' aria-hidden='true' />
+						<span className='sr-only'>Swap axes</span>
+					</button>
 				</span>
 				<span style={SELECT_FIELD_STYLE}>
 					<SelectField id='y-axis' label='Y-Axis' options={yAxisOptions} useSmallerFontSize
-						value={selectedYAxisOption} onChange={yAxisOptions.length === 0 ? undefined : this._handleYAxisSelect} />
+						value={selectedYAxisOption} onChange={yAxisOptions && yAxisOptions.length === 0 ? undefined : this._handleYAxisSelect} />
 				</span>
 			</div>
 		);
