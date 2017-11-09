@@ -40,11 +40,12 @@ body {
  */
 
 .Select-control, .Select-input {
-	height: 2.1em !important;
+	height: 1.6em !important;
 }
 
 .Select-placeholder, .Select-value {
-	line-height: 2.1em !important;
+	line-height: 1.6em !important;
+	top: 0.125em !important;
 }
 
 .Select-arrow-zone {
