@@ -37,6 +37,9 @@ class Report extends Component {
 		this.index = new DataIndex();
 		this._initReport = this._initReport.bind(this);
 		this._createConfig = this._createConfig.bind(this);
+		this._resetState = this._resetState.bind(this);
+		this._restoreStateFromFramework = this._restoreStateFromFramework.bind(this);
+		this._publishStateToFramework = this._publishStateToFramework.bind(this);
 		this._handleError = this._handleError.bind(this);
 		this._getAndHandleAdditionalData = this._getAndHandleAdditionalData.bind(this);
 		this._createAllViewsQuery = this._createAllViewsQuery.bind(this);
@@ -61,7 +64,7 @@ class Report extends Component {
 		this._renderSuccessful = this._renderSuccessful.bind(this);
 		this._renderConfigContent = this._renderConfigContent.bind(this);
 		this._renderSelectFields = this._renderSelectFields.bind(this);
-		this._resetState = this._resetState.bind(this);
+		this._resetUIState = this._resetUIState.bind(this);
 		this.state = {
 			loadingState: LOADING_INIT,
 			legendData: [],
@@ -133,7 +136,7 @@ class Report extends Component {
 						};
 					});
 				}
-				// filter out all have less than 3 elements
+				// filter out all that have less than 3 elements
 				Object.keys(this.reportState.viewOptions).forEach((e) => {
 					if (this.reportState.viewOptions[e].length < 3) {
 						delete this.reportState.viewOptions[e];
@@ -141,16 +144,21 @@ class Report extends Component {
 				});
 				// re-assign updated factsheetModels
 				this.reportState.factsheetModels = Object.keys(this.reportState.viewOptions);
-				// first one should be Application, fallback: use first entry
-				this.reportState.selectedFactsheetType = this.reportState.factsheetModels.find((e) => {
-					return e === 'Application';
-				});
-				if (!this.reportState.selectedFactsheetType) {
-					this.reportState.selectedFactsheetType = this.reportState.factsheetModels[0];
+				// load default state
+				this._resetState();
+				// then may restore saved state
+				if (this.setup.savedState && this.setup.savedState.customState) {
+					const result = this._restoreStateFromFramework(this.setup.savedState.customState);
+					if (result) {
+						this._handleRestoreError(result);
+						lx.hideSpinner();
+						return;
+					}
 				}
 				if (!this.reportState.selectedFactsheetType) {
 					// error, since there is no factsheet type with enough data
 					this._handleError('There is no factsheet type with enough data.');
+				lx.hideSpinner();
 					return;
 				}
 				lx.hideSpinner();
@@ -204,8 +212,103 @@ class Report extends Component {
 				format: 'a1',
 				inputType: 'HTML',
 				orientation: 'landscape'
+			},
+			restoreStateCallback: (state) => {
+				console.log('Callback:');
+				console.log(state);
+				const result = this._restoreStateFromFramework(state);
+				if (result) {
+					this._handleRestoreError(result);
+					return;
+				}
+				// get new data and re-render
+				this._getAndHandleAdditionalData();
 			}
 		};
+	}
+
+	_handleRestoreError(result) {
+		switch (result.loadingState) {
+			case LOADING_ERROR:
+				this._handleError(result.msg);
+				return;
+			default:
+				console.error('Unknown loading state after an unsuccessful restore op: '
+					+ result.loadingState);
+				this._handleError(result.msg);
+				return;
+		}
+	}
+
+	_resetState() {
+		// first one should be Application, fallback: use first entry
+		this.reportState.selectedFactsheetType = this.reportState.factsheetModels.find((e) => {
+			return e === 'Application';
+		});
+		if (!this.reportState.selectedFactsheetType) {
+			this.reportState.selectedFactsheetType = this.reportState.factsheetModels[0];
+		}
+		this.reportState.selectedView = null;
+		this.reportState.selectedXAxis = null;
+		this.reportState.selectedYAxis = null;
+		this.state.showMissingDataWarning = true;
+	}
+
+	_restoreStateFromFramework(newState) {
+		// check if the state can be restored
+		// if not then provide fallbacks or goto error screen
+		this.reportState.selectedFactsheetType = newState.selectedFactsheetType;
+		const viewOptions = this.reportState.viewOptions[newState.selectedFactsheetType];
+		if (!viewOptions) {
+			return {
+				loadingState: LOADING_ERROR,
+				msg: 'There isn\'t enough data for the factsheet type "' + newState.selectedFactsheetType
+					+ '". Please delete this bookmark.'
+			};
+		}
+		this.reportState.selectedView = viewOptions.find((e) => {
+			return e.key === newState.selectedView.key;
+		});
+		if (!this.reportState.selectedView) {
+			return {
+				loadingState: LOADING_ERROR,
+				msg: 'There is no view with the name "' + newState.selectedView.label
+					+ '" defined. Please delete this bookmark.'
+			};
+		}
+		this.reportState.selectedXAxis = viewOptions.find((e) => {
+			return e.key === newState.selectedXAxis.key;
+		});
+		if (!this.reportState.selectedXAxis) {
+			return {
+				loadingState: LOADING_ERROR,
+				msg: 'There is no X-Axis with the name "' + newState.selectedXAxis.label
+					+ '" defined. Please delete this bookmark.'
+			};
+		}
+		this.reportState.selectedYAxis = viewOptions.find((e) => {
+			return e.key === newState.selectedYAxis.key;
+		});
+		if (!this.reportState.selectedYAxis) {
+			return {
+				loadingState: LOADING_ERROR,
+				msg: 'There is no X-Axis with the name "' + newState.selectedYAxis.label
+					+ '" defined. Please delete this bookmark.'
+			};
+		}
+		this.state.showMissingDataWarning = newState.showMissingDataWarning;
+	}
+
+	_publishStateToFramework() {
+		const factsheetType = this.reportState.selectedFactsheetType;
+		const state = {
+			selectedFactsheetType: factsheetType,
+			selectedView: this._getSelectedViewOption(factsheetType),
+			selectedXAxis: this._getSelectedXAxisOption(factsheetType),
+			selectedYAxis: this._getSelectedYAxisOption(factsheetType),
+			showMissingDataWarning: this.state.showMissingDataWarning
+		};
+		lx.publishState(state);
 	}
 
 	_handleError(err) {
@@ -225,16 +328,13 @@ class Report extends Component {
 		const yAxisOption = this._getSelectedYAxisOption(factsheetType);
 		// get remaining data based on selected combobox values
 		lx.showSpinner('Loading data...');
-		const ids = this.reportState.lastFacetData.map((e) => {
-			return '"' + e.id + '"';
-		}).join(',');
 		const attributes = [];
 		attributes.push(this._getQueryAttribute(viewOption.value, viewOption.type));
 		attributes.push(this._getQueryAttribute(xAxisOption.value, xAxisOption.type));
 		attributes.push(this._getQueryAttribute(yAxisOption.value, yAxisOption.type));
-		lx.executeGraphQL(this._createAdditionalDataQuery(ids, factsheetType, attributes)).then((additionalData) => {
+		lx.executeGraphQL(this._createAdditionalDataQuery(this.reportState.lastFacetData, factsheetType, attributes)).then((additionalData) => {
 			this.index.put(additionalData);
-			this._getAndHandleViewData(this._computeData);
+			this._getAndHandleViewData();
 		}).catch(this._handleError);
 	}
 
@@ -259,6 +359,13 @@ class Report extends Component {
 	}
 
 	_createAdditionalDataQuery(ids, factsheetType, attributes) {
+		// create ids string, but pay attention to server-side limitation of 1024 entries
+		const idsString = ids.length < 1025 ? ids.map((e) => {
+			return '"' + e.id + '"';
+		}).join(',') : undefined;
+		// use either ids or at least the factsheet type for the filter
+		const idFilter = idsString ? `(filter: { ids: [${idsString}] })`
+			: (factsheetType ? `(filter: {facetFilters: [{facetKey: "FactSheetTypes", keys: ["${factsheetType}"]}]})` : '');
 		let attributeDef = 'id ' + attributes.filter((e, i) => {
 			// avoid duplicates
 			return attributes.indexOf(e, i + 1) < 0;
@@ -266,8 +373,6 @@ class Report extends Component {
 		if (factsheetType) {
 			attributeDef = `...on ${factsheetType} { ${attributeDef} }`;
 		}
-		// TODO deactivated idFilter b/c of a server-side limitation of 1024 entries
-		const idFilter = factsheetType ? `(filter: {facetFilters: [{facetKey: "FactSheetTypes", keys: ["${factsheetType}"]}]})` : ''; // `(filter: { ids: [${ids}] })`;
 		return `{additionalData: allFactSheets${idFilter} {
 					edges { node {
 						${attributeDef}
@@ -275,12 +380,12 @@ class Report extends Component {
 				}}`;
 	}
 
-	_getAndHandleViewData(then) {
+	_getAndHandleViewData() {
 		const factsheetType = this.reportState.selectedFactsheetType;
 		const viewOption = this._getSelectedViewOption(factsheetType);
 		if (this.reportState.viewModel && this.reportState.viewModel._key === viewOption.value) {
 			// no need to query the same data again
-			then();
+			this._computeData();
 			return;
 		}
 		lx.executeGraphQL(this._createViewQuery(factsheetType, viewOption.key)).then((viewData) => {
@@ -291,7 +396,7 @@ class Report extends Component {
 			}, {});
 			this.reportState.viewModel._rawLegendItems = legendItems;
 			this.reportState.viewModel._key = viewOption.value;
-			then();
+			this._computeData();
 		}).catch(this._handleError);
 	}
 
@@ -407,6 +512,9 @@ class Report extends Component {
 			missingData: missingData,
 			loadingState: LOADING_SUCCESSFUL
 		});
+		// everytime save the state, b/c this method is called, when something
+		// changes which needs to be published
+		this._publishStateToFramework();
 	}
 
 	_createMissingDataMsgForValues(xValue, yValue, xAxisName, yAxisName) {
@@ -561,11 +669,11 @@ class Report extends Component {
 			return;
 		}
 		this.reportState.selectedView = val;
-		this._resetState();
+		this._resetUIState();
 		this._getAndHandleAdditionalData();
 	}
 
-	_resetState() {
+	_resetUIState() {
 		// do not reset all states!
 		this.setState({
 			loadingState: LOADING_NEW_DATA,
@@ -583,7 +691,7 @@ class Report extends Component {
 			return;
 		}
 		this.reportState.selectedXAxis = val;
-		this._resetState();
+		this._resetUIState();
 		this._getAndHandleAdditionalData();
 	}
 
@@ -594,11 +702,16 @@ class Report extends Component {
 			return;
 		}
 		this.reportState.selectedYAxis = val;
-		this._resetState();
+		this._resetUIState();
 		this._getAndHandleAdditionalData();
 	}
 
 	_handleDismissAlertButton() {
+		// set directly b/c 'setState' works async
+		this.state.showMissingDataWarning = false;
+		// publish call is special here, b/c this action doesn't trigger '_computeData'
+		this._publishStateToFramework();
+		// now trigger rendering
 		this.setState({
 			showMissingDataWarning: false
 		});
@@ -622,11 +735,15 @@ class Report extends Component {
 				this.reportState.selectedView = null;
 				this.reportState.selectedXAxis = null;
 				this.reportState.selectedYAxis = null;
+				// set directly b/c 'setState' works async
+				this.state.showMissingDataWarning = this.reportState.configStore.showMissingDataWarning;
 				this.setState({
 					showConfigure: false,
 					showMissingDataWarning: this.reportState.configStore.showMissingDataWarning
 				});
 				if (oldSFT === this.reportState.selectedFactsheetType) {
+					// publish call is special here, b/c this action doesn't trigger '_computeData'
+					this._publishStateToFramework();
 					return;
 				}
 				// update report config, this will trigger the facet callback automatically
