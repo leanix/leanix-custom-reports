@@ -9,8 +9,6 @@ import Matrix from './Matrix';
 import MissingDataAlert from './MissingDataAlert';
 import ModalDialog from './ModalDialog';
 
-// TODO save feature
-
 const LOADING_INIT = 0;
 const LOADING_NEW_DATA = 1;
 const LOADING_SUCCESSFUL = 2;
