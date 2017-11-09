@@ -36,6 +36,7 @@ class Report extends Component {
 		this._initReport = this._initReport.bind(this);
 		this._createConfig = this._createConfig.bind(this);
 		this._resetState = this._resetState.bind(this);
+		this._handleRestoreError = this._handleRestoreError.bind(this);
 		this._restoreStateFromFramework = this._restoreStateFromFramework.bind(this);
 		this._publishStateToFramework = this._publishStateToFramework.bind(this);
 		this._handleError = this._handleError.bind(this);
