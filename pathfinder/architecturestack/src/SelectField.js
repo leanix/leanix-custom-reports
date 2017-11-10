@@ -28,7 +28,7 @@ class SelectField extends Component {
 					ignoreCase={true}
 					clearable={false}
 					searchable={false}
-					disabled={this.props.options.length < 2}
+					disabled={this.props.options.length < 1}
 					value={this.props.value}
 					onChange={this._onChange} />
 			</div>

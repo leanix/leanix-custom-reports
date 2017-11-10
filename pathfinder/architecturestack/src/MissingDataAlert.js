@@ -45,6 +45,7 @@ class MissingDataAlert extends Component {
 		);
 	}
 
+	// TODO this should be somewhere else
 	_renderPopup(type) {
 		if (!this.state.showList) {
 			return null;

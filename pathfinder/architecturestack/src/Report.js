@@ -135,9 +135,9 @@ class Report extends Component {
 						};
 					});
 				}
-				// filter out all that have less than 3 elements
+				// filter out all that have less than 2 elements
 				Object.keys(this.reportState.viewOptions).forEach((e) => {
-					if (this.reportState.viewOptions[e].length < 3) {
+					if (this.reportState.viewOptions[e].length < 2) {
 						delete this.reportState.viewOptions[e];
 					}
 				});
@@ -778,6 +778,7 @@ class Report extends Component {
 
 	_getSelectedViewOption(factsheetType) {
 		if (!this.reportState.selectedView) {
+			// always fallback to the first one
 			return this.reportState.viewOptions[factsheetType][0];
 		}
 		return this.reportState.selectedView;
@@ -785,14 +786,29 @@ class Report extends Component {
 
 	_getSelectedXAxisOption(factsheetType) {
 		if (!this.reportState.selectedXAxis) {
-			return this.reportState.viewOptions[factsheetType][1];
+			const viewOptions = this.reportState.viewOptions[factsheetType];
+			// view options have at least 2 elements, see '_initReport'
+			switch (viewOptions.length) {
+				case 2:
+					return viewOptions[0];
+				default:
+					return viewOptions[1];
+			}
 		}
 		return this.reportState.selectedXAxis;
 	}
 
 	_getSelectedYAxisOption(factsheetType) {
 		if (!this.reportState.selectedYAxis) {
-			return this.reportState.viewOptions[factsheetType][2];
+			const viewOptions = this.reportState.viewOptions[factsheetType];
+			// view options have at least 2 elements, see '_initReport'
+			// choose an option which is different from x-axis
+			switch (viewOptions.length) {
+				case 2:
+					return viewOptions[1];
+				default:
+					return viewOptions[2];
+			}
 		}
 		return this.reportState.selectedYAxis;
 	}
@@ -923,7 +939,7 @@ class Report extends Component {
 				<span style={SWAP_BUTTON_STYLE}>
 					<button type='button' className='btn btn-default btn-xs'
 						aria-label='Swap axes' title='Swap axes'
-						disabled={(xAxisOptions && xAxisOptions.length < 2) || (yAxisOptions && yAxisOptions.length < 2)}
+						disabled={(xAxisOptions && xAxisOptions.length < 1) || (yAxisOptions && yAxisOptions.length < 1)}
 						onClick={this._handleSwapAxes}
 					>
 						<span className='glyphicon glyphicon-retweet' aria-hidden='true' />
