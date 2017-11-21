@@ -19,31 +19,63 @@ class Matrix extends Component {
 	}
 
 	render() {
+		// filter out empty rows & columns if needed
+		let data = [];
+		if (this.props.showEmptyRows && this.props.showEmptyColumns) {
+			// no need to do expensive copying
+			data = this.props.data;
+		} else {
+			data = this.props.data.map((e) => {
+				return Utilities.copyArray(e);
+			});
+			// data is structured in rows, so filter rows first
+			if (!this.props.showEmptyRows) {
+				for (let i = 1; i < data.length; i++) {
+					const row = data[i];
+					if (Utilities.isArrayEmpty(row, 1)) {
+						data.splice(i, 1);
+						i--;
+					}
+				}
+			}
+			// now filter columns
+			if (!this.props.showEmptyColumns) {
+				// there is always at least one row
+				for (let i = 1; i < data[0].length; i++) {
+					let keepColumn = false;
+					for (let j = 1; j < data.length; j++) {
+						const cell = data[j][i];
+						keepColumn = keepColumn ? true : !Utilities.isArrayEmpty(cell, 0);
+					}
+					if (!keepColumn) {
+						// remove column
+						for (let j = 0; j < data.length; j++) {
+							data[j].splice(i, 1);
+						}
+						i--;
+					}
+				}
+			}
+		}
 		const baseUrl = Utilities.getFrom(this.props.setup, 'settings.baseUrl');
 		return (
 			<div className='matrix'>
-				{!this.props.dataAvailable ? this._renderNoData(baseUrl) : this._renderMatrix(baseUrl)}
+				{!this.props.dataAvailable || data.length < 2 ? this._renderNoData(baseUrl) : this._renderMatrix(baseUrl, data)}
 			</div>
 		);
 	}
 
 	_renderNoData(baseUrl) {
 		return (
-			<table>
-				<tbody>
-					{this.props.data.map((e, i) => {
-						return this._renderRow(true, e, i, baseUrl);
-					})}
-				</tbody>
-			</table>
+			<h4 className='text-center' style={{ width: '100%' }}>No data available</h4>
 		);
 	}
 
-	_renderMatrix(baseUrl) {
+	_renderMatrix(baseUrl, data) {
 		return (
 			<table>
 				<tbody>
-					{this.props.data.map((e, i) => {
+					{data.map((e, i) => {
 						return this._renderRow(false, e, i, baseUrl);
 					})}
 				</tbody>
@@ -135,6 +167,8 @@ Matrix.propTypes = {
 	dataAvailable: PropTypes.bool.isRequired,
 	cellWidth: PropTypes.string.isRequired,
 	factsheetType: PropTypes.string.isRequired,
+	showEmptyRows: PropTypes.bool.isRequired,
+	showEmptyColumns: PropTypes.bool.isRequired,
 	setup: PropTypes.object.isRequired
 };
 

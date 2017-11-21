@@ -1,12 +1,15 @@
 body {
 	margin: 0px;
 	padding: 0px 5px;
-	overflow-x: hidden;
 }
 
 #report {
 	margin: 0 auto;
 	padding: 5px 5px 0px 5px;
+}
+
+#content .legend {
+	margin-bottom: 0.5em;
 }
 
 .matrix table {

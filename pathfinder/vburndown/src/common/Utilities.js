@@ -159,6 +159,26 @@ function copyArray(arr) {
 	});
 }
 
+function isArrayEmpty(arr, startIdx) {
+	if (!arr) {
+		return true;
+	}
+	if (!startIdx || startIdx < 0) {
+		startIdx = 0;
+	}
+	for (let i = startIdx; i < arr.length; i++) {
+		const e = arr[i];
+		if (e !== undefined && e !== null) {
+			if (Array.isArray(e) && isArrayEmpty(e, 0)) {
+				continue;
+			} else {
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
 export default {
 	getCurrentLifecycle: getCurrentLifecycle,
 	hasLifecycle: hasLifecycle,
@@ -172,5 +192,6 @@ export default {
 	isProductionPhase: isProductionPhase,
 	getMarket: getMarket,
 	copyObject: copyObject,
-	copyArray: copyArray
+	copyArray: copyArray,
+	isArrayEmpty: isArrayEmpty
 };

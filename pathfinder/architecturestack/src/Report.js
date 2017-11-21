@@ -54,6 +54,8 @@ class Report extends Component {
 		this._handleConfig = this._handleConfig.bind(this);
 		this._handleFactsheetTypeSelect = this._handleFactsheetTypeSelect.bind(this);
 		this._handleShowMissingDataWarningCheck = this._handleShowMissingDataWarningCheck.bind(this);
+		this._handleShowEmptyRowsCheck = this._handleShowEmptyRowsCheck.bind(this);
+		this._handleShowEmptyColumnsCheck = this._handleShowEmptyColumnsCheck.bind(this);
 		this._handleSwapAxes = this._handleSwapAxes.bind(this);
 		this._getSelectedViewOption = this._getSelectedViewOption.bind(this);
 		this._getSelectedXAxisOption = this._getSelectedXAxisOption.bind(this);
@@ -71,6 +73,8 @@ class Report extends Component {
 			matrixDataAvailable: false,
 			missingData: [],
 			showMissingDataWarning: true,
+			showEmptyRows: false,
+			showEmptyColumns: false,
 			showConfigure: false
 		};
 		this.reportState = {
@@ -198,7 +202,9 @@ class Report extends Component {
 					}
 					this.reportState.configStore = {
 						factsheetType: this.reportState.selectedFactsheetType,
-						showMissingDataWarning: this.state.showMissingDataWarning
+						showMissingDataWarning: this.state.showMissingDataWarning,
+						showEmptyRows: this.state.showEmptyRows,
+						showEmptyColumns: this.state.showEmptyColumns
 					};
 					this.setState({
 						showConfigure: true
@@ -251,6 +257,8 @@ class Report extends Component {
 		this.reportState.selectedXAxis = null;
 		this.reportState.selectedYAxis = null;
 		this.state.showMissingDataWarning = true;
+		this.state.showEmptyRows = false;
+		this.state.showEmptyColumns = false;
 	}
 
 	_restoreStateFromFramework(newState) {
@@ -296,6 +304,8 @@ class Report extends Component {
 			};
 		}
 		this.state.showMissingDataWarning = newState.showMissingDataWarning;
+		this.state.showEmptyRows = newState.showEmptyRows;
+		this.state.showEmptyColumns = newState.showEmptyColumns;
 	}
 
 	_publishStateToFramework() {
@@ -305,7 +315,9 @@ class Report extends Component {
 			selectedView: this._getSelectedViewOption(factsheetType),
 			selectedXAxis: this._getSelectedXAxisOption(factsheetType),
 			selectedYAxis: this._getSelectedYAxisOption(factsheetType),
-			showMissingDataWarning: this.state.showMissingDataWarning
+			showMissingDataWarning: this.state.showMissingDataWarning,
+			showEmptyRows: this.state.showEmptyRows,
+			showEmptyColumns: this.state.showEmptyColumns
 		};
 		lx.publishState(state);
 	}
@@ -730,21 +742,22 @@ class Report extends Component {
 			return () => {
 				const oldSFT = this.reportState.selectedFactsheetType;
 				this.reportState.selectedFactsheetType = this.reportState.configStore.factsheetType;
-				// reset all select states
-				this.reportState.selectedView = null;
-				this.reportState.selectedXAxis = null;
-				this.reportState.selectedYAxis = null;
 				// set directly b/c 'setState' works async
 				this.state.showMissingDataWarning = this.reportState.configStore.showMissingDataWarning;
+				this.state.showEmptyRows = this.reportState.configStore.showEmptyRows;
+				this.state.showEmptyColumns = this.reportState.configStore.showEmptyColumns;
 				this.setState({
-					showConfigure: false,
-					showMissingDataWarning: this.reportState.configStore.showMissingDataWarning
+					showConfigure: false
 				});
 				if (oldSFT === this.reportState.selectedFactsheetType) {
 					// publish call is special here, b/c this action doesn't trigger '_computeData'
 					this._publishStateToFramework();
 					return;
 				}
+				// reset all select states, b/c factsheet type changed
+				this.reportState.selectedView = null;
+				this.reportState.selectedXAxis = null;
+				this.reportState.selectedYAxis = null;
 				// update report config, this will trigger the facet callback automatically
 				lx.updateConfiguration(this._createConfig());
 			};
@@ -764,6 +777,22 @@ class Report extends Component {
 			return;
 		}
 		this.reportState.configStore.showMissingDataWarning = val;
+		this.forceUpdate();
+	}
+
+	_handleShowEmptyRowsCheck(val) {
+		if (this.reportState.configStore.showEmptyRows === !val) {
+			return;
+		}
+		this.reportState.configStore.showEmptyRows = !val;
+		this.forceUpdate();
+	}
+
+	_handleShowEmptyColumnsCheck(val) {
+		if (this.reportState.configStore.showEmptyColumns === !val) {
+			return;
+		}
+		this.reportState.configStore.showEmptyColumns = !val;
 		this.forceUpdate();
 	}
 
@@ -876,6 +905,8 @@ class Report extends Component {
 						factsheetType={factsheetType}
 						data={this.state.matrixData}
 						dataAvailable={this.state.matrixDataAvailable}
+						showEmptyRows={this.state.showEmptyRows}
+						showEmptyColumns={this.state.showEmptyColumns}
 					/>
 				</div>
 			</div>
@@ -896,6 +927,14 @@ class Report extends Component {
 					useSmallerFontSize
 					value={this.reportState.configStore.factsheetType}
 					onChange={this._handleFactsheetTypeSelect} />
+				<Checkbox id='showEmptyRows' label='Hide empty rows'
+					useSmallerFontSize
+					value={!this.reportState.configStore.showEmptyRows}
+					onChange={this._handleShowEmptyRowsCheck} />
+				<Checkbox id='showEmptyColumns' label='Hide empty columns'
+					useSmallerFontSize
+					value={!this.reportState.configStore.showEmptyColumns}
+					onChange={this._handleShowEmptyColumnsCheck} />
 				<Checkbox id='showMissingDataWarning' label='Show missing data warning'
 					useSmallerFontSize
 					value={this.reportState.configStore.showMissingDataWarning}
