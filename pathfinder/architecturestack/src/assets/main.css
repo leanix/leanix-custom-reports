@@ -1,0 +1,83 @@
+body {
+	margin: 0px;
+	padding: 0px 5px;
+}
+
+#report {
+	margin: 0 auto;
+	padding: 5px 5px 0px 5px;
+}
+
+#content .legend {
+	margin-bottom: 0.5em;
+}
+
+.matrix table {
+	border-collapse: separate;
+	border-spacing: 0.25em;
+	empty-cells: hide;
+}
+
+.matrix .label {
+	font-weight: initial;
+}
+
+.matrix .label a {
+	color: inherit;
+}
+
+.matrix th {
+	background: lightgrey;
+	padding: 0.5em;
+}
+
+.matrix td {
+	background: #F3F3F3;
+	vertical-align: top;
+}
+
+/*
+ * from 'react-select/dist/react-select.css'
+ *
+ * controls are about 25% smaller
+ */
+
+.Select-control, .Select-input {
+	height: 1.6em !important;
+}
+
+.Select-placeholder, .Select-value {
+	line-height: 1.6em !important;
+	top: 0.125em !important;
+}
+
+.Select-arrow-zone {
+	padding-top: 0.4em;
+}
+
+.Select-option {
+	padding-top: 0.4em;
+	padding-bottom: 0.4em;
+}
+
+/*
+ * from 'react-bootstrap-table/css/react-bootstrap-table.css'
+ */
+.react-bs-table table td,
+.react-bs-table table th {
+	white-space: normal !important;
+}
+
+.react-bs-container-header > table > thead > tr > th {
+    vertical-align: bottom !important;
+}
+
+.react-bs-table,
+.react-bs-table-tool-bar,
+.react-bs-table-pagination {
+	margin: 0px;
+}
+
+.react-bs-table-tool-bar {
+	margin-bottom: 10px;
+}
