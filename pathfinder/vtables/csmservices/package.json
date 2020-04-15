@@ -43,7 +43,7 @@
 	"dependencies": {
 		"@leanix/reporting": "0.2.0",
 		"bootstrap": "3.3.7",
-		"prop-types": "15.5.10",
+		"prop-types": "15.7.2",
 		"react": "15.6.1",
 		"react-bootstrap-table": "4.0.3",
 		"react-dom": "15.6.1"
