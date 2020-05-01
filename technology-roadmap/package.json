@@ -17,7 +17,8 @@
     "bootstrap": "^3.3.7",
     "react": "^15.4.2",
     "react-bootstrap-table": "^3.1.1",
-    "react-dom": "^15.4.2"
+    "react-dom": "^15.4.2",
+    "snyk": "^1.316.1"
   },
   "devDependencies": {
     "react-scripts": "0.9.5"
@@ -26,6 +27,9 @@
     "createToken": "node ./lib/createToken.js",
     "prestart": "npm run createToken",
     "start": "react-scripts start",
-    "build": "react-scripts build"
-  }
+    "build": "react-scripts build",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
+  },
+  "snyk": true
 }
